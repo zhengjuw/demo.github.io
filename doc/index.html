@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="ja" style="height: 100%">
+
+<head>
+  <meta charset="utf-8">
+  <title>ソースデータ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600&family=Noto+Sans:wght@400;500;600&display=swap" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none
+    }
+
+    button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-family: inherit
+    }
+
+    img {
+      display: block
+    }
+
+    :root {
+      --header-h: 52px;
+      --bar-h: 42px;
+      --blue: #3d7eff;
+      --blue-light: #e8f0ff;
+      --blue-mid: #dbe4ff;
+      --blue-deep: #3b5bdb;
+      --blue-hover: #4f6ef7;
+      --sidebar-border: #e8ecf2;
+      --text-dark: #1a2332;
+      --text-mid: #4a5568;
+      --text-light: #94a3b8;
+      --selected-bg: #eef3ff;
+      --white: #ffffff;
+      --bg: #f5f7fa;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Noto Sans JP', 'Noto Sans', sans-serif
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg)
+    }
+
+    /* TOP HEADER */
+    #top-header {
+      height: var(--header-h);
+      background: var(--blue-light);
+      border-bottom: 1px solid var(--sidebar-border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 14px;
+      flex-shrink: 0;
+      z-index: 100
+    }
+
+    #top-header img#logo {
+      height: 36px;
+      width: auto
+    }
+
+    #top-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dark)
+    }
+
+    .spacer {
+      flex: 1
+    }
+
+    /* CONTENT BAR */
+    #content-bar {
+      height: var(--bar-h);
+      background: var(--white);
+      border-bottom: 1px solid var(--sidebar-border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 8px;
+      flex-shrink: 0;
+      overflow-x: auto
+    }
+
+    #content-bar .spacer {
+      flex: 1
+    }
+
+    .back-btn {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-mid);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--sidebar-border);
+      background: #f8fafc;
+      white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s, color 0.15s
+    }
+
+    .back-btn:hover {
+      background: var(--blue-light);
+      border-color: #c4d4ff;
+      color: var(--blue-deep)
+    }
+
+    .bar-label {
+      font-size: 11px;
+      color: var(--text-light);
+      white-space: nowrap
+    }
+
+    .filter-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 12px;
+      white-space: nowrap
+    }
+
+    .cohort-tag {
+      background: #fff3e0;
+      color: #c76b00
+    }
+
+    .patient-tag {
+      background: var(--blue-light);
+      color: #1d4ed8
+    }
+
+    .pending-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-mid);
+      background: #f8fafc;
+      border: 1px solid var(--sidebar-border);
+      border-radius: 20px;
+      padding: 4px 12px 4px 4px;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      white-space: nowrap
+    }
+
+    .pending-chip:hover {
+      background: var(--selected-bg);
+      box-shadow: 0 1px 6px rgba(61, 126, 255, 0.13)
+    }
+
+    .pending-avatar {
+      width: 24px;
+      height: 24px;
+      background: var(--blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: white
+    }
+
+    /* MAIN */
+    #main-content {
+      flex: 1;
+      overflow: auto;
+      padding: 24px
+    }
+
+    /* TABLE */
+    #grid-wrap {
+      width: 100%;
+      overflow-x: auto
+    }
+
+    table {
+      border-collapse: collapse;
+      min-width: 100%
+    }
+
+    thead tr.row-timepoint th {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e3a5f;
+      text-align: center;
+      white-space: nowrap
+    }
+
+    thead tr.row-timepoint th.row-label {
+      background: #f8fafc;
+      min-width: 140px;
+      text-align: left;
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 400
+    }
+
+    thead tr.row-visit th {
+      background: #f0f4ff;
+      border: 1px solid #e2e8f0;
+      padding: 10px 16px;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: top
+    }
+
+    thead tr.row-visit th.row-label {
+      background: #f8fafc;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      vertical-align: middle
+    }
+
+    .visit-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px
+    }
+
+    .visit-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #3b5bdb;
+      white-space: nowrap
+    }
+
+    .status-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #94a3b8;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 4px 10px
+    }
+
+    .status-empty {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px dashed #cbd5e1;
+      border-radius: 4px;
+      flex-shrink: 0
+    }
+
+    tbody td {
+      border: 1px solid #e2e8f0;
+      padding: 16px;
+      vertical-align: middle;
+      text-align: center;
+      background: #fff;
+      white-space: nowrap;
+      height: 80px
+    }
+
+    tbody td.row-label {
+      background: #f8fafc;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.7
+    }
+
+    .folder-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #64748b;
+      background: #dbe4ff;
+      border: 1px solid #dbe4ff;
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      user-select: none
+    }
+
+    .folder-btn svg {
+      width: 28px;
+      height: 28px
+    }
+
+    .folder-btn:hover {
+      color: #fff;
+      background: #4f6ef7;
+      border-color: #4f6ef7
+    }
+
+    .folder-btn.active {
+      color: #fff;
+      background: #3b5bdb;
+      border-color: #3b5bdb;
+      box-shadow: 0 2px 8px rgba(59, 91, 219, 0.25)
+    }
+
+    tr.expand-row>td {
+      padding: 0 !important;
+      height: auto !important;
+      border-left: none !important;
+      border-right: none !important;
+      border-top: none !important;
+      background: transparent !important
+    }
+
+    .expand-panel {
+      background: #f8faff;
+      border-top: 2px solid #4f6ef7;
+      border-bottom: 2px solid #e2e8f0;
+      animation: slideDown 0.18s ease
+    }
+
+    .expand-body {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 0;
+      max-width: 100%;
+      overflow: hidden
+    }
+
+    .expand-left {
+      flex: 0 0 280px;
+      min-width: 0;
+      border-right: 1px solid #e2e8f0;
+      background: #fff
+    }
+
+    .expand-right {
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: calc(100% - 280px);
+      background: #f8faff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 24px;
+      gap: 16px
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        max-height: 0
+      }
+
+      to {
+        opacity: 1;
+        max-height: 1000px
+      }
+    }
+
+    .expand-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 8px;
+      border-bottom: 1px solid #e2e8f0
+    }
+
+    .expand-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #3b5bdb
+    }
+
+    .expand-close {
+      margin-left: auto;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid #c7d2fe;
+      background: #fff;
+      color: #64748b;
+      font-size: 15px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, color 0.12s, border-color 0.12s
+    }
+
+    .expand-close:hover {
+      background: #4f6ef7;
+      color: #fff;
+      border-color: #4f6ef7
+    }
+
+    .expand-table {
+      border-collapse: collapse;
+      width: 100%
+    }
+
+    .expand-table thead th {
+      background: #eef2ff;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      padding: 7px 14px;
+      text-align: center;
+      border-bottom: 1px solid #e2e8f0
+    }
+
+    .expand-table thead th:first-child {
+      text-align: left
+    }
+
+    .expand-table tbody td {
+      font-size: 12px;
+      color: #334155;
+      padding: 8px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      background: #fff;
+      height: auto !important;
+      white-space: nowrap;
+      border-left: none;
+      border-right: none;
+      border-top: none;
+      text-align: center
+    }
+
+    .expand-table tbody td:first-child {
+      text-align: left
+    }
+
+    .expand-table tbody tr:last-child td {
+      border-bottom: none
+    }
+
+    .expand-table tbody tr {
+      cursor: pointer;
+      transition: background 0.1s
+    }
+
+    .expand-table tbody tr:hover td {
+      background: #eef2ff !important
+    }
+
+    .file-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-start;
+      padding: 6px 0
+    }
+
+    .file-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      transition: background 0.12s, color 0.12s
+    }
+
+    .file-cell-image {
+      color: #334155
+    }
+
+    .file-cell-image:hover {
+      background: #e0e7ff;
+      color: #3b5bdb
+    }
+
+    .file-cell-report {
+      color: #4f6ef7;
+      font-weight: 500
+    }
+
+    .file-cell-report:hover {
+      background: #dbe4ff;
+      color: #2346c9
+    }
+
+    .file-cell svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0
+    }
+
+    .row-link-arrow {
+      color: #c7d2fe;
+      font-size: 16px;
+      transition: color 0.12s, transform 0.12s
+    }
+
+    .expand-table tbody tr:hover .row-link-arrow {
+      color: #4f6ef7;
+      transform: translateX(3px)
+    }
+
+    .file-cell-image.active-preview {
+      background: #dbeafe;
+      color: #2563eb
+    }
+
+    .file-cell-report.active-preview {
+      background: #fce7f3;
+      color: #db2777
+    }
+
+    .preview-section {
+      animation: slideDown 0.2s ease;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px
+    }
+
+    .preview-section.theme-ct {
+      background: transparent
+    }
+
+    .preview-section.theme-ct .preview-header,
+    .preview-section.theme-pdf .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 0;
+      height: 28px;
+      width: 100%;
+      max-width: 1000px
+    }
+
+    .preview-section.theme-ct .preview-title,
+    .preview-section.theme-pdf .preview-title {
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px
+    }
+
+    .preview-close-btn {
+      position: absolute;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      color: #94a3b8;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      z-index: 2
+    }
+
+    .preview-close-btn:hover {
+      background: #4f6ef7;
+      color: #fff;
+      border-color: #4f6ef7
+    }
+
+    .preview-section.theme-pdf {
+      background: transparent;
+      box-shadow: none
+    }
+
+    .preview-grid.type-ct {
+      display: flex;
+      width: 200%;
+      max-width: 1000px;
+      height: 680px;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 6px 28px rgba(0, 0, 0, 0.35)
+    }
+
+    .preview-grid.type-ct .pane-left {
+      flex: 0 0 220px;
+      background: #242424;
+      border-right: 1px solid #111;
+      overflow-y: auto;
+      padding: 0
+    }
+
+    .preview-grid.type-ct .pane-left img {
+      width: 100%;
+      height: auto;
+      display: block
+    }
+
+    .preview-grid.type-ct .pane-right {
+      flex: 1 1 0;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden
+    }
+
+    .preview-grid.type-ct .pane-right img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block
+    }
+
+    .preview-grid.type-pdf {
+      display: flex;
+      justify-content: center;
+      width: 200%;
+      max-width: 1000px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 6px 28px rgba(0, 0, 0, 0.18)
+    }
+
+    .preview-grid.type-pdf .preview-pane-single {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .preview-grid.type-pdf .preview-pane-single img {
+      width: 100%;
+      height: auto;
+      display: block
+    }
+  </style>
+</head>
+
+<body>
+  <div id="top-header">
+    <img id="logo" src="image13215-yqx-200w.png" alt="Logo" onerror="this.style.display='none'">
+    <h3>ソースデータ</h3>
+  </div>
+
+  <div id="content-bar">
+    <button class="back-btn" onclick="goBack()">← 戻る</button>
+    <span class="bar-label">表示中：</span>
+    <span class="filter-tag cohort-tag" id="bar-id">M30011111</span>
+    <span class="filter-tag patient-tag" id="bar-age">56歳</span>
+    <span class="filter-tag cohort-tag" id="bar-sex">男性</span>
+    <span class="filter-tag patient-tag" id="bar-date">登録日：2024-06-24</span>
+    <span class="filter-tag cohort-tag">コホートB1：Up-front Surgery を施行する場合</span>
+    <span class="filter-tag patient-tag">結腸・直腸癌</span>
+    <span class="filter-tag cohort-tag">生存</span>
+    <div class="spacer"></div>
+    <div class="pending-chip" onclick="navigateToPendingPage()">
+      <div class="pending-avatar" id="pending-count">2</div>
+      確認待ち
+    </div>
+  </div>
+
+  <div id="main-content">
+    <div id="grid-wrap">
+      <table id="main-table"></table>
+    </div>
+  </div>
+
+  <script>
+    /* Navigation */
+    function goBack() {
+      window.location.href = '../index.html';
+    }
+
+    function navigateToPendingPage() {
+      window.location.href = './chart/index.html';
+    }
+
+    /* CSV Data */
+    const csvData = [
+      {
+        timepoint: '登録時', visit_info: '症例登錄票', status: '', hasFolder: true,
+        files: [
+          { image: 'CT', report: 'CT.pdf' },
+          { image: 'MRI', report: 'MRI.pdf' },
+          { image: '内視鏡検査', report: '内視鏡検査.pdf' },
+        ]
+      },
+      { timepoint: '手術時', visit_info: 'コホートB：手術', status: '', hasFolder: false },
+      { timepoint: '術後4w', visit_info: 'コホートB：再発（N）', status: '', hasFolder: false },
+      { timepoint: '術後12w', visit_info: 'コホートB：再発（N）', status: '', hasFolder: false },
+      {
+        timepoint: '術後24w', visit_info: 'コホートB：再発（6m）', status: '', hasFolder: true,
+        files: [
+          { image: 'CT', report: 'CT.pdf' },
+          { image: 'コンピュータX線撮影', report: 'コンピュータX線撮影.pdf' },
+          { image: '内視鏡検査', report: ' ' },
+        ]
+      },
+      { timepoint: '術後36w', visit_info: 'コホートB：再発（N）', status: '', hasFolder: false },
+      {
+        timepoint: '術後48w', visit_info: 'コホートB：再発（12m）', status: '', hasFolder: true,
+        files: [
+          // { image: 'CT', report: 'CT.pdf' },
+          // { image: 'MRI', report: 'MRI.pdf' },
+          { image: '内視鏡検査', report: '内視鏡検査.pdf' },
+        ]
+      },
+      {
+        timepoint: '術後72w', visit_info: 'コホートB：再発（18m）', status: '', hasFolder: true,
+        files: [
+          // { image: 'CT', report: 'CT.pdf' },
+          // { image: 'MRI', report: ' ' },
+          // { image: '内視鏡検査', report: ' ' },
+        ]
+      },
+    ];
+
+    /* SVG Icons */
+    const folderSVG = `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 14C6 12.34 7.34 11 9 11H20L24 15H39C40.66 15 42 16.34 42 18V38C42 39.66 40.66 41 39 41H9C7.34 41 6 39.66 6 38V14Z"
+            fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <line x1="6" y1="21" x2="42" y2="21" stroke="currentColor" stroke-width="1.5"/>
+    </svg>`;
+    const imgSVG = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/>
+      <circle cx="5.5" cy="6.5" r="1.2" fill="currentColor"/>
+      <path d="M1 12l4-4 3 3 2.5-2.5L15 12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+    const rptSVG = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 1.5h6.5l3 3V14a.5.5 0 01-.5.5H3a.5.5 0 01-.5-.5V2a.5.5 0 01.5-.5z" stroke="currentColor" stroke-width="1.3"/>
+      <path d="M9.5 1.5V4.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      <line x1="4.5" y1="7.5" x2="11.5" y2="7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="4.5" y1="10" x2="9" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>`;
+
+    /* Build Table */
+    const table = document.getElementById('main-table');
+    const thead = document.createElement('thead');
+
+    const rowTP = document.createElement('tr');
+    rowTP.className = 'row-timepoint';
+    addTh(rowTP, '', 'row-label');
+    csvData.forEach((d, i) => { const th = document.createElement('th'); th.textContent = d.timepoint; th.dataset.col = i; rowTP.appendChild(th); });
+    thead.appendChild(rowTP);
+
+    const rowVI = document.createElement('tr');
+    rowVI.className = 'row-visit';
+    addTh(rowVI, 'Visit情報', 'row-label');
+    csvData.forEach((d, i) => {
+      const th = document.createElement('th'); th.dataset.col = i;
+      const inner = document.createElement('div'); inner.className = 'visit-inner';
+      const name = document.createElement('div'); name.className = 'visit-name'; name.textContent = d.visit_info;
+      const sw = document.createElement('div'); sw.className = 'status-wrap';
+      sw.innerHTML = 'ステータス <span class="status-empty"></span>';
+      inner.appendChild(name); inner.appendChild(sw); th.appendChild(inner); rowVI.appendChild(th);
+    });
+    thead.appendChild(rowVI);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    const rowImg = document.createElement('tr');
+    const tdLabel = document.createElement('td'); tdLabel.className = 'row-label'; tdLabel.innerHTML = '臨床画像'; rowImg.appendChild(tdLabel);
+
+    let activeCol = null, expandRow = null;
+
+    csvData.forEach((d, i) => {
+      const td = document.createElement('td'); td.dataset.col = i;
+      if (d.hasFolder) {
+        const btn = document.createElement('div'); btn.className = 'folder-btn'; btn.id = `btn-${i}`;
+        btn.innerHTML = folderSVG + `<span>+${d.files.length}</span>`;
+        btn.addEventListener('click', () => {
+          if (activeCol === i) { collapseExpand(); }
+          else { collapseExpand(); activeCol = i; btn.classList.add('active'); insertExpandRow(d, i); }
+        });
+        td.appendChild(btn);
+      }
+      rowImg.appendChild(td);
+    });
+    tbody.appendChild(rowImg);
+    table.appendChild(tbody);
+
+    /* Expand Row */
+    function insertExpandRow(d, colIndex) {
+      expandRow = document.createElement('tr'); expandRow.className = 'expand-row';
+      const td = document.createElement('td'); td.colSpan = csvData.length + 1;
+      const panel = document.createElement('div'); panel.className = 'expand-panel';
+      const hdr = document.createElement('div'); hdr.className = 'expand-header';
+      hdr.innerHTML = `<span style="font-size:16px">📁</span><span class="expand-title">${d.timepoint} — ファイル一覧</span><button class="expand-close" title="閉じる">×</button>`;
+      hdr.querySelector('.expand-close').addEventListener('click', collapseExpand);
+      panel.appendChild(hdr);
+
+      const body = document.createElement('div'); body.className = 'expand-body';
+      const leftCol = document.createElement('div'); leftCol.className = 'expand-left';
+      const et = document.createElement('table'); et.className = 'expand-table';
+      et.innerHTML = `<thead><tr><th style="width:32px;color:#94a3b8;text-align:left">#</th><th>臨床画像 / 診断レポート</th><th style="width:24px"></th></tr></thead>`;
+      const etb = document.createElement('tbody');
+
+      (d.files || []).forEach((f, idx) => {
+        const tr = document.createElement('tr');
+        const numTd = document.createElement('td'); numTd.style.cssText = 'color:#94a3b8;font-size:11px;vertical-align:top;padding-top:14px;'; numTd.textContent = idx + 1;
+        const stackTd = document.createElement('td'); stackTd.style.cssText = 'text-align:left;';
+        const stack = document.createElement('div'); stack.className = 'file-stack';
+
+        const imgCell = document.createElement('span'); imgCell.className = 'file-cell file-cell-image';
+        imgCell.innerHTML = imgSVG + f.image; imgCell.title = '画像を開く';
+        imgCell.addEventListener('click', (e) => { e.stopPropagation(); navigateToImageViewer(f, d, imgCell, panel, rightCol); });
+
+        const rptCell = document.createElement('span'); rptCell.className = 'file-cell file-cell-report';
+        rptCell.innerHTML = rptSVG + f.report; rptCell.title = 'レポートを開く';
+        rptCell.addEventListener('click', (e) => { e.stopPropagation(); navigateToReportViewer(f, d, rptCell, panel, rightCol); });
+
+        stack.appendChild(imgCell); stack.appendChild(rptCell); stackTd.appendChild(stack);
+        const arrowTd = document.createElement('td'); arrowTd.style.cssText = 'vertical-align:top;padding-top:14px;';
+        arrowTd.innerHTML = '<span class="row-link-arrow">›</span>';
+        tr.appendChild(numTd); tr.appendChild(stackTd); tr.appendChild(arrowTd);
+        tr.addEventListener('click', () => navigateToImageViewer(f, d, imgCell, panel, rightCol));
+        etb.appendChild(tr);
+      });
+
+      et.appendChild(etb); leftCol.appendChild(et);
+      const rightCol = document.createElement('div'); rightCol.className = 'expand-right';
+      body.appendChild(leftCol); body.appendChild(rightCol);
+      panel.appendChild(body); td.appendChild(panel); expandRow.appendChild(td);
+      tbody.insertBefore(expandRow, rowImg.nextSibling);
+    }
+
+    function collapseExpand() {
+      if (activePreviewCell) { activePreviewCell.classList.remove('active-preview'); activePreviewCell = null; }
+      if (expandRow) { expandRow.remove(); expandRow = null; }
+      if (activeCol !== null) { const btn = document.getElementById(`btn-${activeCol}`); if (btn) btn.classList.remove('active'); activeCol = null; }
+    }
+
+    let activePreviewCell = null;
+
+    function showPreview(container, type, leftSrc, rightSrc) {
+      container.innerHTML = '';
+      const section = document.createElement('div');
+      section.className = 'preview-section theme-' + type.toLowerCase();
+      let contentHTML = '', previewTitle = '';
+      if (type === 'CT') {
+        previewTitle = '臨床画像：CT';
+        contentHTML = `<div class="preview-grid type-ct"><div class="pane-left"><div class="preview-pane-frame"><img src="${leftSrc}" alt="CT Thumbnail List"/></div></div><div class="pane-right"><img src="${rightSrc}" alt="CT Main View"/></div></div>`;
+      } else if (type === 'PDF') {
+        previewTitle = '診断レポート：CT';
+        contentHTML = `<div class="preview-grid type-pdf"><div class="preview-pane-single"><img src="${leftSrc}" alt="PDF Document"/></div></div>`;
+      }
+      section.innerHTML = `<div class="preview-header"><button class="preview-close-btn" title="閉じる"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button><div class="preview-title">${previewTitle}</div></div>${contentHTML}`;
+      section.querySelector('.preview-close-btn').addEventListener('click', (e) => {
+        e.stopPropagation(); container.innerHTML = '';
+        if (activePreviewCell) { activePreviewCell.classList.remove('active-preview'); activePreviewCell = null; }
+      });
+      container.appendChild(section);
+    }
+
+    function navigateToImageViewer(file, data, cellEl, panel, container) {
+      if (file.image === 'CT') {
+        if (activePreviewCell === cellEl) { container.innerHTML = ''; cellEl.classList.remove('active-preview'); activePreviewCell = null; return; }
+        if (activePreviewCell) activePreviewCell.classList.remove('active-preview');
+        activePreviewCell = cellEl; cellEl.classList.add('active-preview');
+        showPreview(container, 'CT', './CTTTL.png', './CTTTR.png');
+      }
+    }
+
+    function navigateToReportViewer(file, data, cellEl, panel, container) {
+      if (file.report === 'CT.pdf') {
+        if (activePreviewCell === cellEl) { container.innerHTML = ''; cellEl.classList.remove('active-preview'); activePreviewCell = null; return; }
+        if (activePreviewCell) activePreviewCell.classList.remove('active-preview');
+        activePreviewCell = cellEl; cellEl.classList.add('active-preview');
+        showPreview(container, 'PDF', './CTTTpdf.png');
+      }
+    }
+
+    function addTh(row, text, cls) {
+      const th = document.createElement('th'); th.className = cls || ''; th.textContent = text; row.appendChild(th);
+    }
+  </script>
+</body>
+
+</html>
