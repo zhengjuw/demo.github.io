@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="ja" style="height: 100%">
+
+<head>
+    <meta charset="utf-8">
+    <title>Clinical Data Mapping</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600&family=Noto+Sans:wght@400;500;600&display=swap" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none
+        }
+
+        button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-family: inherit
+        }
+
+        img {
+            display: block
+        }
+
+        :root {
+            --header-h: 52px;
+            --bar-h: 42px;
+            --blue: #3d7eff;
+            --blue-light: #e8f0ff;
+            --blue-mid: #dbe4ff;
+            --blue-deep: #3b5bdb;
+            --sidebar-border: #e8ecf2;
+            --text-dark: #1a2332;
+            --text-mid: #4a5568;
+            --text-light: #94a3b8;
+            --bg: #f5f7fa;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Noto Sans JP', 'Noto Sans', sans-serif;
+            font-size: 15px;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg)
+        }
+
+        /* HEADER & BAR */
+        #top-header {
+            height: var(--header-h);
+            background: var(--blue-light);
+            border-bottom: 1px solid var(--sidebar-border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 14px;
+            flex-shrink: 0;
+            z-index: 100
+        }
+
+        #top-header img#logo {
+            height: 36px;
+            width: auto
+        }
+
+        #top-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark)
+        }
+
+        .spacer {
+            flex: 1
+        }
+
+        #content-bar {
+            height: var(--bar-h);
+            background: #ffffff;
+            border-bottom: 1px solid var(--sidebar-border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 8px;
+            flex-shrink: 0;
+            overflow-x: auto
+        }
+
+        .back-btn {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-mid);
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--sidebar-border);
+            background: #f8fafc;
+            white-space: nowrap;
+            transition: all 0.15s
+        }
+
+        .back-btn:hover {
+            background: var(--blue-light);
+            border-color: #c4d4ff;
+            color: var(--blue-deep)
+        }
+
+        .bar-label {
+            font-size: 15px;
+            color: var(--text-light);
+            white-space: nowrap
+        }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 5px 14px;
+            border-radius: 12px;
+            white-space: nowrap
+        }
+
+        .cohort-tag {
+            background: #fff3e0;
+            color: #c76b00
+        }
+
+        .patient-tag {
+            background: var(--blue-light);
+            color: #1d4ed8
+        }
+
+        .btn-nav {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 6px 18px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            white-space: nowrap
+        }
+
+        .btn-save {
+            background: #52c41a;
+            color: white
+        }
+
+        .btn-save:hover {
+            background: #73d13d;
+            box-shadow: 0 2px 4px rgba(82, 196, 26, 0.2)
+        }
+
+        .btn-cancel {
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #d9d9d9
+        }
+
+        .btn-cancel:hover {
+            background: #eeeeee;
+            color: #333
+        }
+
+        /* MAIN */
+        #main-content {
+            flex: 1;
+            position: relative;
+            background-color: #ffffff;
+            overflow: hidden
+        }
+
+        #container {
+            width: 100%;
+            height: 100%
+        }
+
+        /* WIDER TABLE POPUP */
+        #custom-popup {
+            position: absolute;
+            display: none;
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid #d9d9d9;
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            z-index: 99999;
+            width: 820px;
+            pointer-events: auto;
+            font-size: 15px;
+            color: #333;
+            transition: top 0.2s, left 0.2s;
+        }
+
+        .pop-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            border: 1px solid #e8ecf2;
+            border-radius: 6px;
+        }
+
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            table-layout: fixed;
+        }
+
+        .file-table th,
+        .file-table td {
+            border-bottom: 1px solid #e8ecf2;
+            border-right: 1px solid #e8ecf2;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            word-break: break-word;
+        }
+
+        .file-table th {
+            background: #f8fafc;
+            color: #4a5568;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            border-top: none;
+        }
+
+        .file-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            margin-top: 4px;
+        }
+
+        .status-ok {
+            background: #e6f7ff;
+            color: #096dd9;
+            border: 1px solid #91d5ff;
+        }
+
+        .status-warn {
+            background: #fff2e8;
+            color: #d4380d;
+            border: 1px solid #ffbb96;
+        }
+
+        .status-err {
+            background: #fff1f0;
+            color: #f5222d;
+            border: 1px solid #ffa39e;
+        }
+
+        /* 判定用样式 */
+        .radio-label {
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            transition: background 0.2s;
+            font-weight: 500;
+        }
+
+        .radio-label:hover {
+            background: #f1f5f9;
+        }
+
+        .include-label input[type="radio"] {
+            accent-color: #15803d;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .exclude-label input[type="radio"] {
+            accent-color: #dc2626;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .include-label {
+            color: #15803d;
+        }
+
+        .exclude-label {
+            color: #b91c1c;
+        }
+
+        .detail-select {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+            font-size: 13px;
+            background: #fff;
+            cursor: pointer;
+            margin-bottom: 6px;
+        }
+
+        .detail-select:focus {
+            border-color: #3b5bdb;
+            outline: none;
+        }
+
+        .detail-input {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        .detail-input:focus {
+            border-color: #3b5bdb;
+            outline: none;
+        }
+
+        #custom-popup button.submit-btn {
+            width: 100%;
+            background: #3b5bdb;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        #custom-popup button.submit-btn:hover {
+            background: #2346c9;
+        }
+
+        #custom-popup button.submit-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .single-save-btn {
+            margin-top: 8px;
+            width: 100%;
+            background: #16a34a;
+            color: white;
+            padding: 7px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .single-save-btn:hover {
+            background: #15803d;
+        }
+
+        .single-save-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .close-btn {
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            background: #e2e8f0;
+        }
+
+        /* CONFIRM MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 200000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px 32px;
+            min-width: 320px;
+            text-align: center
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px
+        }
+
+        .modal-body {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 22px
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center
+        }
+
+        .modal-btn {
+            padding: 8px 24px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .modal-btn-confirm {
+            background: #3b5bdb;
+            color: #fff
+        }
+
+        .modal-btn-cancel {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0
+        }
+    </style>
+</head>
+
+<body>
+    <div id="top-header">
+        <img id="logo" src="../image13215-yqx-200w.png" alt="Logo" onerror="this.style.display='none'">
+        <h3>タイムポイント管理</h3>
+    </div>
+
+    <div id="content-bar">
+        <button class="back-btn" onclick="window.location.href='../index.html'">← 戻る</button>
+        <span class="bar-label">表示中：</span>
+        <span class="filter-tag cohort-tag">M30011111</span>
+        <span class="filter-tag patient-tag">56歳</span>
+        <span class="filter-tag cohort-tag">男性</span>
+        <span class="filter-tag patient-tag">登録日：2024-06-24</span>
+        <span class="filter-tag cohort-tag">コホートB1：Up-front Surgery を施行する場合</span>
+        <span class="filter-tag patient-tag">結腸・直腸癌</span>
+        <span class="filter-tag patient-tag">生存</span>
+        <div class="spacer"></div>
+        <button class="btn-nav btn-cancel" id="nav-cancel">キャンセル</button>
+        <button class="btn-nav btn-save" id="nav-save">保存</button>
+    </div>
+
+    <div id="main-content">
+        <div id="container"></div>
+
+        <div id="chart-legend"
+            style="position:absolute;top:8px;right:12px;display:flex;align-items:center;gap:10px;z-index:50;pointer-events:none;">
+            <div style="display:flex;align-items:center;gap:5px;pointer-events:auto;">
+                <span
+                    style="display:inline-block;width:16px;height:16px;border-radius:3px;background:rgba(20,184,166,0.45);border:1px solid rgba(20,184,166,0.7);"></span>
+                <span style="font-size:13px;color:#0f766e;font-weight:600;">登録期間</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;pointer-events:auto;">
+                <span
+                    style="display:inline-block;width:16px;height:16px;border-radius:3px;background:rgba(245,158,11,0.40);border:1px solid rgba(245,158,11,0.7);"></span>
+                <span style="font-size:13px;color:#b45309;font-weight:600;">治療期間</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;pointer-events:auto;">
+                <span
+                    style="display:inline-block;width:16px;height:16px;border-radius:3px;background:rgba(99,102,241,0.35);border:1px solid rgba(99,102,241,0.6);"></span>
+                <span style="font-size:13px;color:#4338ca;font-weight:600;">フォローアップ期間</span>
+            </div>
+            <div style="width:1px;height:18px;background:#d1d5db;pointer-events:none;"></div>
+            <button id="audit-log-btn" onclick="showAuditLog()"
+                style="pointer-events:auto;font-size:13px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid #c4b5fd;background:#f5f3ff;color:#6d28d9;cursor:pointer;display:flex;align-items:center;gap:4px;"
+                onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
+                📋 判定履歴 <span id="audit-count-badge"
+                    style="display:none;background:#6d28d9;color:#fff;border-radius:10px;padding:1px 6px;font-size:12px;min-width:18px;text-align:center;">0</span>
+            </button>
+        </div>
+
+        <div id="audit-panel"
+            style="display:none;position:absolute;top:40px;right:12px;width:560px;background:#fff;border:1px solid #c4b5fd;border-radius:10px;box-shadow:0 8px 24px rgba(109,40,217,0.12);z-index:9999;padding:16px;font-size:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-size:16px;font-weight:700;color:#6d28d9;">📋 判定履歴</span>
+                <button onclick="document.getElementById('audit-panel').style.display='none'"
+                    style="background:#f1f5f9;color:#64748b;padding:3px 8px;border-radius:4px;font-size:14px;cursor:pointer;border:none;">閉じる</button>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:12px;">
+                <button onclick="setAuditFilter('all')" id="filter-all"
+                    style="font-size:13px;font-weight:600;padding:4px 12px;border-radius:20px;border:1.5px solid #c4b5fd;background:#6d28d9;color:#fff;cursor:pointer;">すべて</button>
+                <button onclick="setAuditFilter('include')" id="filter-include"
+                    style="font-size:13px;font-weight:600;padding:4px 12px;border-radius:20px;border:1.5px solid #86efac;background:#f0fdf4;color:#15803d;cursor:pointer;">✅
+                    研究データ対象</button>
+                <button onclick="setAuditFilter('exclude')" id="filter-exclude"
+                    style="font-size:13px;font-weight:600;padding:4px 12px;border-radius:20px;border:1.5px solid #fca5a5;background:#fff1f0;color:#b91c1c;cursor:pointer;">⛔
+                    研究データ対象外</button>
+            </div>
+            <div id="audit-panel-body" style="max-height:340px;overflow-y:auto;"></div>
+        </div>
+
+        <div id="custom-popup">
+            <div class="pop-title">
+                <span id="pop-header-text">判定</span>
+                <button class="close-btn" onclick="closePopup()">閉じる</button>
+            </div>
+
+            <div class="table-container">
+                <table class="file-table" id="pop-table">
+                    <thead>
+                        <tr>
+                            <th width="20%">検査ファイル</th>
+                            <th width="15%">実施日</th>
+                            <th width="30%">判定アクション</th>
+                            <th width="35%">詳細入力 (Timepoint / 理由)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pop-table-body"></tbody>
+                </table>
+            </div>
+
+
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script>
+        const chartDom = document.getElementById('container');
+        const myChart = echarts.init(chartDom);
+        const popup = document.getElementById('custom-popup');
+
+        function showModal(opts) {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+        <div class="modal-box">
+          <div class="modal-title" style="font-size:18px">${opts.icon || ''} ${opts.title}</div>
+          <div class="modal-body">${opts.body}</div>
+          <div class="modal-btns">
+            <button class="modal-btn modal-btn-cancel" id="modal-cancel-btn">${opts.cancelText || 'キャンセル'}</button>
+            <button class="modal-btn ${opts.confirmClass || 'modal-btn-confirm'}" id="modal-confirm-btn">${opts.confirmText || 'はい'}</button>
+          </div>
+        </div>
+      `;
+            document.body.appendChild(overlay);
+            overlay.querySelector('#modal-confirm-btn').onclick = () => { overlay.remove(); if (opts.onConfirm) opts.onConfirm(); };
+            overlay.querySelector('#modal-cancel-btn').onclick = () => { overlay.remove(); if (opts.onCancel) opts.onCancel(); };
+        }
+
+        const registrationDate = new Date('2024-06-24');
+        const surgeryDate = new Date('2024-07-25');
+        function addDays(baseDate, days) {
+            const d = new Date(baseDate);
+            d.setDate(d.getDate() + days);
+            return d.toISOString().split('T')[0];
+        }
+        const W = w => w * 7;
+
+        const recurrenceDate = new Date(addDays(surgeryDate, W(72)));
+        const surgery2Date = new Date(addDays(recurrenceDate, W(7)));
+
+        function getTargetDateStr(name) {
+            if (name === '登録時') return '2024-06-24';
+            if (name === '手術時') return '2024-07-25';
+            if (name === '再発時') return recurrenceDate.toISOString().split('T')[0];
+            if (name === '初回再発後手術時') return surgery2Date.toISOString().split('T')[0];
+            if (name === '初回再発後術後4w') return addDays(surgery2Date, W(4));
+            const match = name.match(/術後(\d+)w/);
+            if (match) return addDays('2024-07-25', parseInt(match[1], 10) * 7);
+            return '';
+        }
+
+        const COLOR_REGISTRATION = 'rgba(20,184,166,0.13)';
+        const COLOR_SURGERY = 'rgba(245,158,11,0.13)';
+        const COLOR_POSTOP = 'rgba(99,102,241,0.11)';
+
+        const bands = [
+            { name: '登録時', window: '[-8w, +0w]', startDate: addDays(registrationDate, -W(8)), endDate: addDays(registrationDate, 0), color: COLOR_REGISTRATION },
+            { name: '手術時', window: '[-4w, +0w]', startDate: addDays(surgeryDate, -W(4)), endDate: addDays(surgeryDate, 0), color: COLOR_SURGERY },
+            { name: '術後4w', window: '[-1w, +1w]', startDate: addDays(surgeryDate, W(3)), endDate: addDays(surgeryDate, W(5)), color: COLOR_POSTOP },
+            { name: '術後12w', window: '[-2w, +2w]', startDate: addDays(surgeryDate, W(10)), endDate: addDays(surgeryDate, W(14)), color: COLOR_POSTOP },
+            { name: '術後24w', window: '[-2w, +2w]', startDate: addDays(surgeryDate, W(22)), endDate: addDays(surgeryDate, W(26)), color: COLOR_POSTOP },
+            { name: '術後36w', window: '[-2w, +2w]', startDate: addDays(surgeryDate, W(34)), endDate: addDays(surgeryDate, W(38)), color: COLOR_POSTOP },
+            { name: '術後48w', window: '[-2w, +2w]', startDate: addDays(surgeryDate, W(46)), endDate: addDays(surgeryDate, W(50)), color: COLOR_POSTOP },
+            { name: '再発時', window: '[-4w, +0w]', startDate: addDays(recurrenceDate, -W(4)), endDate: addDays(recurrenceDate, 0), color: COLOR_POSTOP },
+            { name: '初回再発後手術時', displayName: '手術時', window: '[-4w, +0w]', startDate: addDays(surgery2Date, -W(4)), endDate: addDays(surgery2Date, 0), color: COLOR_SURGERY },
+            { name: '初回再発後術後4w', displayName: '術後4w', window: '[-1w, +1w]', startDate: addDays(surgery2Date, W(3)), endDate: addDays(surgery2Date, W(5)), color: COLOR_POSTOP },
+            { name: '術後720w', window: '[-8w, +8w]', startDate: addDays(surgeryDate, W(712)), endDate: addDays(surgeryDate, W(728)), color: COLOR_POSTOP }
+        ];
+
+        bands.forEach(b => { b.targetDateStr = getTargetDateStr(b.name); });
+
+        const tpLabelMap = {
+            '初回再発後手術時': '初回再発後手術時',
+            '初回再発後術後4w': '初回再発後術後4w'
+        };
+        const tpOptionsHTML = bands.map(b => `<option value="${b.name}">${tpLabelMap[b.name] || b.name}</option>`).join('');
+        const reasonOptionsHTML = `
+            <option value="">-- 理由を選択 --</option>
+            <option value="許容範囲内の遅延">許容範囲内の遅延</option>
+            <option value="医師の判断による延期">医師の判断による延期</option>
+            <option value="患者都合によるリスケジュール">患者都合によるリスケ</option>
+            <option value="機器トラブル">機器トラブル</option>
+            <option value="その他">その他</option>
+        `;
+
+        function isDateInBand(dateStr, band) {
+            if (!dateStr || dateStr === '未取得') return false;
+            const d = new Date(dateStr);
+            return d >= new Date(band.startDate) && d <= new Date(band.endDate);
+        }
+
+        function computeDotDate(files, bandName) {
+            const band = bands.find(b => b.name === bandName);
+            if (!band) return getTargetDateStr(bandName);
+
+            const hasAnyFile = files.length > 0;
+            if (!hasAnyFile) return getTargetDateStr(bandName);
+
+            const outsideOrMissing = files.filter(f => f.isMissing || !isDateInBand(f.actualDate, band));
+
+            if (outsideOrMissing.length === 0) {
+                const mid = new Date((new Date(band.startDate).getTime() + new Date(band.endDate).getTime()) / 2);
+                return mid.toISOString().split('T')[0];
+            } else {
+                let latestOutside = null;
+                outsideOrMissing.forEach(f => {
+                    if (f.isMissing) return;
+                    const d = new Date(f.actualDate);
+                    if (!latestOutside || d > latestOutside) latestOutside = d;
+                });
+                if (latestOutside) return latestOutside.toISOString().split('T')[0];
+                const mid = new Date((new Date(band.startDate).getTime() + new Date(band.endDate).getTime()) / 2);
+                return mid.toISOString().split('T')[0];
+            }
+        }
+
+        let patientData = [
+            { date: (() => { const b = bands.find(b => b.name === '登録時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '登録時 - 症例登録票' },
+            {
+                date: computeDotDate([
+                    { name: 'CT画像', actualDate: addDays(registrationDate, -7) },
+                    { name: 'CTレポート', actualDate: addDays(registrationDate, -7) },
+                    { name: 'MRI画像', actualDate: addDays(registrationDate, -7) },
+                    { name: 'MRIレポート', actualDate: addDays(registrationDate, -7) },
+                    { name: '内視鏡検査画像', actualDate: addDays(registrationDate, -7) },
+                    { name: '内視鏡検査レポート', actualDate: addDays(registrationDate, -7) }
+                ], '登録時'),
+                type: '臨床画像', status: 'green', visit: '登録時 - 臨床画像',
+                requiresJudgment: false, originalAssignedTP: '登録時',
+                files: [
+                    { name: 'CT画像', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' },
+                    { name: 'CTレポート', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' },
+                    { name: 'MRI画像', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' },
+                    { name: 'MRIレポート', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' },
+                    { name: '内視鏡検査画像', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' },
+                    { name: '内視鏡検査レポート', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' }
+                ]
+            },
+            { date: (() => { const b = bands.find(b => b.name === '手術時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '手術時 - コホートB：手術' },
+            { date: (() => { const b = bands.find(b => b.name === '術後4w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後4w - コホートB：再発（1m）' },
+            { date: (() => { const b = bands.find(b => b.name === '術後12w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後12w - コホートB：再発（3m）' },
+            { date: (() => { const b = bands.find(b => b.name === '術後24w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後24w - コホートB：再発（6m）' },
+            {
+                date: computeDotDate([
+                    { name: 'CT画像', actualDate: addDays(surgeryDate, W(24)) },
+                    { name: 'CTレポート', actualDate: addDays(surgeryDate, W(24)) },
+                    { name: 'コンピュータX線撮影画像', actualDate: addDays(surgeryDate, W(24)) },
+                    { name: 'コンピュータX線撮影レポート', actualDate: addDays(surgeryDate, W(24)) },
+                    { name: '内視鏡検査画像', actualDate: addDays(surgeryDate, W(24)) },
+                ], '術後24w'),
+                type: '臨床画像', status: 'green', visit: '術後24w - 臨床画像',
+                requiresJudgment: false, originalAssignedTP: '術後24w',
+                files: [
+                    { name: 'CT画像', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' },
+                    { name: 'CTレポート', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' },
+                    { name: 'コンピュータX線撮影画像', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' },
+                    { name: 'コンピュータX線撮影レポート', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' },
+                    { name: '内視鏡検査画像', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' }
+                ]
+            },
+            { date: (() => { const b = bands.find(b => b.name === '術後36w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後36w - コホートB：再発（9m）' },
+            { date: (() => { const b = bands.find(b => b.name === '術後48w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後48w - コホートB：再発（12m）' },
+
+            {
+                date: computeDotDate([
+                    { name: 'MRI画像', actualDate: addDays(surgeryDate, W(48)) },
+                    { name: 'MRIレポート', actualDate: addDays(surgeryDate, W(48)) },
+                    { name: '内視鏡検査画像', actualDate: addDays(surgeryDate, W(48)) },
+                    { name: '内視鏡検査レポート', actualDate: addDays(surgeryDate, W(48)) }
+                ], '術後48w'),
+                type: '臨床画像', status: 'green', visit: '術後48w - 臨床画像',
+                requiresJudgment: false, originalAssignedTP: '術後48w',
+                files: [
+                    { name: 'MRI画像', actualDate: addDays(surgeryDate, W(48)), isDelayed: false, assignedTP: '術後48w', reason: '予定通り' },
+                    { name: 'MRIレポート', actualDate: addDays(surgeryDate, W(48)), isDelayed: false, assignedTP: '術後48w', reason: '予定通り' },
+                    { name: '内視鏡検査画像', actualDate: addDays(surgeryDate, W(48)), isDelayed: false, assignedTP: '術後48w', reason: '予定通り' },
+                    { name: '内視鏡検査レポート', actualDate: addDays(surgeryDate, W(48)), isDelayed: false, assignedTP: '術後48w', reason: '予定通り' }
+                ]
+            },
+            {
+                date: addDays(surgeryDate, W(48) + 35),
+                type: '臨床画像', status: 'red', visit: '臨床画像',
+                requiresJudgment: true, originalAssignedTP: '術後48w',
+                files: [
+                    { name: 'CT画像', actualDate: addDays(surgeryDate, W(48) + 35), isDelayed: true, assignedTP: '', reason: '', originalDate: addDays(surgeryDate, W(48) + 35) },
+                    { name: 'CTレポート', actualDate: addDays(surgeryDate, W(48) + 35), isDelayed: true, assignedTP: '', reason: '', originalDate: addDays(surgeryDate, W(48) + 35) }
+                ]
+            },
+            {
+                date: addDays(surgeryDate, W(48) + 40),
+                type: '臨床画像', status: 'red', visit: '臨床画像',
+                requiresJudgment: true, originalAssignedTP: '術後48w',
+                files: [
+                    { name: 'MRI画像', actualDate: addDays(surgeryDate, W(48) + 40), isDelayed: true, assignedTP: '', reason: '', originalDate: addDays(surgeryDate, W(48) + 40) },
+                    { name: 'MRIレポート', actualDate: addDays(surgeryDate, W(48) + 40), isDelayed: true, assignedTP: '', reason: '', originalDate: addDays(surgeryDate, W(48) + 40) }
+                ]
+            },
+
+            { date: (() => { const b = bands.find(b => b.name === '再発時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '再発時 - 初回再発確認' },
+            {
+                date: (() => { const b = bands.find(b => b.name === '再発時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(),
+                type: '臨床画像', status: 'missing_expected', visit: '再発時 - 臨床画像 (未取得)',
+                requiresJudgment: false, isMissingExpected: true, originalAssignedTP: '再発時',
+                files: []
+            },
+            { date: (() => { const b = bands.find(b => b.name === '初回再発後手術時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '手術時 - 初回再発後手術' },
+            {
+                date: (() => { const b = bands.find(b => b.name === '初回再発後手術時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(),
+                type: '病理画像', status: 'green', visit: '手術時 - 病理画像（初回再発後）',
+                requiresJudgment: false, originalAssignedTP: '初回再発後手術時',
+                files: [
+                    { name: 'HE染色', actualDate: addDays(surgery2Date, 0), isDelayed: false, assignedTP: '初回再発後手術時', reason: '予定通り' }
+                ]
+            },
+            { date: (() => { const b = bands.find(b => b.name === '初回再発後術後4w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後4w - 初回再発後術後4w' },
+            { date: (() => { const b = bands.find(b => b.name === '術後720w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後720w - 長期追跡調査' },
+            {
+                date: (() => { const b = bands.find(b => b.name === '手術時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(),
+                type: '病理画像', status: 'green', visit: '手術時 - 病理画像',
+                requiresJudgment: false, originalAssignedTP: '手術時',
+                files: [
+                    { name: 'HE染色', actualDate: addDays(surgeryDate, 0), isDelayed: false, assignedTP: '手術時', reason: '予定通り' }
+                ]
+            }
+        ];
+
+        let auditLog = [];
+        let auditFilter = 'all';
+
+        function updateAuditBadge() {
+            const badge = document.getElementById('audit-count-badge');
+            if (auditLog.length > 0) {
+                badge.style.display = 'inline-block';
+                badge.textContent = auditLog.length;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        window.setAuditFilter = function (f) {
+            auditFilter = f;
+            ['all', 'include', 'exclude'].forEach(k => {
+                const btn = document.getElementById('filter-' + k);
+                if (k === f) {
+                    btn.style.background = k === 'include' ? '#16a34a' : k === 'exclude' ? '#dc2626' : '#6d28d9';
+                    btn.style.color = '#fff';
+                } else {
+                    btn.style.background = k === 'include' ? '#f0fdf4' : k === 'exclude' ? '#fff1f0' : '#f5f3ff';
+                    btn.style.color = k === 'include' ? '#15803d' : k === 'exclude' ? '#b91c1c' : '#6d28d9';
+                }
+            });
+            renderAuditBody();
+        };
+
+        function renderAuditBody() {
+            const body = document.getElementById('audit-panel-body');
+            const filtered = auditFilter === 'all' ? auditLog : auditLog.filter(r => r.actionType === auditFilter);
+            if (filtered.length === 0) {
+                body.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:20px;">履歴がありません</p>';
+                return;
+            }
+            body.innerHTML = filtered.slice().reverse().map((r) => {
+                const isInclude = r.actionType === 'include';
+                const borderColor = isInclude ? '#86efac' : '#fca5a5';
+                const bgColor = isInclude ? '#f0fdf4' : '#fff8f8';
+                const icon = isInclude ? '✅' : '⛔';
+                const actionLabel = isInclude ? '研究対象内' : '研究対象外';
+                const actionBg = isInclude ? '#dcfce7' : '#fee2e2';
+                const actionColor = isInclude ? '#15803d' : '#991b1b';
+                const filesHtml = r.files.map(f => {
+                    if (isInclude) {
+                        return '<tr>'
+                            + '<td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;">' + f.name + '</td>'
+                            + '<td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;">' + (f.actualDate || '未取得') + '</td>'
+                            + '<td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#1d4ed8;">' + (f.assignedTP || '—') + '</td>'
+                            + '<td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;color:#64748b;">' + (f.reason || '—') + '</td>'
+                            + '</tr>';
+                    } else {
+                        return '<tr>'
+                            + '<td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;">' + f.name + '</td>'
+                            + '<td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;">' + (f.actualDate || '未取得') + '</td>'
+                            + '</tr>';
+                    }
+                }).join('');
+                const thHtml = isInclude
+                    ? '<th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">ファイル名</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">実施日</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">割当TP</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">判定理由</th>'
+                    : '<th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">ファイル名</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">実施日</th>';
+                return '<div style="border:1px solid ' + borderColor + ';border-radius:6px;padding:10px;margin-bottom:8px;background:' + bgColor + ';">'
+                    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
+                    + '<span style="font-weight:700;color:#1a2332;">' + icon + ' ' + r.visit + '</span>'
+                    + '<span style="font-size:10px;color:#94a3b8;">' + r.timestamp + '</span>'
+                    + '</div>'
+                    + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">'
+                    + '<span style="background:' + actionBg + ';color:' + actionColor + ';border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;">' + actionLabel + '</span>'
+                    + '<span style="background:#f1f5f9;color:#475569;border-radius:4px;padding:2px 7px;font-size:11px;">種類: ' + r.type + '</span>'
+                    + '<span style="background:#f1f5f9;color:#475569;border-radius:4px;padding:2px 7px;font-size:11px;">担当: ' + r.operator + '</span>'
+                    + (r.excludeReason ? '<span style="background:#fee2e2;color:#991b1b;border-radius:4px;padding:2px 7px;font-size:11px;">除外理由: ' + r.excludeReason + '</span>' : '')
+                    + '</div>'
+                    + (r.comment && r.comment !== '—' ? '<div style="color:#64748b;font-size:11px;margin-bottom:6px;padding:4px 6px;background:#f8fafc;border-radius:4px;border-left:2px solid #c4b5fd;">💬 ' + r.comment + '</div>' : '')
+                    + '<table style="width:100%;font-size:11px;border-collapse:collapse;">'
+                    + '<thead><tr style="background:#f8fafc;">' + thHtml + '</tr></thead>'
+                    + '<tbody>' + filesHtml + '</tbody>'
+                    + '</table>'
+                    + '</div>';
+            }).join('');
+        }
+
+        window.showAuditLog = function () {
+            const panel = document.getElementById('audit-panel');
+            if (panel.style.display === 'block') { panel.style.display = 'none'; return; }
+            renderAuditBody();
+            panel.style.display = 'block';
+        };
+
+        let activeDataIndex = null;
+
+        function closePopup() {
+            popup.style.display = 'none';
+            activeDataIndex = null;
+        }
+
+        function draw() {
+            const xMin = addDays(registrationDate, -W(10));
+            const xMax = bands[bands.length - 1].endDate;
+
+            const markAreas = [];
+            bands.forEach(b => {
+                const isKeyTP = b.name === '登録時' || b.name === '手術時' || b.name === '初回再発後手術時';
+                const label = b.displayName || b.name;
+                if (isKeyTP) {
+                    markAreas.push([
+                        {
+                            coord: [b.startDate, 0], itemStyle: { color: b.color },
+                            label: {
+                                show: true, position: 'insideTop', distance: 6,
+                                formatter: `{date|${b.targetDateStr}}\n{title|${label}}\n{window|${b.window}}`,
+                                rich: {
+                                    date: { color: '#1d4ed8', fontSize: 14, fontWeight: 'bold', align: 'center', backgroundColor: '#dbeafe', padding: [2, 8], borderRadius: 4, borderWidth: 1.5, borderColor: '#3b82f6', lineHeight: 24 },
+                                    title: { color: '#1a2332', fontSize: 16, fontWeight: 700, align: 'center', lineHeight: 26 },
+                                    window: { color: '#64748b', fontSize: 13, align: 'center', backgroundColor: '#ffffff', padding: [3, 6], borderRadius: 4, borderWidth: 1, borderColor: '#cbd5e1', lineHeight: 24 }
+                                }
+                            }
+                        },
+                        { coord: [b.endDate, 1] }
+                    ]);
+                } else {
+                    markAreas.push([
+                        {
+                            coord: [b.startDate, 0], itemStyle: { color: b.color },
+                            label: {
+                                show: true, position: 'insideTop', distance: 6,
+                                formatter: `{date|${b.targetDateStr}}\n{title|${label}}\n{window|${b.window}}`,
+                                rich: {
+                                    date: { color: '#64748b', fontSize: 14, align: 'center', backgroundColor: '#eef3ff', padding: [2, 8], borderRadius: 4, lineHeight: 24 },
+                                    title: { color: '#1a2332', fontSize: 16, fontWeight: 700, align: 'center', lineHeight: 26 },
+                                    window: { color: '#64748b', fontSize: 13, align: 'center', backgroundColor: '#ffffff', padding: [3, 6], borderRadius: 4, borderWidth: 1, borderColor: '#cbd5e1', lineHeight: 24 }
+                                }
+                            }
+                        },
+                        { coord: [b.endDate, 1] }
+                    ]);
+                }
+            });
+
+            const timelineMarkLines = [
+                [{ coord: [bands[0].targetDateStr, 1], lineStyle: { color: '#cbd5e1', width: 1.5, type: 'solid' } }, { coord: [bands[bands.length - 1].targetDateStr, 1] }],
+                [{ coord: [getTargetDateStr('登録時'), 0], lineStyle: { color: '#3b5bdb', width: 2.5, type: 'solid' }, label: { show: false } }, { coord: [getTargetDateStr('登録時'), 1] }],
+                [{ coord: [getTargetDateStr('手術時'), 0], lineStyle: { color: '#3b5bdb', width: 2.5, type: 'solid' }, label: { show: false } }, { coord: [getTargetDateStr('手術時'), 1] }],
+                [{ coord: [getTargetDateStr('初回再発後手術時'), 0], lineStyle: { color: '#3b5bdb', width: 2.5, type: 'solid' }, label: { show: false } }, { coord: [getTargetDateStr('初回再発後手術時'), 1] }]
+            ];
+
+            myChart.setOption({
+                tooltip: { show: false },
+                grid: { left: '9%', right: '5%', top: '10%', bottom: 90 },
+                dataZoom: [{ type: 'slider', show: true, xAxisIndex: [0], bottom: 15, height: 24, start: 0, end: 20 }, { type: 'inside', xAxisIndex: [0], zoomOnMouseWheel: true, moveOnMouseMove: true }],
+                xAxis: [{ type: 'time', position: 'bottom', min: xMin, max: xMax, axisLabel: { show: false }, splitLine: { show: false }, axisLine: { lineStyle: { color: '#e8ecf2' } }, axisTick: { show: false } }],
+                yAxis: [
+                    { type: 'category', data: ['EDC Visit', '臨床画像', '病理画像'], inverse: true, boundaryGap: true, axisLine: { show: false }, axisLabel: { color: '#1e3a5f', fontWeight: 'bold', margin: 16, fontSize: 17 } },
+                    { type: 'value', min: 0, max: 1, inverse: true, show: false }
+                ],
+                series: [
+                    {
+                        type: 'scatter', yAxisIndex: 0, symbolSize: 15,
+                        data: patientData.map((d, i) => {
+                            if (d.status === 'missing_expected') {
+                                return {
+                                    value: [d.date, d.type], idx: i,
+                                    symbol: 'circle', symbolSize: 18,
+                                    itemStyle: {
+                                        color: 'transparent',
+                                        borderColor: '#aaaaaa',
+                                        borderWidth: 2,
+                                        borderType: 'dashed'
+                                    }
+                                };
+                            }
+                            let c = '#52c41a';
+                            if (d.status === 'red') c = '#ff4d4f';
+                            if (d.status === 'yellow') c = '#faad14';
+                            if (d.status === 'excluded') {
+                                return {
+                                    value: [d.date, d.type], idx: i,
+                                    symbol: 'circle', symbolSize: 18,
+                                    itemStyle: { color: '#d9d9d9', borderColor: '#8c8c8c', borderWidth: 1.5, borderType: 'solid' }
+                                };
+                            }
+                            return { value: [d.date, d.type], idx: i, itemStyle: { color: c, shadowBlur: 4, shadowColor: c + '66' } };
+                        })
+                    },
+                    {
+                        type: 'scatter', yAxisIndex: 1, silent: true, symbol: 'none',
+                        data: [], markArea: { silent: true, data: markAreas }, markLine: { silent: true, symbol: ['none', 'none'], data: timelineMarkLines }
+                    }
+                ]
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  UI Interaction Logic
+        // ═══════════════════════════════════════════════════════════
+        window.updateRowState = function (i) {
+            const checkedObj = document.querySelector(`input[name="dec-${i}"]:checked`);
+            if (!checkedObj) return;
+            const radioVal = checkedObj.value;
+            const detailCell = document.getElementById(`row-detail-${i}`);
+
+            if (radioVal === 'include') {
+                detailCell.innerHTML = `
+                    <select id="sel-tp-${i}" class="detail-select" onchange="checkSingleValid(${i})">
+                        <option value="">-- Timepointを選択 --</option>
+                        ${tpOptionsHTML}
+                    </select>
+                    <select id="sel-rs-${i}" class="detail-select" onchange="checkSingleValid(${i})">
+                        ${reasonOptionsHTML}
+                    </select>
+                    <button class="single-save-btn" id="save-btn-${i}" disabled onclick="saveSingleDecision(${i})">
+                        💾 保存
+                    </button>
+                `;
+            } else if (radioVal === 'exclude') {
+                detailCell.innerHTML = `
+                    <select id="sel-excl-${i}" class="detail-select" onchange="checkSingleValid(${i})">
+                        <option value="">-- 除外理由を選択 --</option>
+                        <option value="プロトコル逸脱">プロトコル逸脱</option>
+                        <option value="データ品質不足">データ品質不足</option>
+                        <option value="患者同意撤回">患者同意撤回</option>
+                        <option value="重複データ">重複データ</option>
+                        <option value="収集期間外">収集期間外（ウィンドウ外）</option>
+                        <option value="検査手順違反">検査手順違反</option>
+                        <option value="その他">その他</option>
+                    </select>
+                    <input type="text" id="inp-excl-comm-${i}" class="detail-input" placeholder="補足コメント（任意）" oninput="checkSingleValid(${i})">
+                    <button class="single-save-btn" id="save-btn-${i}" disabled onclick="saveSingleDecision(${i})">
+                        💾 保存
+                    </button>
+                `;
+            }
+            checkSingleValid(i);
+        };
+
+
+        window.checkSingleValid = function (i) {
+            const checkedObj = document.querySelector(`input[name="dec-${i}"]:checked`);
+            const btn = document.getElementById(`save-btn-${i}`);
+            if (!checkedObj || !btn) return;
+
+            let valid = false;
+
+            if (checkedObj.value === 'include') {
+                const tp = document.getElementById(`sel-tp-${i}`);
+                const rs = document.getElementById(`sel-rs-${i}`);
+                valid = !!(tp && rs && tp.value && rs.value);
+            } else {
+                const ex = document.getElementById(`sel-excl-${i}`);
+                const comm = document.getElementById(`inp-excl-comm-${i}`);
+                valid = !!(ex && ex.value);
+            }
+
+            btn.disabled = !valid;
+        };
+
+        window.saveSingleDecision = function (i) {
+            if (activeDataIndex === null) return;
+
+            const pd = patientData[activeDataIndex];
+            const f = pd.files[i];
+            const checkedObj = document.querySelector(`input[name="dec-${i}"]:checked`);
+            if (!checkedObj) return;
+
+            const now = new Date();
+            const ts = now.toLocaleDateString('ja-JP') + ' ' + now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+
+            if (checkedObj.value === 'include') {
+                const tpVal = document.getElementById(`sel-tp-${i}`).value;
+                const rsVal = document.getElementById(`sel-rs-${i}`).value;
+
+                f.assignedTP = tpVal;
+                f.reason = rsVal;
+                f.modifiedBy = 'Dr. 山田 (CRA)';
+
+                auditLog.push({
+                    actionType: 'include',
+                    visit: pd.visit,
+                    type: pd.type,
+                    operator: 'Dr. 山田 (CRA)',
+                    timestamp: ts,
+                    files: [{
+                        name: f.name,
+                        actualDate: f.actualDate,
+                        assignedTP: tpVal,
+                        reason: rsVal
+                    }]
+                });
+
+                const targetBand = bands.find(b => b.name === tpVal);
+
+                if (targetBand) {
+                    const yellowDate = targetBand.endDate;
+
+                    const existingYellowNode = patientData.find(d =>
+                        d.status === 'yellow' &&
+                        d.type === pd.type &&
+                        d.visit.includes(tpVal)
+                    );
+
+                    if (existingYellowNode) {
+                        existingYellowNode.files.push(f);
+                    } else {
+                        patientData.push({
+                            date: yellowDate,
+                            type: pd.type,
+                            status: 'yellow',
+                            visit: `${tpVal} - ${pd.type}`,
+                            requiresJudgment: false,
+                            files: [f]
+                        });
+                    }
+                }
+
+            } else {
+                const exVal = document.getElementById(`sel-excl-${i}`).value;
+                const commVal = document.getElementById(`inp-excl-comm-${i}`).value.trim();
+
+                auditLog.push({
+                    actionType: 'exclude',
+                    visit: pd.visit,
+                    type: pd.type,
+                    excludeReason: exVal,
+                    comment: commVal || '—',
+                    operator: 'Dr. 山田 (CRA)',
+                    timestamp: ts,
+                    files: [{
+                        name: f.name,
+                        actualDate: f.actualDate || '未取得'
+                    }]
+                });
+            }
+
+            // 从红点中移除当前文件
+            pd.files.splice(i, 1);
+
+            // 如果红点已经没有文件了，则删除红点
+            if (pd.files.length === 0) {
+                const idx = patientData.indexOf(pd);
+                if (idx !== -1) {
+                    patientData.splice(idx, 1);
+                }
+                closePopup();
+            } else {
+                // 重新刷新当前popup
+                popup.style.display = 'none';
+                draw();
+
+                setTimeout(() => {
+                    activeDataIndex = patientData.indexOf(pd);
+
+                    if (activeDataIndex !== -1) {
+                        myChart.dispatchAction({
+                            type: 'highlight',
+                            seriesIndex: 0,
+                            dataIndex: activeDataIndex
+                        });
+                    }
+                }, 50);
+            }
+
+            updateAuditBadge();
+            draw();
+        };
+
+        window.checkAllValid = function () {
+            if (activeDataIndex === null) return;
+            const pd = patientData[activeDataIndex];
+            let allValid = true;
+            let hasJudged = false;
+
+            pd.files.forEach((f, i) => {
+                if (pd.requiresJudgment && f.isDelayed && !f.isMissing) {
+                    hasJudged = true;
+                    const checkedObj = document.querySelector(`input[name="dec-${i}"]:checked`);
+                    if (!checkedObj) {
+                        allValid = false;
+                        return;
+                    }
+                    const radioVal = checkedObj.value;
+                    if (radioVal === 'include') {
+                        const tp = document.getElementById(`sel-tp-${i}`);
+                        const rs = document.getElementById(`sel-rs-${i}`);
+                        if (!tp || !rs || !tp.value || !rs.value) allValid = false;
+                    } else if (radioVal === 'exclude') {
+                        const ex = document.getElementById(`sel-excl-${i}`);
+                        if (!ex || !ex.value) allValid = false;
+                    }
+                }
+            });
+
+            document.getElementById('pop-confirm-btn').disabled = !(hasJudged && allValid);
+        };
+
+        window.confirmDecisions = function () {
+            if (activeDataIndex === null) return;
+            const pd = patientData[activeDataIndex];
+            const movedFilesMap = {};
+            const remainingFiles = [];
+            let hasRemainingMissing = false;
+
+            const now = new Date();
+            const ts = now.toLocaleDateString('ja-JP') + ' ' + now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+
+            pd.files.forEach((f, i) => {
+                if (pd.requiresJudgment && f.isDelayed && !f.isMissing) {
+                    const radioVal = document.querySelector(`input[name="dec-${i}"]:checked`).value;
+                    if (radioVal === 'include') {
+                        const tpVal = document.getElementById(`sel-tp-${i}`).value;
+                        const rsVal = document.getElementById(`sel-rs-${i}`).value;
+                        f.assignedTP = tpVal;
+                        f.reason = rsVal;
+                        f.modifiedBy = 'Dr. 山田 (CRA)';
+                        if (!movedFilesMap[tpVal]) movedFilesMap[tpVal] = [];
+                        movedFilesMap[tpVal].push(f);
+                    } else if (radioVal === 'exclude') {
+                        const exVal = document.getElementById(`sel-excl-${i}`).value;
+                        const commVal = document.getElementById(`inp-excl-comm-${i}`).value.trim();
+
+                        auditLog.push({
+                            actionType: 'exclude',
+                            visit: pd.visit,
+                            type: pd.type,
+                            excludeReason: exVal,
+                            comment: commVal || '—',
+                            timestamp: ts,
+                            operator: 'Dr. 山田 (CRA)',
+                            files: [{ name: f.name, actualDate: f.actualDate || '未取得' }]
+                        });
+                        // 被除外的文件不加入 remainingFiles, 等同于从当前节点移除
+                    }
+                } else {
+                    remainingFiles.push(f);
+                    if (f.isMissing) hasRemainingMissing = true;
+                }
+            });
+
+            // 记录 Include 到 AuditLog 并分配到新节点
+            for (const tpName in movedFilesMap) {
+                auditLog.push({
+                    actionType: 'include',
+                    visit: pd.visit,
+                    type: pd.type,
+                    operator: 'Dr. 山田 (CRA)',
+                    timestamp: ts,
+                    files: movedFilesMap[tpName].map(f => ({ name: f.name, actualDate: f.actualDate, assignedTP: f.assignedTP, reason: f.reason }))
+                });
+
+                const targetBand = bands.find(b => b.name === tpName);
+                if (targetBand) {
+                    const yellowDate = targetBand.endDate;
+                    const existingYellowNode = patientData.find(d =>
+                        d.status === 'yellow' && d.type === pd.type && d.visit.includes(tpName));
+                    if (existingYellowNode) {
+                        existingYellowNode.files.push(...movedFilesMap[tpName]);
+                    } else {
+                        patientData.push({
+                            date: yellowDate, type: pd.type, status: 'yellow',
+                            visit: `${tpName} - ${pd.type}`,
+                            requiresJudgment: false, files: movedFilesMap[tpName]
+                        });
+                    }
+                }
+            }
+
+            // 更新原节点状态
+            pd.files = remainingFiles;
+            if (pd.files.length === 0) {
+                // 如果没有剩下任何文件，删除该红点
+                const selfIdx = patientData.indexOf(pd);
+                if (selfIdx !== -1) patientData.splice(selfIdx, 1);
+            } else if (hasRemainingMissing) {
+                // 如果只剩下缺失的文件，仍保留为红点但无需判定
+                pd.status = 'red'; pd.requiresJudgment = false;
+                pd.date = computeDotDate(remainingFiles, pd.originalAssignedTP);
+            } else {
+                const selfIdx = patientData.indexOf(pd);
+                if (selfIdx !== -1) patientData.splice(selfIdx, 1);
+            }
+
+            activeDataIndex = null;
+            updateAuditBadge();
+            closePopup();
+            draw();
+        };
+
+        // ═══════════════════════════════════════════════════════════
+        //  CHART CLICK
+        // ═══════════════════════════════════════════════════════════
+        myChart.on('click', (params) => {
+            if (params.componentType === 'series' && params.seriesIndex === 0) {
+                const pd = patientData[params.data.idx];
+
+                // missing_expectedのフラグがある場合はここで処理をストップしてポップアップを出さない
+                if (pd.isMissingExpected) return;
+
+                if (pd.files) {
+                    activeDataIndex = params.data.idx;
+
+                    // Position popup
+                    let leftPos = params.event.offsetX + 20;
+                    let topPos = params.event.offsetY - 200;
+                    const contentArea = document.getElementById('main-content');
+                    const contentW = contentArea.offsetWidth;
+                    const contentH = contentArea.offsetHeight;
+                    if (leftPos + 760 > contentW) leftPos = params.event.offsetX - 800; // Adjust for wider table
+                    if (topPos < 20) topPos = 20;
+                    if (topPos + 460 > contentH) topPos = contentH - 460;
+                    if (topPos < 10) topPos = 10;
+                    popup.style.left = leftPos + 'px';
+                    popup.style.top = topPos + 'px';
+
+                    // Header color
+                    let titleColor = '#52c41a';
+                    if (pd.status === 'red') titleColor = '#ff4d4f';
+                    if (pd.status === 'yellow') titleColor = '#faad14';
+                    if (pd.status === 'excluded') titleColor = '#8c8c8c';
+                    document.getElementById('pop-header-text').innerHTML =
+                        `<span style="color:${titleColor}">&#128193; ${pd.visit}</span>`;
+
+                    // Build table
+                    const tbody = document.getElementById('pop-table-body');
+                    let rowsHtml = '';
+                    if (pd.files.length === 0) {
+                        rowsHtml = `<tr><td colspan="4" style="text-align:center;padding:30px;color:#94a3b8;">ファイルがアップロードされていません</td></tr>`;
+                    } else {
+                        pd.files.forEach((f, i) => {
+                            let dateBadge = f.isMissing ? `<span class="status-badge status-err">欠落</span>` :
+                                f.isDelayed ? `<span class="status-badge status-warn">遅延</span>` :
+                                    `<span class="status-badge status-ok">定刻</span>`;
+
+                            if (pd.requiresJudgment && f.isDelayed && !f.isMissing) {
+                                // 需要判定的行
+                                rowsHtml += `
+                                    <tr style="background:#fffcfc">
+                                        <td><strong>${f.name}</strong></td>
+                                        <td>${f.actualDate || '未取得'}<br>${dateBadge}</td>
+                                        <td>
+                                            <div style="display:flex; flex-direction:column; gap:6px;">
+                                                <label class="radio-label include-label"><input type="radio" name="dec-${i}" value="include" onchange="updateRowState(${i})"> ✅ 研究データ対象</label>
+                                                <label class="radio-label exclude-label"><input type="radio" name="dec-${i}" value="exclude" onchange="updateRowState(${i})"> ⛔ 研究データ対象外</label>
+                                            </div>
+                                        </td>
+                                        <td id="row-detail-${i}">
+                                            <div style="color:#94a3b8; font-size:13px; margin-top:8px;"> </div>
+                                        </td>
+                                    </tr>`;
+                            } else {
+                                // 正常的/只读的行
+                                let tpCell = f.assignedTP ? `<strong>${f.assignedTP}</strong>` : `<span style="color:#94a3b8;font-style:italic;">未割当</span>`;
+                                if (f.modifiedBy && f.modifiedBy !== 'System') {
+                                    tpCell += `<span style="display:block; font-size:11px; color:#94a3b8; margin-top:2px;">変更: ${f.modifiedBy}</span>`;
+                                }
+                                rowsHtml += `
+                                    <tr>
+                                        <td>${f.name}</td>
+                                        <td>${f.actualDate || '未取得'}<br>${dateBadge}</td>
+                                        <td >
+                                            <div style="color:#64748b; font-size: 13px;">
+                                                割当済: ${tpCell} <br>
+                                                <span style="font-size:12px;">理由: ${f.reason || '—'}</span>
+                                            </div>
+                                        </td>
+                                    </tr>`;
+                            }
+                        });
+                    }
+                    tbody.innerHTML = rowsHtml;
+
+
+
+                    popup.style.display = 'block';
+                } else {
+                    closePopup();
+                }
+            }
+        });
+
+        popup.addEventListener('click', (e) => e.stopPropagation());
+        myChart.getZr().on('click', (params) => { if (!params.target) closePopup(); });
+
+        const keyBandOverlays = [
+            { name: '登録時', label: '登録日' },
+            { name: '手術時', label: '手術日' },
+            { name: '初回再発後手術時', label: '手術日（初回再発後）' }
+        ];
+
+        function updateBandOverlays() {
+            keyBandOverlays.forEach(({ name, label }) => {
+                const band = bands.find(b => b.name === name);
+                if (!band) return;
+
+                const elId = 'band-overlay-' + name;
+                let el = document.getElementById(elId);
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = elId;
+                    el.style.cssText = 'position:absolute;pointer-events:none;z-index:60;font-size:14px;font-weight:bold;color:#1d4ed8;background:#dbeafe;border:1.5px solid #3b82f6;border-radius:4px;padding:3px 10px;white-space:nowrap;transform:translateX(-50%);';
+                    el.textContent = label;
+                    document.getElementById('main-content').appendChild(el);
+                }
+
+                const xStart = myChart.convertToPixel({ xAxisIndex: 0 }, band.startDate);
+                const xEnd = myChart.convertToPixel({ xAxisIndex: 0 }, band.endDate);
+                if (xStart == null || xEnd == null) return;
+                const xCenter = (xStart + xEnd) / 2;
+                const gridTop = myChart.convertToPixel({ yAxisIndex: 1 }, 0);
+
+                el.style.left = xCenter + 'px';
+                el.style.top = (gridTop - 28) + 'px';
+            });
+        }
+
+        myChart.on('finished', updateBandOverlays);
+        window.addEventListener('resize', () => { myChart.resize(); closePopup(); updateBandOverlays(); });
+        draw();
+
+        const navSave = document.getElementById('nav-save');
+        const navCancel = document.getElementById('nav-cancel');
+
+        navSave.onclick = () => {
+            showModal({
+                icon: '💾', title: '変更を保存しますか？', body: ' ',
+                confirmText: '保存して戻る', confirmClass: 'modal-btn-confirm', cancelText: 'キャンセル',
+                onConfirm: () => { sessionStorage.setItem('saveSuccess', 'true'); window.location.href = '../index.html'; }
+            });
+        };
+
+        navCancel.onclick = () => {
+            showModal({
+                icon: '⚠️', title: '変更を破棄しますか？', body: ' ',
+                confirmText: '破棄して戻る', confirmClass: 'modal-btn-cancel', cancelText: '続ける',
+                onConfirm: () => { window.location.href = '../index.html'; }
+            });
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('saveSuccess') === 'true') {
+                sessionStorage.removeItem('saveSuccess');
+                const toast = document.createElement('div');
+                toast.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#52c41a;color:#fff;padding:12px 22px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(82,196,26,0.35);animation:fadeInDown 0.3s ease';
+                toast.textContent = '✓ 変更が保存されました';
+                document.body.appendChild(toast);
+
+                const style = document.createElement('style');
+                style.innerHTML = `@keyframes fadeInDown { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }`;
+                document.head.appendChild(style);
+
+                setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.4s'; setTimeout(() => toast.remove(), 400); }, 2800);
+            }
+        });
+    </script>
+</body>
+
+</html>
