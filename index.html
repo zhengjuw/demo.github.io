@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="ja" style="height:100%">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>参加者一覧</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --blue: #3d7eff;
+            --blue-mid: #3b5bdb;
+            --blue-light: #e8f0ff;
+            --blue-pale: #f0f4ff;
+            --border: #e2e8f0;
+            --bg: #f5f7fa;
+            --sidebar-bg: #ffffff;
+            --text-dark: #1a2332;
+            --text-mid: #4a5568;
+            --text-light: #94a3b8;
+            --header-h: 52px;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: 'Noto Sans JP', sans-serif;
+            background: var(--bg);
+        }
+
+        #top-header {
+            height: var(--header-h);
+            background: var(--blue-light);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 14px;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        #top-header img#logo {
+            height: 36px;
+            width: auto;
+        }
+
+        #top-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        #top-header .divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border);
+        }
+
+        #top-header .spacer {
+            flex: 1;
+        }
+
+        #content-bar {
+            height: 42px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .bar-label {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+
+        #result-count {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        #content-bar .spacer {
+            flex: 1;
+        }
+
+        #clear-btn {
+            font-size: 11px;
+            color: var(--text-light);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 3px 8px;
+            border-radius: 5px;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        #clear-btn:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        #table-wrap {
+            flex: 1;
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 860px;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #fff;
+            border-bottom: 2px solid var(--border);
+            border-right: 1px solid var(--border);
+            white-space: nowrap;
+            user-select: none;
+            vertical-align: top;
+        }
+
+        thead th:last-child {
+            border-right: none;
+        }
+
+        .th-inner {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .th-label-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 14px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-mid);
+        }
+
+        .th-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .th-title:hover {
+            color: var(--text-dark);
+        }
+
+        .filter-trigger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
+            color: var(--text-light);
+            transition: background 0.12s, color 0.12s;
+            flex-shrink: 0;
+        }
+
+        .th-title:hover .filter-trigger,
+        .th-title.open .filter-trigger {
+            background: #eef2ff;
+            color: var(--blue-mid);
+        }
+
+        .filter-trigger svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .sort-icon {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            cursor: pointer;
+            opacity: 0.35;
+            transition: opacity 0.12s;
+            margin-left: 2px;
+            flex-shrink: 0;
+        }
+
+        .sort-icon:hover,
+        .sort-icon.active {
+            opacity: 1;
+        }
+
+        .sort-icon svg {
+            width: 8px;
+            height: 8px;
+        }
+
+        .filter-dropdown {
+            display: none;
+            position: absolute;
+            left: 8px;
+            right: 8px;
+            top: calc(100% - 2px);
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.10);
+            padding: 10px;
+            z-index: 30;
+            max-height: 320px;
+            overflow: auto;
+        }
+
+        .filter-dropdown.open {
+            display: block;
+        }
+
+        .dropdown-label {
+            font-size: 10.5px;
+            color: var(--text-light);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px 8px 30px;
+            font-size: 12px;
+            color: var(--text-dark);
+            font-family: 'Noto Sans JP', sans-serif;
+            outline: none;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-light);
+        }
+
+        .search-box input:focus {
+            border-color: var(--blue);
+            background: #fff;
+        }
+
+        .search-icon-bar {
+            position: absolute;
+            left: 9px;
+            pointer-events: none;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon-bar svg {
+            width: 13px;
+            height: 13px;
+        }
+
+        .filter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .pill {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 6px;
+            font-size: 10.5px;
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            color: var(--text-mid);
+            cursor: pointer;
+            transition: background 0.12s, border-color 0.12s, color 0.12s;
+            white-space: nowrap;
+        }
+
+        .pill:hover {
+            border-color: #a5b4fc;
+            background: #eef2ff;
+        }
+
+        .pill.active {
+            background: var(--blue-mid);
+            border-color: var(--blue-mid);
+            color: #fff;
+        }
+
+        .filter-range,
+        .filter-date {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .filter-range input,
+        .date-select {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 11px;
+            color: var(--text-dark);
+            font-family: 'Noto Sans JP', sans-serif;
+            outline: none;
+            background: #f8fafc;
+            transition: border-color 0.12s, background 0.12s;
+        }
+
+        .filter-range input {
+            width: 58px;
+            text-align: center;
+        }
+
+        .date-select {
+            min-width: 66px;
+        }
+
+        .filter-range input:focus,
+        .date-select:focus {
+            border-color: var(--blue);
+            background: #fff;
+        }
+
+        .dash {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+
+        .dropdown-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed #e5e7eb;
+        }
+
+        .dropdown-actions.right {
+            justify-content: flex-end;
+        }
+
+        .dropdown-clear {
+            font-size: 11px;
+            color: var(--text-light);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 0;
+        }
+
+        .dropdown-clear:hover {
+            color: #dc2626;
+        }
+
+        .dropdown-ok {
+            font-size: 11px;
+            color: #fff;
+            background: var(--blue-mid);
+            border: 1px solid var(--blue-mid);
+            cursor: pointer;
+            padding: 5px 12px;
+            border-radius: 8px;
+        }
+
+        .dropdown-ok:hover {
+            filter: brightness(0.96);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
+        }
+
+        tbody tr:hover {
+            background: var(--blue-pale);
+        }
+
+        tbody tr.hidden {
+            display: none;
+        }
+
+        tbody td {
+            padding: 10px 14px;
+            font-size: 12px;
+            color: var(--text-mid);
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        td.col-id {
+            color: var(--blue-mid);
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        td.col-id:hover {
+            text-decoration: underline;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 10px;
+            border-radius: 10px;
+        }
+
+        .badge-alive {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-dead {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        #empty-row td {
+            text-align: center;
+            padding: 48px;
+            color: var(--text-light);
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="top-header">
+        <img id="logo" src="./doc/image13215-yqx-200w.png" alt="Logo"
+            onerror="this.src='https://via.placeholder.com/40x36?text=Logo'">
+        <h3>参加者一覧</h3>
+    </div>
+
+    <div id="content-bar">
+        <span class="bar-label">表示件数：</span>
+        <span id="result-count">— 件</span>
+        <div class="spacer"></div>
+        <button id="clear-btn" onclick="clearAll()">× フィルターをリセット</button>
+    </div>
+
+    <div id="table-wrap">
+        <table id="main-table">
+            <thead>
+                <tr>
+                    <th>
+                        <div class="th-inner">
+                            <div class="th-label-row">
+                                <span class="th-title" onclick="toggleDropdown('id')">参加者ID
+                                    <span class="filter-trigger" aria-hidden="true">
+                                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 3.5H12L8.5 7.7V11L5.5 12V7.7L2 3.5Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="filter-dropdown" id="dropdown-id" data-dropdown="id">
+                                <div class="dropdown-label">参加者ID検索</div>
+                                <div class="search-box">
+                                    <span class="search-icon-bar">
+                                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5" />
+                                            <line x1="9.5" y1="9.5" x2="13" y2="13" stroke="currentColor"
+                                                stroke-width="1.5" stroke-linecap="round" />
+                                        </svg>
+                                    </span>
+                                    <input type="text" id="id-search" placeholder="参加者IDを検索..."
+                                        oninput="updateDraft('id')">
+                                </div>
+                                <div class="dropdown-actions right">
+                                    <button class="dropdown-ok" type="button" onclick="commitDropdown('id')">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+
+                    <th>
+                        <div class="th-inner">
+                            <div class="th-label-row">
+                                <span class="th-title" onclick="toggleDropdown('age')">年齢
+                                    <span class="filter-trigger" aria-hidden="true">
+                                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 3.5H12L8.5 7.7V11L5.5 12V7.7L2 3.5Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </span>
+                                <span class="sort-icon" onclick="sortTable('age')" id="sort-age">
+                                    <svg viewBox="0 0 8 5" fill="currentColor">
+                                        <path d="M4 0L8 5H0z" />
+                                    </svg>
+                                    <svg viewBox="0 0 8 5" fill="currentColor" style="transform:rotate(180deg)">
+                                        <path d="M4 0L8 5H0z" />
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="filter-dropdown" id="dropdown-age" data-dropdown="age">
+                                <div class="dropdown-label">年齢範囲</div>
+                                <div class="filter-range">
+                                    <input type="number" id="age-min" placeholder="下限" min="0" max="120"
+                                        oninput="updateDraft('age')">
+                                    <span class="dash">–</span>
+                                    <input type="number" id="age-max" placeholder="上限" min="0" max="120"
+                                        oninput="updateDraft('age')">
+                                </div>
+                                <div class="dropdown-actions">
+                                    <button class="dropdown-clear" onclick="clearAgeFilter(true)"
+                                        type="button">年齢の条件を解除</button>
+                                    <button class="dropdown-ok" type="button"
+                                        onclick="commitDropdown('age')">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+
+                    <th>
+                        <div class="th-inner">
+                            <div class="th-label-row">
+                                <span class="th-title" onclick="toggleDropdown('gender')">性別
+                                    <span class="filter-trigger" aria-hidden="true">
+                                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 3.5H12L8.5 7.7V11L5.5 12V7.7L2 3.5Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="filter-dropdown" id="dropdown-gender" data-dropdown="gender">
+                                <div class="dropdown-label">性別を選択</div>
+                                <div class="filter-list">
+                                    <span class="pill" data-val="男性" onclick="togglePill(this,'gender')">男性</span>
+                                    <span class="pill" data-val="女性" onclick="togglePill(this,'gender')">女性</span>
+                                </div>
+                                <div class="dropdown-actions right">
+                                    <button class="dropdown-ok" type="button"
+                                        onclick="commitDropdown('gender')">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+
+                    <th>
+                        <div class="th-inner">
+                            <div class="th-label-row">
+                                <span class="th-title" onclick="toggleDropdown('regdate')">登録日
+                                    <span class="filter-trigger" aria-hidden="true">
+                                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 3.5H12L8.5 7.7V11L5.5 12V7.7L2 3.5Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </span>
+                                <span class="sort-icon" onclick="sortTable('regdate')" id="sort-regdate">
+                                    <svg viewBox="0 0 8 5" fill="currentColor">
+                                        <path d="M4 0L8 5H0z" />
+                                    </svg>
+                                    <svg viewBox="0 0 8 5" fill="currentColor" style="transform:rotate(180deg)">
+                                        <path d="M4 0L8 5H0z" />
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="filter-dropdown" id="dropdown-regdate" data-dropdown="regdate">
+                                <div class="dropdown-label">登録日（年月日）</div>
+                                <div class="filter-date">
+                                    <select class="date-select" id="reg-from-y"
+                                        onchange="updateDraft('regdate')"></select>
+                                    <select class="date-select" id="reg-from-m"
+                                        onchange="updateDraft('regdate')"></select>
+                                    <select class="date-select" id="reg-from-d"
+                                        onchange="updateDraft('regdate')"></select>
+                                </div>
+                                <div style="height:8px"></div>
+                                <div class="filter-date">
+                                    <select class="date-select" id="reg-to-y"
+                                        onchange="updateDraft('regdate')"></select>
+                                    <select class="date-select" id="reg-to-m"
+                                        onchange="updateDraft('regdate')"></select>
+                                    <select class="date-select" id="reg-to-d"
+                                        onchange="updateDraft('regdate')"></select>
+                                </div>
+                                <div class="dropdown-actions">
+                                    <button class="dropdown-clear" onclick="clearDateFilter('reg', true)"
+                                        type="button">登録日の条件を解除</button>
+                                    <button class="dropdown-ok" type="button"
+                                        onclick="commitDropdown('regdate')">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+
+                    <th>
+                        <div class="th-inner">
+                            <div class="th-label-row">
+                                <span class="th-title" onclick="toggleDropdown('cohort')">コホート
+                                    <span class="filter-trigger" aria-hidden="true">
+                                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 3.5H12L8.5 7.7V11L5.5 12V7.7L2 3.5Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="filter-dropdown" id="dropdown-cohort" data-dropdown="cohort">
+                                <div class="dropdown-label">コホートを選択</div>
+                                <div class="filter-list">
+                                    <span class="pill" data-val="A" onclick="togglePill(this,'cohort')">A：根治治療不能
+                                        であり、緩和的薬物療法</span>
+                                    <span class="pill" data-val="B1" onclick="togglePill(this,'cohort')">B1：Up-front
+                                        Surgery を施行する場合</span>
+                                    <span class="pill" data-val="B2"
+                                        onclick="togglePill(this,'cohort')">B2：術前化学療法・術前化学放射線療法を施行する場合</span>
+                                    <span class="pill" data-val="B3"
+                                        onclick="togglePill(this,'cohort')">B3：根治的な非手術療法</span>
+                                    <span class="pill" data-val="C1" onclick="togglePill(this,'cohort')">C1：WGS-based
+                                        MRD</span>
+                                    <span class="pill" data-val="C2"
+                                        onclick="togglePill(this,'cohort')">C2：IgH/TCR-based MRD</span>
+                                </div>
+                                <div class="dropdown-actions right">
+                                    <button class="dropdown-ok" type="button"
+                                        onclick="commitDropdown('cohort')">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+
+                    <th>
+                        <div class="th-inner">
+                            <div class="th-label-row">
+                                <span class="th-title" onclick="toggleDropdown('cancer')">癌種
+                                    <span class="filter-trigger" aria-hidden="true">
+                                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 3.5H12L8.5 7.7V11L5.5 12V7.7L2 3.5Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="filter-dropdown" id="dropdown-cancer" data-dropdown="cancer">
+                                <div class="dropdown-label">癌種を選択（</div>
+                                <div class="filter-list">
+                                    <span class="pill" data-val="胃癌" onclick="togglePill(this,'cancer')">胃癌</span>
+                                    <span class="pill" data-val="結腸・直腸癌"
+                                        onclick="togglePill(this,'cancer')">結腸・直腸癌</span>
+                                    <span class="pill" data-val="大腸癌" onclick="togglePill(this,'cancer')">大腸癌</span>
+                                    <span class="pill" data-val="肺癌" onclick="togglePill(this,'cancer')">肺癌</span>
+                                    <span class="pill" data-val="乳癌" onclick="togglePill(this,'cancer')">乳癌</span>
+                                </div>
+                                <div class="dropdown-actions right">
+                                    <button class="dropdown-ok" type="button"
+                                        onclick="commitDropdown('cancer')">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+
+                    <th>
+                        <div class="th-inner">
+                            <div class="th-label-row">
+                                <span class="th-title" onclick="toggleDropdown('survival')">生存状況
+                                    <span class="filter-trigger" aria-hidden="true">
+                                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 3.5H12L8.5 7.7V11L5.5 12V7.7L2 3.5Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="filter-dropdown" id="dropdown-survival" data-dropdown="survival">
+                                <div class="dropdown-label">生存状況を選択</div>
+                                <div class="filter-list">
+                                    <span class="pill" data-val="生存" onclick="togglePill(this,'survival')">生存</span>
+                                    <span class="pill" data-val="死亡" onclick="togglePill(this,'survival')">死亡</span>
+                                </div>
+                                <div class="dropdown-actions right">
+                                    <button class="dropdown-ok" type="button"
+                                        onclick="commitDropdown('survival')">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+
+                    <th>
+                        <div class="th-inner">
+                            <div class="th-label-row">
+                                <span class="th-title" onclick="toggleDropdown('deathdate')">死亡日
+                                    <span class="filter-trigger" aria-hidden="true">
+                                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 3.5H12L8.5 7.7V11L5.5 12V7.7L2 3.5Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </span>
+                                <span class="sort-icon" onclick="sortTable('deathdate')" id="sort-deathdate">
+                                    <svg viewBox="0 0 8 5" fill="currentColor">
+                                        <path d="M4 0L8 5H0z" />
+                                    </svg>
+                                    <svg viewBox="0 0 8 5" fill="currentColor" style="transform:rotate(180deg)">
+                                        <path d="M4 0L8 5H0z" />
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="filter-dropdown" id="dropdown-deathdate" data-dropdown="deathdate">
+                                <div class="dropdown-label">死亡日（年月日）</div>
+                                <div class="filter-date">
+                                    <select class="date-select" id="death-from-y"
+                                        onchange="updateDraft('deathdate')"></select>
+                                    <select class="date-select" id="death-from-m"
+                                        onchange="updateDraft('deathdate')"></select>
+                                    <select class="date-select" id="death-from-d"
+                                        onchange="updateDraft('deathdate')"></select>
+                                </div>
+                                <div style="height:8px"></div>
+                                <div class="filter-date">
+                                    <select class="date-select" id="death-to-y"
+                                        onchange="updateDraft('deathdate')"></select>
+                                    <select class="date-select" id="death-to-m"
+                                        onchange="updateDraft('deathdate')"></select>
+                                    <select class="date-select" id="death-to-d"
+                                        onchange="updateDraft('deathdate')"></select>
+                                </div>
+                                <div class="dropdown-actions">
+                                    <button class="dropdown-clear" onclick="clearDateFilter('death', true)"
+                                        type="button">死亡日の条件を解除</button>
+                                    <button class="dropdown-ok" type="button"
+                                        onclick="commitDropdown('deathdate')">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr id="empty-row" style="display:none">
+                    <td colspan="8">該当するデータがありません</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const rawData = [
+            { id: 'M30011111', age: 56, gender: '男性', regdate: '2024-06-24', cohort: 'B1：Up-front Surgery を施行する場合', cancer: '結腸・直腸癌', survival: '生存', deathdate: '' },
+            { id: 'M30022222', age: 75, gender: '男性', regdate: '2019-07-31', cohort: 'B1：Up-front Surgery を施行する場合', cancer: '大腸癌', survival: '生存', deathdate: '' },
+            { id: 'M30033333', age: 81, gender: '男性', regdate: '2019-08-06', cohort: 'B2：術前化学療法・術前化学放射線療法を施行する場合', cancer: '胃癌', survival: '生存', deathdate: '' },
+            { id: 'M30044444', age: 80, gender: '女性', regdate: '2019-08-30', cohort: 'A：根治治療不能であり、緩和的薬物療法', cancer: '乳癌', survival: '生存', deathdate: '' },
+            { id: 'M30055555', age: 81, gender: '男性', regdate: '2019-09-02', cohort: 'B3：根治的な非手術療法', cancer: '肺癌', survival: '生存', deathdate: '' },
+            { id: 'M30066666', age: 78, gender: '女性', regdate: '2019-09-18', cohort: 'C1：WGS-based MRD', cancer: '乳癌', survival: '死亡', deathdate: '2019-12-17' },
+            { id: 'M30077777', age: 85, gender: '男性', regdate: '2019-09-26', cohort: 'A：根治治療不能であり、緩和的薬物療法', cancer: '胃癌', survival: '死亡', deathdate: '2021-08-08' },
+            { id: 'M30088888', age: 79, gender: '男性', regdate: '2019-10-08', cohort: 'B1：Up-front Surgery を施行する場合', cancer: '大腸癌', survival: '死亡', deathdate: '2022-03-31' },
+            { id: 'M30099999', age: 65, gender: '女性', regdate: '2019-10-18', cohort: 'C2：IgH/TCR-based MRD', cancer: '乳癌', survival: '生存', deathdate: '' },
+            { id: 'M30101010', age: 81, gender: '男性', regdate: '2019-08-06', cohort: 'B2：術前化学療法・術前化学放射線療法を施行する場合', cancer: '肺癌', survival: '生存', deathdate: '' },
+            { id: 'M30111111', age: 81, gender: '男性', regdate: '2019-08-06', cohort: 'B3：根治的な非手術療法', cancer: '胃癌', survival: '生存', deathdate: '' },
+            { id: 'M30121212', age: 81, gender: '男性', regdate: '2019-08-06', cohort: 'A：根治治療不能であり、緩和的薬物療法', cancer: '大腸癌', survival: '生存', deathdate: '' },
+            { id: 'M30131313', age: 81, gender: '男性', regdate: '2019-08-06', cohort: 'C1：WGS-based MRD', cancer: '肺癌', survival: '生存', deathdate: '' },
+            { id: 'M30141414', age: 78, gender: '女性', regdate: '2019-09-18', cohort: 'C2：IgH/TCR-based MRD', cancer: '乳癌', survival: '死亡', deathdate: '2019-12-17' },
+            { id: 'M30151515', age: 65, gender: '女性', regdate: '2019-10-18', cohort: 'B1：Up-front Surgery を施行する場合', cancer: '大腸癌', survival: '生存', deathdate: '' },
+            { id: 'M30161616', age: 72, gender: '男性', regdate: '2020-01-15', cohort: 'B2：術前化学療法・術前化学放射線療法を施行する場合', cancer: '胃癌', survival: '死亡', deathdate: '2023-05-10' },
+            { id: 'M30171717', age: 68, gender: '女性', regdate: '2020-02-20', cohort: 'A：根治治療不能であり、緩和的薬物療法', cancer: '乳癌', survival: '生存', deathdate: '' },
+            { id: 'M30181818', age: 90, gender: '男性', regdate: '2020-03-11', cohort: 'B3：根治的な非手術療法', cancer: '肺癌', survival: '死亡', deathdate: '2021-11-03' },
+            { id: 'M30191919', age: 55, gender: '女性', regdate: '2020-04-05', cohort: 'C1：WGS-based MRD', cancer: '大腸癌', survival: '生存', deathdate: '' },
+        ];
+
+        const committed = {
+            idQ: '',
+            ageMin: '',
+            ageMax: '',
+            gender: new Set(),
+            cohort: new Set(),
+            cancer: new Set(),
+            survival: new Set(),
+            reg: {
+                from: { y: '', m: '', d: '' },
+                to: { y: '', m: '', d: '' },
+            },
+            death: {
+                from: { y: '', m: '', d: '' },
+                to: { y: '', m: '', d: '' },
+            },
+        };
+
+        const draft = cloneState(committed);
+
+        let sortCol = null;
+        let sortDir = 1;
+        let openDropdownKey = null;
+
+        const tbody = document.getElementById('table-body');
+        const emptyRow = document.getElementById('empty-row');
+
+        function cloneState(src) {
+            return {
+                idQ: src.idQ,
+                ageMin: src.ageMin,
+                ageMax: src.ageMax,
+                gender: new Set(src.gender),
+                cohort: new Set(src.cohort),
+                cancer: new Set(src.cancer),
+                survival: new Set(src.survival),
+                reg: {
+                    from: { ...src.reg.from },
+                    to: { ...src.reg.to },
+                },
+                death: {
+                    from: { ...src.death.from },
+                    to: { ...src.death.to },
+                },
+            };
+        }
+
+        function renderRows(data) {
+            tbody.querySelectorAll('tr.data-row').forEach(r => r.remove());
+            if (data.length === 0) {
+                emptyRow.style.display = '';
+                document.getElementById('result-count').textContent = '0 件';
+                return;
+            }
+            emptyRow.style.display = 'none';
+            document.getElementById('result-count').textContent = `${data.length} 件`;
+
+            data.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.className = 'data-row';
+                tr.innerHTML = `
+          <td class="col-id" onclick="navigateToParticipant('${d.id}')">${d.id}</td>
+          <td>${d.age}</td>
+          <td>${d.gender}</td>
+          <td>${d.regdate}</td>
+          <td>${d.cohort || ''}</td>
+          <td>${d.cancer || ''}</td>
+          <td><span class="badge ${d.survival === '生存' ? 'badge-alive' : 'badge-dead'}">${d.survival}</span></td>
+          <td>${d.deathdate || ''}</td>
+        `;
+                tbody.insertBefore(tr, emptyRow);
+            });
+        }
+
+        function sortData(data, col, dir) {
+            return [...data].sort((a, b) => {
+                let va, vb;
+                if (col === 'age') { va = a.age; vb = b.age; }
+                if (col === 'regdate') { va = a.regdate; vb = b.regdate; }
+                if (col === 'deathdate') { va = a.deathdate || ''; vb = b.deathdate || ''; }
+                if (va < vb) return -1 * dir;
+                if (va > vb) return 1 * dir;
+                return 0;
+            });
+        }
+
+        function parseDateInput(prefix, kind) {
+            const y = document.getElementById(`${prefix}-${kind}-y`).value;
+            const m = document.getElementById(`${prefix}-${kind}-m`).value;
+            const d = document.getElementById(`${prefix}-${kind}-d`).value;
+            return { y, m, d };
+        }
+
+        function boundaryDate(parts, isEnd) {
+            if (!parts.y) return null;
+            const year = Number(parts.y);
+            const month = parts.m ? Number(parts.m) : (isEnd ? 12 : 1);
+            if (parts.d) {
+                return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(Number(parts.d)).padStart(2, '0')}`;
+            }
+            if (parts.m) {
+                if (isEnd) {
+                    const last = new Date(year, month, 0).getDate();
+                    return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(last).padStart(2, '0')}`;
+                }
+                return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-01`;
+            }
+            return isEnd
+                ? `${String(year).padStart(4, '0')}-12-31`
+                : `${String(year).padStart(4, '0')}-01-01`;
+        }
+
+        function inDateRange(value, fromParts, toParts) {
+            if (!value) return false;
+            const from = boundaryDate(fromParts, false);
+            const to = boundaryDate(toParts, true);
+            if (from && value < from) return false;
+            if (to && value > to) return false;
+            return true;
+        }
+
+        function applyFilters() {
+            const ageMin = committed.ageMin === '' ? 0 : Number(committed.ageMin);
+            const ageMax = committed.ageMax === '' ? 999 : Number(committed.ageMax);
+
+            let result = rawData.filter(d => {
+                if (committed.idQ && !d.id.toLowerCase().includes(committed.idQ)) return false;
+                if (d.age < ageMin || d.age > ageMax) return false;
+                if (!inDateRange(d.regdate, committed.reg.from, committed.reg.to)) return false;
+                if (d.deathdate && !inDateRange(d.deathdate, committed.death.from, committed.death.to)) return false;
+                if (!d.deathdate && (boundaryDate(committed.death.from, false) || boundaryDate(committed.death.to, true))) return false;
+                if (committed.gender.size > 0 && !committed.gender.has(d.gender)) return false;
+                if (committed.cohort.size > 0 && !committed.cohort.has(d.cohort)) return false;
+                if (committed.cancer.size > 0 && !committed.cancer.has(d.cancer)) return false;
+                if (committed.survival.size > 0 && !committed.survival.has(d.survival)) return false;
+                return true;
+            });
+
+            if (sortCol) result = sortData(result, sortCol, sortDir);
+            renderRows(result);
+        }
+
+        function syncDraftUI(key) {
+            if (key === 'id') {
+                document.getElementById('id-search').value = draft.idQ;
+                return;
+            }
+            if (key === 'age') {
+                document.getElementById('age-min').value = draft.ageMin;
+                document.getElementById('age-max').value = draft.ageMax;
+                return;
+            }
+            if (key === 'regdate') {
+                ['from', 'to'].forEach(kind => {
+                    document.getElementById(`reg-${kind}-y`).value = draft.reg[kind].y;
+                    document.getElementById(`reg-${kind}-m`).value = draft.reg[kind].m;
+                    document.getElementById(`reg-${kind}-d`).value = draft.reg[kind].d;
+                });
+                return;
+            }
+            if (key === 'deathdate') {
+                ['from', 'to'].forEach(kind => {
+                    document.getElementById(`death-${kind}-y`).value = draft.death[kind].y;
+                    document.getElementById(`death-${kind}-m`).value = draft.death[kind].m;
+                    document.getElementById(`death-${kind}-d`).value = draft.death[kind].d;
+                });
+                return;
+            }
+            ['gender', 'cohort', 'cancer', 'survival'].forEach(k => {
+                if (k !== key) return;
+                document.querySelectorAll(`#dropdown-${k} .pill`).forEach(p => {
+                    p.classList.toggle('active', draft[k].has(p.dataset.val));
+                });
+            });
+        }
+
+        function setDraftFromCommitted(key) {
+            if (key === 'id') draft.idQ = committed.idQ;
+            if (key === 'age') { draft.ageMin = committed.ageMin; draft.ageMax = committed.ageMax; }
+            if (key === 'regdate') draft.reg = { from: { ...committed.reg.from }, to: { ...committed.reg.to } };
+            if (key === 'deathdate') draft.death = { from: { ...committed.death.from }, to: { ...committed.death.to } };
+            if (['gender', 'cohort', 'cancer', 'survival'].includes(key)) draft[key] = new Set(committed[key]);
+            syncDraftUI(key);
+        }
+
+        function updateDraft(key) {
+            if (key === 'id') {
+                draft.idQ = document.getElementById('id-search').value.trim().toLowerCase();
+                return;
+            }
+            if (key === 'age') {
+                draft.ageMin = document.getElementById('age-min').value;
+                draft.ageMax = document.getElementById('age-max').value;
+                return;
+            }
+            if (key === 'regdate') {
+                draft.reg.from = parseDateInput('reg', 'from');
+                draft.reg.to = parseDateInput('reg', 'to');
+                return;
+            }
+            if (key === 'deathdate') {
+                draft.death.from = parseDateInput('death', 'from');
+                draft.death.to = parseDateInput('death', 'to');
+            }
+        }
+
+        function togglePill(el, key) {
+            const val = el.dataset.val;
+            if (draft[key].has(val)) draft[key].delete(val);
+            else draft[key].add(val);
+            el.classList.toggle('active');
+        }
+
+        function commitDropdown(key) {
+            if (key === 'id') {
+                committed.idQ = draft.idQ;
+            } else if (key === 'age') {
+                committed.ageMin = draft.ageMin;
+                committed.ageMax = draft.ageMax;
+            } else if (key === 'regdate') {
+                committed.reg = {
+                    from: { ...draft.reg.from },
+                    to: { ...draft.reg.to },
+                };
+            } else if (key === 'deathdate') {
+                committed.death = {
+                    from: { ...draft.death.from },
+                    to: { ...draft.death.to },
+                };
+            } else if (['gender', 'cohort', 'cancer', 'survival'].includes(key)) {
+                committed[key] = new Set(draft[key]);
+            }
+            closeAllDropdowns();
+            applyFilters();
+        }
+
+        function sortTable(col) {
+            if (sortCol === col) sortDir *= -1;
+            else { sortCol = col; sortDir = 1; }
+            document.querySelectorAll('.sort-icon').forEach(el => el.classList.remove('active'));
+            const icon = document.getElementById(`sort-${col}`);
+            if (icon) icon.classList.add('active');
+            applyFilters();
+        }
+
+        function setDropdownOpen(key, open) {
+            const dd = document.getElementById(`dropdown-${key}`);
+            const title = dd?.closest('.th-inner')?.querySelector('.th-title');
+            if (!dd || !title) return;
+            dd.classList.toggle('open', open);
+            title.classList.toggle('open', open);
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.filter-dropdown.open').forEach(el => el.classList.remove('open'));
+            document.querySelectorAll('.th-title.open').forEach(el => el.classList.remove('open'));
+            openDropdownKey = null;
+        }
+
+        function toggleDropdown(key) {
+            const shouldOpen = openDropdownKey !== key;
+            closeAllDropdowns();
+            if (shouldOpen) {
+                setDraftFromCommitted(key);
+                setDropdownOpen(key, true);
+                openDropdownKey = key;
+            }
+        }
+
+        function clearDateFilter(prefix, commitNow = false) {
+            const key = prefix === 'reg' ? 'regdate' : 'deathdate';
+            ['from', 'to'].forEach(kind => {
+                ['y', 'm', 'd'].forEach(part => {
+                    const el = document.getElementById(`${prefix}-${kind}-${part}`);
+                    if (el) el.value = '';
+                });
+            });
+            updateDraft(key);
+            if (commitNow) {
+                committed[prefix] = {
+                    from: { y: '', m: '', d: '' },
+                    to: { y: '', m: '', d: '' },
+                };
+                closeAllDropdowns();
+                applyFilters();
+            }
+        }
+
+        function clearAgeFilter(commitNow = false) {
+            document.getElementById('age-min').value = '';
+            document.getElementById('age-max').value = '';
+            updateDraft('age');
+            if (commitNow) {
+                committed.ageMin = '';
+                committed.ageMax = '';
+                closeAllDropdowns();
+                applyFilters();
+            }
+        }
+
+        function clearAll() {
+            const idSearch = document.getElementById('id-search');
+            if (idSearch) idSearch.value = '';
+            document.getElementById('age-min').value = '';
+            document.getElementById('age-max').value = '';
+
+            ['reg', 'death'].forEach(prefix => {
+                ['from', 'to'].forEach(kind => {
+                    ['y', 'm', 'd'].forEach(part => {
+                        const el = document.getElementById(`${prefix}-${kind}-${part}`);
+                        if (el) el.value = '';
+                    });
+                });
+            });
+
+            Object.keys(committed).forEach(k => {
+                if (committed[k] instanceof Set) committed[k].clear();
+            });
+            committed.idQ = '';
+            committed.ageMin = '';
+            committed.ageMax = '';
+            committed.reg = { from: { y: '', m: '', d: '' }, to: { y: '', m: '', d: '' } };
+            committed.death = { from: { y: '', m: '', d: '' }, to: { y: '', m: '', d: '' } };
+
+            Object.keys(draft).forEach(k => {
+                if (draft[k] instanceof Set) draft[k].clear();
+            });
+            draft.idQ = '';
+            draft.ageMin = '';
+            draft.ageMax = '';
+            draft.reg = { from: { y: '', m: '', d: '' }, to: { y: '', m: '', d: '' } };
+            draft.death = { from: { y: '', m: '', d: '' }, to: { y: '', m: '', d: '' } };
+
+            document.querySelectorAll('.pill.active').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sort-icon').forEach(el => el.classList.remove('active'));
+            sortCol = null; sortDir = 1;
+            closeAllDropdowns();
+            applyFilters();
+        }
+
+        function navigateToParticipant(id) {
+            // 示例：点击指定ID跳转
+            if (id === 'M30011111') {
+                window.location.href = './doc/index.html';
+                return;
+            }
+
+            // 其他ID默认行为（可扩展）
+            console.log('navigateToParticipant:', id);
+        }
+
+        function fillDateSelects(prefix) {
+            const regDates = rawData.map(d => d.regdate).filter(Boolean);
+            const deathDates = rawData.map(d => d.deathdate).filter(Boolean);
+            const allDates = [...regDates, ...deathDates];
+            const minYear = Math.min(...allDates.map(v => Number(v.slice(0, 4))));
+            const maxYear = Math.max(...allDates.map(v => Number(v.slice(0, 4))));
+            const years = [];
+            for (let y = minYear - 1; y <= maxYear + 2; y++) years.push(y);
+
+            ['from', 'to'].forEach(kind => {
+                const ySel = document.getElementById(`${prefix}-${kind}-y`);
+                const mSel = document.getElementById(`${prefix}-${kind}-m`);
+                const dSel = document.getElementById(`${prefix}-${kind}-d`);
+
+                ySel.innerHTML = '<option value="">年</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+                mSel.innerHTML = '<option value="">月</option>' + Array.from({ length: 12 }, (_, i) => i + 1)
+                    .map(m => `<option value="${String(m).padStart(2, '0')}">${m}</option>`).join('');
+                dSel.innerHTML = '<option value="">日</option>' + Array.from({ length: 31 }, (_, i) => i + 1)
+                    .map(d => `<option value="${String(d).padStart(2, '0')}">${d}</option>`).join('');
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            const inDropdown = e.target.closest('.filter-dropdown');
+            const inTitle = e.target.closest('.th-title');
+            if (!inDropdown && !inTitle) closeAllDropdowns();
+        });
+
+        ['reg', 'death'].forEach(fillDateSelects);
+        applyFilters();
+    </script>
+</body>
+
+</html>
