@@ -548,8 +548,8 @@
                         <tr>
                             <th width="20%">検査ファイル</th>
                             <th width="15%">実施日</th>
-                            <th width="30%">判定アクション</th>
-                            <th width="35%">詳細入力 (Timepoint / 理由)</th>
+                            <th width="30%">判定要否</th>
+                            <th width="35%">Timepoint・理由</th>
                         </tr>
                     </thead>
                     <tbody id="pop-table-body"></tbody>
@@ -633,7 +633,7 @@
         };
         const tpOptionsHTML = bands.map(b => `<option value="${b.name}">${tpLabelMap[b.name] || b.name}</option>`).join('');
         const reasonOptionsHTML = `
-            <option value="">-- 理由を選択 --</option>
+            <option value="">-- 理由選択 --</option>
             <option value="医師の判断による延期">医師の判断による延期</option>
             <option value="患者都合によるリスケジュール">患者都合によるリスケ</option>
         `;
@@ -848,7 +848,7 @@
                     + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">'
                     + '<span style="background:' + actionBg + ';color:' + actionColor + ';border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;">' + actionLabel + '</span>'
                     + '<span style="background:#f1f5f9;color:#475569;border-radius:4px;padding:2px 7px;font-size:11px;">種類: ' + r.type + '</span>'
-                    + '<span style="background:#f1f5f9;color:#475569;border-radius:4px;padding:2px 7px;font-size:11px;">担当: ' + r.operator + '</span>'
+                    + '<span style="background:#f1f5f9;color:#475569;border-radius:4px;padding:2px 7px;font-size:11px;">判定者: ' + r.operator + '</span>'
                     + (r.excludeReason ? '<span style="background:#fee2e2;color:#991b1b;border-radius:4px;padding:2px 7px;font-size:11px;">除外理由: ' + r.excludeReason + '</span>' : '')
                     + '</div>'
                     + (r.comment && r.comment !== '—' ? '<div style="color:#64748b;font-size:11px;margin-bottom:6px;padding:4px 6px;background:#f8fafc;border-radius:4px;border-left:2px solid #c4b5fd;">💬 ' + r.comment + '</div>' : '')
@@ -982,7 +982,7 @@
             if (radioVal === 'include') {
                 detailCell.innerHTML = `
                     <select id="sel-tp-${i}" class="detail-select" onchange="checkSingleValid(${i})">
-                        <option value="">-- Timepointを選択 --</option>
+                        <option value="">-- Timepoint選択 --</option>
                         ${tpOptionsHTML}
                     </select>
                     <select id="sel-rs-${i}" class="detail-select" onchange="checkSingleValid(${i})">
@@ -995,7 +995,7 @@
             } else if (radioVal === 'exclude') {
                 // ★ 修正: 除外理由の選択プルダウンを削除。コメント入力は任意（必須ではない）。
                 detailCell.innerHTML = `
-                    <input type="text" id="inp-excl-comm-${i}" class="detail-input" placeholder="補足コメント（任意）" oninput="checkSingleValid(${i})">
+                    <input type="text" id="inp-excl-comm-${i}" class="detail-input" placeholder="コメント（任意）" oninput="checkSingleValid(${i})">
                     <button class="single-save-btn" id="save-btn-${i}" onclick="saveSingleDecision(${i})">
                         💾 保存
                     </button>
