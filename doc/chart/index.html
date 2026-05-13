@@ -819,7 +819,7 @@
                 const borderColor = isInclude ? '#86efac' : '#fca5a5';
                 const bgColor = isInclude ? '#f0fdf4' : '#fff8f8';
                 const icon = isInclude ? '✅' : '⛔';
-                const actionLabel = isInclude ? '研究対象内' : '研究対象外';
+                const actionLabel = isInclude ? '研究データ対象' : '研究データ対象外';
                 const actionBg = isInclude ? '#dcfce7' : '#fee2e2';
                 const actionColor = isInclude ? '#15803d' : '#991b1b';
                 const filesHtml = r.files.map(f => {
@@ -838,7 +838,7 @@
                     }
                 }).join('');
                 const thHtml = isInclude
-                    ? '<th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">ファイル名</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">実施日</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">判定TP</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">判定理由</th>'
+                    ? '<th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">ファイル名</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">実施日</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">Timepoint</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">判定理由</th>'
                     : '<th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">ファイル名</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">実施日</th>';
                 return '<div style="border:1px solid ' + borderColor + ';border-radius:6px;padding:10px;margin-bottom:8px;background:' + bgColor + ';">'
                     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
