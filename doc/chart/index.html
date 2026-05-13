@@ -483,7 +483,7 @@
         <span class="filter-tag patient-tag">結腸・直腸癌</span>
         <span class="filter-tag patient-tag">生存</span>
         <div class="spacer"></div>
-        <button class="btn-nav btn-cancel" id="nav-cancel">放棄</button>
+        <button class="btn-nav btn-cancel" id="nav-cancel">破棄</button>
         <button class="btn-nav btn-save" id="nav-save">保存</button>
     </div>
 
@@ -574,7 +574,7 @@
           <div class="modal-title" style="font-size:18px">${opts.icon || ''} ${opts.title}</div>
           <div class="modal-body">${opts.body}</div>
           <div class="modal-btns">
-            <button class="modal-btn modal-btn-cancel" id="modal-cancel-btn">${opts.cancelText || '放棄'}</button>
+            <button class="modal-btn modal-btn-cancel" id="modal-cancel-btn">${opts.cancelText || '破棄'}</button>
             <button class="modal-btn ${opts.confirmClass || 'modal-btn-confirm'}" id="modal-confirm-btn">${opts.confirmText || 'はい'}</button>
           </div>
         </div>
@@ -1377,7 +1377,7 @@
         navSave.onclick = () => {
             showModal({
                 icon: '💾', title: '変更を保存しますか？', body: ' ',
-                confirmText: '保存して戻る', confirmClass: 'modal-btn-confirm', cancelText: '放棄',
+                confirmText: '保存して戻る', confirmClass: 'modal-btn-confirm', cancelText: '破棄',
                 onConfirm: () => { sessionStorage.setItem('saveSuccess', 'true'); window.location.href = '../index.html'; }
             });
         };
