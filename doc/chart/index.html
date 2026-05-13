@@ -483,8 +483,8 @@
         <span class="filter-tag patient-tag">結腸・直腸癌</span>
         <span class="filter-tag patient-tag">生存</span>
         <div class="spacer"></div>
-        <button class="btn-nav btn-cancel" id="nav-cancel">キャンセル</button>
-        <button class="btn-nav btn-save" id="nav-save">保存</button>
+        <button class="btn-nav btn-cancel" id="nav-cancel">放棄</button>
+        <button class="btn-nav btn-save" id="nav-save">放棄</button>
     </div>
 
     <div id="main-content">
@@ -574,7 +574,7 @@
           <div class="modal-title" style="font-size:18px">${opts.icon || ''} ${opts.title}</div>
           <div class="modal-body">${opts.body}</div>
           <div class="modal-btns">
-            <button class="modal-btn modal-btn-cancel" id="modal-cancel-btn">${opts.cancelText || 'キャンセル'}</button>
+            <button class="modal-btn modal-btn-cancel" id="modal-cancel-btn">${opts.cancelText || '放棄'}</button>
             <button class="modal-btn ${opts.confirmClass || 'modal-btn-confirm'}" id="modal-confirm-btn">${opts.confirmText || 'はい'}</button>
           </div>
         </div>
@@ -634,11 +634,8 @@
         const tpOptionsHTML = bands.map(b => `<option value="${b.name}">${tpLabelMap[b.name] || b.name}</option>`).join('');
         const reasonOptionsHTML = `
             <option value="">-- 理由を選択 --</option>
-            <option value="許容範囲内の遅延">許容範囲内の遅延</option>
             <option value="医師の判断による延期">医師の判断による延期</option>
             <option value="患者都合によるリスケジュール">患者都合によるリスケ</option>
-            <option value="機器トラブル">機器トラブル</option>
-            <option value="その他">その他</option>
         `;
 
         function isDateInBand(dateStr, band) {
@@ -841,7 +838,7 @@
                     }
                 }).join('');
                 const thHtml = isInclude
-                    ? '<th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">ファイル名</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">実施日</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">割当TP</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">判定理由</th>'
+                    ? '<th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">ファイル名</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">実施日</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">判定TP</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">判定理由</th>'
                     : '<th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">ファイル名</th><th style="padding:4px 6px;text-align:left;border-bottom:1px solid #e2e8f0;">実施日</th>';
                 return '<div style="border:1px solid ' + borderColor + ';border-radius:6px;padding:10px;margin-bottom:8px;background:' + bgColor + ';">'
                     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
@@ -1054,13 +1051,13 @@
 
                 f.assignedTP = tpVal;
                 f.reason = rsVal;
-                f.modifiedBy = 'Dr. 山田 (CRA)';
+                f.modifiedBy = 'Dr. 山田';
 
                 auditLog.push({
                     actionType: 'include',
                     visit: pd.visit,
                     type: pd.type,
-                    operator: 'Dr. 山田 (CRA)',
+                    operator: 'Dr. 山田',
                     timestamp: ts,
                     files: [{
                         name: f.name,
@@ -1105,7 +1102,7 @@
                     type: pd.type,
                     excludeReason: exVal,
                     comment: commVal || '—',
-                    operator: 'Dr. 山田 (CRA)',
+                    operator: 'Dr. 山田',
                     timestamp: ts,
                     files: [{
                         name: f.name,
@@ -1193,7 +1190,7 @@
                         const rsVal = document.getElementById(`sel-rs-${i}`).value;
                         f.assignedTP = tpVal;
                         f.reason = rsVal;
-                        f.modifiedBy = 'Dr. 山田 (CRA)';
+                        f.modifiedBy = 'Dr. 山田';
                         if (!movedFilesMap[tpVal]) movedFilesMap[tpVal] = [];
                         movedFilesMap[tpVal].push(f);
                     } else if (radioVal === 'exclude') {
@@ -1207,7 +1204,7 @@
                             excludeReason: exVal,
                             comment: commVal || '—',
                             timestamp: ts,
-                            operator: 'Dr. 山田 (CRA)',
+                            operator: 'Dr. 山田',
                             files: [{ name: f.name, actualDate: f.actualDate || '未取得' }]
                         });
                         // 被除外的文件不加入 remainingFiles, 等同于从当前节点移除
@@ -1224,7 +1221,7 @@
                     actionType: 'include',
                     visit: pd.visit,
                     type: pd.type,
-                    operator: 'Dr. 山田 (CRA)',
+                    operator: 'Dr. 山田',
                     timestamp: ts,
                     files: movedFilesMap[tpName].map(f => ({ name: f.name, actualDate: f.actualDate, assignedTP: f.assignedTP, reason: f.reason }))
                 });
@@ -1309,7 +1306,7 @@
                     } else {
                         pd.files.forEach((f, i) => {
                             let dateBadge = f.isMissing ? `<span class="status-badge status-err">欠落</span>` :
-                                f.isDelayed ? `<span class="status-badge status-warn">遅延</span>` :
+                                f.isDelayed ? `<span class="status-badge status-warn"> </span>` :
                                     `<span class="status-badge status-ok">定刻</span>`;
 
                             if (pd.requiresJudgment && f.isDelayed && !f.isMissing) {
@@ -1330,9 +1327,9 @@
                                     </tr>`;
                             } else {
                                 // 正常的/只读的行
-                                let tpCell = f.assignedTP ? `<strong>${f.assignedTP}</strong>` : `<span style="color:#94a3b8;font-style:italic;">未割当</span>`;
+                                let tpCell = f.assignedTP ? `<strong>${f.assignedTP}</strong>` : `<span style="color:#94a3b8;font-style:italic;">未判定</span>`;
                                 if (f.modifiedBy && f.modifiedBy !== 'System') {
-                                    tpCell += `<span style="display:block; font-size:11px; color:#94a3b8; margin-top:2px;">変更: ${f.modifiedBy}</span>`;
+                                    tpCell += `<span style="display:block; font-size:11px; color:#94a3b8; margin-top:2px;">判定者: ${f.modifiedBy}</span>`;
                                 }
                                 rowsHtml += `
                                     <tr>
@@ -1340,7 +1337,7 @@
                                         <td>${f.actualDate || '未取得'}<br>${dateBadge}</td>
                                         <td >
                                             <div style="color:#64748b; font-size: 13px;">
-                                                割当済: ${tpCell} <br>
+                                                判定済: ${tpCell} <br>
                                                 <span style="font-size:12px;">理由: ${f.reason || '—'}</span>
                                             </div>
                                         </td>
@@ -1404,7 +1401,7 @@
         navSave.onclick = () => {
             showModal({
                 icon: '💾', title: '変更を保存しますか？', body: ' ',
-                confirmText: '保存して戻る', confirmClass: 'modal-btn-confirm', cancelText: 'キャンセル',
+                confirmText: '保存して戻る', confirmClass: 'modal-btn-confirm', cancelText: '放棄',
                 onConfirm: () => { sessionStorage.setItem('saveSuccess', 'true'); window.location.href = '../index.html'; }
             });
         };
