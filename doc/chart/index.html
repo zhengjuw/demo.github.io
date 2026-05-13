@@ -484,7 +484,7 @@
         <span class="filter-tag patient-tag">生存</span>
         <div class="spacer"></div>
         <button class="btn-nav btn-cancel" id="nav-cancel">放棄</button>
-        <button class="btn-nav btn-save" id="nav-save">放棄</button>
+        <button class="btn-nav btn-save" id="nav-save">保存</button>
     </div>
 
     <div id="main-content">
@@ -993,19 +993,10 @@
                     </button>
                 `;
             } else if (radioVal === 'exclude') {
+                // ★ 修正: 除外理由の選択プルダウンを削除。コメント入力は任意（必須ではない）。
                 detailCell.innerHTML = `
-                    <select id="sel-excl-${i}" class="detail-select" onchange="checkSingleValid(${i})">
-                        <option value="">-- 除外理由を選択 --</option>
-                        <option value="プロトコル逸脱">プロトコル逸脱</option>
-                        <option value="データ品質不足">データ品質不足</option>
-                        <option value="患者同意撤回">患者同意撤回</option>
-                        <option value="重複データ">重複データ</option>
-                        <option value="収集期間外">収集期間外（ウィンドウ外）</option>
-                        <option value="検査手順違反">検査手順違反</option>
-                        <option value="その他">その他</option>
-                    </select>
                     <input type="text" id="inp-excl-comm-${i}" class="detail-input" placeholder="補足コメント（任意）" oninput="checkSingleValid(${i})">
-                    <button class="single-save-btn" id="save-btn-${i}" disabled onclick="saveSingleDecision(${i})">
+                    <button class="single-save-btn" id="save-btn-${i}" onclick="saveSingleDecision(${i})">
                         💾 保存
                     </button>
                 `;
@@ -1026,9 +1017,8 @@
                 const rs = document.getElementById(`sel-rs-${i}`);
                 valid = !!(tp && rs && tp.value && rs.value);
             } else {
-                const ex = document.getElementById(`sel-excl-${i}`);
-                const comm = document.getElementById(`inp-excl-comm-${i}`);
-                valid = !!(ex && ex.value);
+                // ★ 修正: 除外の場合はラジオボタンが選択されていれば常に有効（コメントは任意）
+                valid = true;
             }
 
             btn.disabled = !valid;
@@ -1093,14 +1083,13 @@
                 }
 
             } else {
-                const exVal = document.getElementById(`sel-excl-${i}`).value;
-                const commVal = document.getElementById(`inp-excl-comm-${i}`).value.trim();
+                // ★ 修正: 除外理由の選択プルダウンを削除したため、excludeReasonは記録しない
+                const commVal = document.getElementById(`inp-excl-comm-${i}`) ? document.getElementById(`inp-excl-comm-${i}`).value.trim() : '';
 
                 auditLog.push({
                     actionType: 'exclude',
                     visit: pd.visit,
                     type: pd.type,
-                    excludeReason: exVal,
                     comment: commVal || '—',
                     operator: 'Dr. 山田',
                     timestamp: ts,
@@ -1162,10 +1151,8 @@
                         const tp = document.getElementById(`sel-tp-${i}`);
                         const rs = document.getElementById(`sel-rs-${i}`);
                         if (!tp || !rs || !tp.value || !rs.value) allValid = false;
-                    } else if (radioVal === 'exclude') {
-                        const ex = document.getElementById(`sel-excl-${i}`);
-                        if (!ex || !ex.value) allValid = false;
                     }
+                    // ★ 修正: excludeの場合は常に有効（コメントは任意）
                 }
             });
 
@@ -1194,20 +1181,19 @@
                         if (!movedFilesMap[tpVal]) movedFilesMap[tpVal] = [];
                         movedFilesMap[tpVal].push(f);
                     } else if (radioVal === 'exclude') {
-                        const exVal = document.getElementById(`sel-excl-${i}`).value;
-                        const commVal = document.getElementById(`inp-excl-comm-${i}`).value.trim();
+                        // ★ 修正: 除外理由の選択プルダウンを削除。コメントは任意。
+                        const commVal = document.getElementById(`inp-excl-comm-${i}`) ? document.getElementById(`inp-excl-comm-${i}`).value.trim() : '';
 
                         auditLog.push({
                             actionType: 'exclude',
                             visit: pd.visit,
                             type: pd.type,
-                            excludeReason: exVal,
                             comment: commVal || '—',
                             timestamp: ts,
                             operator: 'Dr. 山田',
                             files: [{ name: f.name, actualDate: f.actualDate || '未取得' }]
                         });
-                        // 被除外的文件不加入 remainingFiles, 等同于从当前节点移除
+                        // 被除外的文件不加入 remainingFiles
                     }
                 } else {
                     remainingFiles.push(f);
@@ -1246,11 +1232,9 @@
             // 更新原节点状态
             pd.files = remainingFiles;
             if (pd.files.length === 0) {
-                // 如果没有剩下任何文件，删除该红点
                 const selfIdx = patientData.indexOf(pd);
                 if (selfIdx !== -1) patientData.splice(selfIdx, 1);
             } else if (hasRemainingMissing) {
-                // 如果只剩下缺失的文件，仍保留为红点但无需判定
                 pd.status = 'red'; pd.requiresJudgment = false;
                 pd.date = computeDotDate(remainingFiles, pd.originalAssignedTP);
             } else {
@@ -1271,26 +1255,23 @@
             if (params.componentType === 'series' && params.seriesIndex === 0) {
                 const pd = patientData[params.data.idx];
 
-                // missing_expectedのフラグがある場合はここで処理をストップしてポップアップを出さない
                 if (pd.isMissingExpected) return;
 
                 if (pd.files) {
                     activeDataIndex = params.data.idx;
 
-                    // Position popup
                     let leftPos = params.event.offsetX + 20;
                     let topPos = params.event.offsetY - 200;
                     const contentArea = document.getElementById('main-content');
                     const contentW = contentArea.offsetWidth;
                     const contentH = contentArea.offsetHeight;
-                    if (leftPos + 760 > contentW) leftPos = params.event.offsetX - 800; // Adjust for wider table
+                    if (leftPos + 760 > contentW) leftPos = params.event.offsetX - 800;
                     if (topPos < 20) topPos = 20;
                     if (topPos + 460 > contentH) topPos = contentH - 460;
                     if (topPos < 10) topPos = 10;
                     popup.style.left = leftPos + 'px';
                     popup.style.top = topPos + 'px';
 
-                    // Header color
                     let titleColor = '#52c41a';
                     if (pd.status === 'red') titleColor = '#ff4d4f';
                     if (pd.status === 'yellow') titleColor = '#faad14';
@@ -1298,7 +1279,6 @@
                     document.getElementById('pop-header-text').innerHTML =
                         `<span style="color:${titleColor}">&#128193; ${pd.visit}</span>`;
 
-                    // Build table
                     const tbody = document.getElementById('pop-table-body');
                     let rowsHtml = '';
                     if (pd.files.length === 0) {
@@ -1310,11 +1290,10 @@
                                     `<span class="status-badge status-ok">定刻</span>`;
 
                             if (pd.requiresJudgment && f.isDelayed && !f.isMissing) {
-                                // 需要判定的行
                                 rowsHtml += `
                                     <tr style="background:#fffcfc">
                                         <td><strong>${f.name}</strong></td>
-                                        <td>${f.actualDate || '未取得'}<br>${dateBadge}</td>
+                                        <td>${f.actualDate || '未取得'}</td>
                                         <td>
                                             <div style="display:flex; flex-direction:column; gap:6px;">
                                                 <label class="radio-label include-label"><input type="radio" name="dec-${i}" value="include" onchange="updateRowState(${i})"> ✅ 研究データ対象</label>
@@ -1326,7 +1305,6 @@
                                         </td>
                                     </tr>`;
                             } else {
-                                // 正常的/只读的行
                                 let tpCell = f.assignedTP ? `<strong>${f.assignedTP}</strong>` : `<span style="color:#94a3b8;font-style:italic;">未判定</span>`;
                                 if (f.modifiedBy && f.modifiedBy !== 'System') {
                                     tpCell += `<span style="display:block; font-size:11px; color:#94a3b8; margin-top:2px;">判定者: ${f.modifiedBy}</span>`;
@@ -1334,7 +1312,7 @@
                                 rowsHtml += `
                                     <tr>
                                         <td>${f.name}</td>
-                                        <td>${f.actualDate || '未取得'}<br>${dateBadge}</td>
+                                        <td>${f.actualDate || '未取得'}</td>
                                         <td >
                                             <div style="color:#64748b; font-size: 13px;">
                                                 判定済: ${tpCell} <br>
@@ -1346,8 +1324,6 @@
                         });
                     }
                     tbody.innerHTML = rowsHtml;
-
-
 
                     popup.style.display = 'block';
                 } else {
