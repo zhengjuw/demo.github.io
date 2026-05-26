@@ -1,908 +1,561 @@
 <!DOCTYPE html>
-<html lang="ja" style="height: 100%">
-
+<html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <title>ソースデータ</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600&family=Noto+Sans:wght@400;500;600&display=swap" />
-  <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none
-    }
-
-    button {
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-family: inherit
-    }
-
-    img {
-      display: block
-    }
-
-    :root {
-      --header-h: 52px;
-      --bar-h: 42px;
-      --blue: #3d7eff;
-      --blue-light: #e8f0ff;
-      --blue-mid: #dbe4ff;
-      --blue-deep: #3b5bdb;
-      --blue-hover: #4f6ef7;
-      --sidebar-border: #e8ecf2;
-      --text-dark: #1a2332;
-      --text-mid: #4a5568;
-      --text-light: #94a3b8;
-      --selected-bg: #eef3ff;
-      --white: #ffffff;
-      --bg: #f5f7fa;
-    }
-
-    html,
-    body {
-      height: 100%;
-      overflow: hidden;
-      font-family: 'Noto Sans JP', 'Noto Sans', sans-serif
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      background: var(--bg)
-    }
-
-    /* TOP HEADER */
-    #top-header {
-      height: var(--header-h);
-      background: var(--blue-light);
-      border-bottom: 1px solid var(--sidebar-border);
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      gap: 14px;
-      flex-shrink: 0;
-      z-index: 100
-    }
-
-    #top-header img#logo {
-      height: 36px;
-      width: auto
-    }
-
-    #top-header h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-dark)
-    }
-
-    .spacer {
-      flex: 1
-    }
-
-    /* CONTENT BAR */
-    #content-bar {
-      height: var(--bar-h);
-      background: var(--white);
-      border-bottom: 1px solid var(--sidebar-border);
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      gap: 8px;
-      flex-shrink: 0;
-      overflow-x: auto
-    }
-
-    #content-bar .spacer {
-      flex: 1
-    }
-
-    .back-btn {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-mid);
-      padding: 4px 10px;
-      border-radius: 6px;
-      border: 1px solid var(--sidebar-border);
-      background: #f8fafc;
-      white-space: nowrap;
-      transition: background 0.15s, border-color 0.15s, color 0.15s
-    }
-
-    .back-btn:hover {
-      background: var(--blue-light);
-      border-color: #c4d4ff;
-      color: var(--blue-deep)
-    }
-
-    .bar-label {
-      font-size: 11px;
-      color: var(--text-light);
-      white-space: nowrap
-    }
-
-    .filter-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      font-weight: 500;
-      padding: 3px 10px;
-      border-radius: 12px;
-      white-space: nowrap
-    }
-
-    .cohort-tag {
-      background: #fff3e0;
-      color: #c76b00
-    }
-
-    .patient-tag {
-      background: var(--blue-light);
-      color: #1d4ed8
-    }
-
-    .pending-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--text-mid);
-      background: #f8fafc;
-      border: 1px solid var(--sidebar-border);
-      border-radius: 20px;
-      padding: 4px 12px 4px 4px;
-      cursor: pointer;
-      transition: background 0.15s, box-shadow 0.15s;
-      white-space: nowrap
-    }
-
-    .pending-chip:hover {
-      background: var(--selected-bg);
-      box-shadow: 0 1px 6px rgba(61, 126, 255, 0.13)
-    }
-
-    .pending-avatar {
-      width: 24px;
-      height: 24px;
-      background: var(--blue);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      font-weight: 700;
-      color: white
-    }
-
-    /* MAIN */
-    #main-content {
-      flex: 1;
-      overflow: auto;
-      padding: 24px
-    }
-
-    /* TABLE */
-    #grid-wrap {
-      width: 100%;
-      overflow-x: auto
-    }
-
-    table {
-      border-collapse: collapse;
-      min-width: 100%
-    }
-
-    thead tr.row-timepoint th {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      padding: 10px 20px;
-      font-size: 13px;
-      font-weight: 700;
-      color: #1e3a5f;
-      text-align: center;
-      white-space: nowrap
-    }
-
-    thead tr.row-timepoint th.row-label {
-      background: #f8fafc;
-      min-width: 140px;
-      text-align: left;
-      font-size: 11px;
-      color: #94a3b8;
-      font-weight: 400
-    }
-
-    thead tr.row-visit th {
-      background: #f0f4ff;
-      border: 1px solid #e2e8f0;
-      padding: 10px 16px;
-      text-align: center;
-      white-space: nowrap;
-      vertical-align: top
-    }
-
-    thead tr.row-visit th.row-label {
-      background: #f8fafc;
-      text-align: left;
-      font-size: 11px;
-      font-weight: 600;
-      color: #64748b;
-      vertical-align: middle
-    }
-
-    .visit-inner {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px
-    }
-
-    .visit-name {
-      font-size: 12px;
-      font-weight: 600;
-      color: #3b5bdb;
-      white-space: nowrap
-    }
-
-    .status-wrap {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: #94a3b8;
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 4px 10px
-    }
-
-    .status-empty {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      border: 2px dashed #cbd5e1;
-      border-radius: 4px;
-      flex-shrink: 0
-    }
-
-    tbody td {
-      border: 1px solid #e2e8f0;
-      padding: 16px;
-      vertical-align: middle;
-      text-align: center;
-      background: #fff;
-      white-space: nowrap;
-      height: 80px
-    }
-
-    tbody td.row-label {
-      background: #f8fafc;
-      text-align: left;
-      font-weight: 600;
-      font-size: 12px;
-      color: #64748b;
-      line-height: 1.7
-    }
-
-    .folder-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: #64748b;
-      background: #dbe4ff;
-      border: 1px solid #dbe4ff;
-      border-radius: 6px;
-      padding: 4px 10px;
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, color 0.15s;
-      user-select: none
-    }
-
-    .folder-btn svg {
-      width: 28px;
-      height: 28px
-    }
-
-    .folder-btn:hover {
-      color: #fff;
-      background: #4f6ef7;
-      border-color: #4f6ef7
-    }
-
-    .folder-btn.active {
-      color: #fff;
-      background: #3b5bdb;
-      border-color: #3b5bdb;
-      box-shadow: 0 2px 8px rgba(59, 91, 219, 0.25)
-    }
-
-    tr.expand-row>td {
-      padding: 0 !important;
-      height: auto !important;
-      border-left: none !important;
-      border-right: none !important;
-      border-top: none !important;
-      background: transparent !important
-    }
-
-    .expand-panel {
-      background: #f8faff;
-      border-top: 2px solid #4f6ef7;
-      border-bottom: 2px solid #e2e8f0;
-      animation: slideDown 0.18s ease
-    }
-
-    .expand-body {
-      display: flex;
-      flex-direction: row;
-      align-items: flex-start;
-      gap: 0;
-      max-width: 100%;
-      overflow: hidden
-    }
-
-    .expand-left {
-      flex: 0 0 280px;
-      min-width: 0;
-      border-right: 1px solid #e2e8f0;
-      background: #fff
-    }
-
-    .expand-right {
-      flex: 1 1 0;
-      min-width: 0;
-      max-width: calc(100% - 280px);
-      background: #f8faff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 24px;
-      gap: 16px
-    }
-
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        max-height: 0
-      }
-
-      to {
-        opacity: 1;
-        max-height: 1000px
-      }
-    }
-
-    .expand-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 20px 8px;
-      border-bottom: 1px solid #e2e8f0
-    }
-
-    .expand-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #3b5bdb
-    }
-
-    .expand-close {
-      margin-left: auto;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 1px solid #c7d2fe;
-      background: #fff;
-      color: #64748b;
-      font-size: 15px;
-      line-height: 1;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.12s, color 0.12s, border-color 0.12s
-    }
-
-    .expand-close:hover {
-      background: #4f6ef7;
-      color: #fff;
-      border-color: #4f6ef7
-    }
-
-    .expand-table {
-      border-collapse: collapse;
-      width: 100%
-    }
-
-    .expand-table thead th {
-      background: #eef2ff;
-      font-size: 11px;
-      font-weight: 600;
-      color: #64748b;
-      padding: 7px 14px;
-      text-align: center;
-      border-bottom: 1px solid #e2e8f0
-    }
-
-    .expand-table thead th:first-child {
-      text-align: left
-    }
-
-    .expand-table tbody td {
-      font-size: 12px;
-      color: #334155;
-      padding: 8px 14px;
-      border-bottom: 1px solid #f1f5f9;
-      background: #fff;
-      height: auto !important;
-      white-space: nowrap;
-      border-left: none;
-      border-right: none;
-      border-top: none;
-      text-align: center
-    }
-
-    .expand-table tbody td:first-child {
-      text-align: left
-    }
-
-    .expand-table tbody tr:last-child td {
-      border-bottom: none
-    }
-
-    .expand-table tbody tr {
-      cursor: pointer;
-      transition: background 0.1s
-    }
-
-    .expand-table tbody tr:hover td {
-      background: #eef2ff !important
-    }
-
-    .file-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      align-items: flex-start;
-      padding: 6px 0
-    }
-
-    .file-cell {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 3px 8px;
-      border-radius: 5px;
-      transition: background 0.12s, color 0.12s
-    }
-
-    .file-cell-image {
-      color: #334155
-    }
-
-    .file-cell-image:hover {
-      background: #e0e7ff;
-      color: #3b5bdb
-    }
-
-    .file-cell-report {
-      color: #4f6ef7;
-      font-weight: 500
-    }
-
-    .file-cell-report:hover {
-      background: #dbe4ff;
-      color: #2346c9
-    }
-
-    .file-cell svg {
-      width: 14px;
-      height: 14px;
-      flex-shrink: 0
-    }
-
-    .row-link-arrow {
-      color: #c7d2fe;
-      font-size: 16px;
-      transition: color 0.12s, transform 0.12s
-    }
-
-    .expand-table tbody tr:hover .row-link-arrow {
-      color: #4f6ef7;
-      transform: translateX(3px)
-    }
-
-    .file-cell-image.active-preview {
-      background: #dbeafe;
-      color: #2563eb
-    }
-
-    .file-cell-report.active-preview {
-      background: #fce7f3;
-      color: #db2777
-    }
-
-    .preview-section {
-      animation: slideDown 0.2s ease;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px
-    }
-
-    .preview-section.theme-ct {
-      background: transparent
-    }
-
-    .preview-section.theme-ct .preview-header,
-    .preview-section.theme-pdf .preview-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      margin-bottom: 0;
-      height: 28px;
-      width: 100%;
-      max-width: 1000px
-    }
-
-    .preview-section.theme-ct .preview-title,
-    .preview-section.theme-pdf .preview-title {
-      color: #64748b;
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.5px
-    }
-
-    .preview-close-btn {
-      position: absolute;
-      right: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 26px;
-      height: 26px;
-      border-radius: 4px;
-      border: 1px solid #e2e8f0;
-      background: #fff;
-      color: #94a3b8;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-      z-index: 2
-    }
-
-    .preview-close-btn:hover {
-      background: #4f6ef7;
-      color: #fff;
-      border-color: #4f6ef7
-    }
-
-    .preview-section.theme-pdf {
-      background: transparent;
-      box-shadow: none
-    }
-
-    .preview-grid.type-ct {
-      display: flex;
-      width: 200%;
-      max-width: 1000px;
-      height: 680px;
-      background: #000;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 6px 28px rgba(0, 0, 0, 0.35)
-    }
-
-    .preview-grid.type-ct .pane-left {
-      flex: 0 0 220px;
-      background: #242424;
-      border-right: 1px solid #111;
-      overflow-y: auto;
-      padding: 0
-    }
-
-    .preview-grid.type-ct .pane-left img {
-      width: 100%;
-      height: auto;
-      display: block
-    }
-
-    .preview-grid.type-ct .pane-right {
-      flex: 1 1 0;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden
-    }
-
-    .preview-grid.type-ct .pane-right img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block
-    }
-
-    .preview-grid.type-pdf {
-      display: flex;
-      justify-content: center;
-      width: 200%;
-      max-width: 1000px;
-      background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 6px 28px rgba(0, 0, 0, 0.18)
-    }
-
-    .preview-grid.type-pdf .preview-pane-single {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center
-    }
-
-    .preview-grid.type-pdf .preview-pane-single img {
-      width: 100%;
-      height: auto;
-      display: block
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>詳細情報 — M30011111</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #3d7eff;
+  --blue-mid: #3b5bdb;
+  --blue-dark: #1e3a8a;
+  --blue-light: #e8f0ff;
+  --blue-pale: #f0f4ff;
+  --blue-soft: #dbeafe;
+  --border: #e2e8f0;
+  --border-light: #eef2f8;
+  --border-dashed: #e2e8f0; 
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --text-dark: #1a2332;
+  --text-mid: #4a5568;
+  --text-light: #94a3b8;
+  --red: #dc2626;
+  --amber: #d97706;
+  --header-h: 52px;
+  --font: 'Noto Sans JP', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+  --radius: 5px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  display: flex; flex-direction: column;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-dark);
+  font-size: 13px; line-height: 1.5;
+}
+
+/* ── Top header ── */
+#top-header {
+  height: var(--header-h);
+  background: var(--blue-light);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 14px;
+  flex-shrink: 0; z-index: 100;
+}
+#top-header img#logo {
+  height: 36px;
+  width: auto;
+}
+#top-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.hd-divider { width: 1px; height: 20px; background: #c7d4ea; }
+.hd-spacer { flex: 1; }
+
+/* ── Patient bar ── */
+#patient-bar {
+  background: #fff; border-bottom: 1px solid var(--border);
+  padding: 0 20px; height: 44px;
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.back-btn {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; color: var(--text-mid); cursor: pointer;
+  padding: 4px 9px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--bg);
+  text-decoration: none; transition: all 0.15s;
+}
+.back-btn:hover { background: var(--blue-pale); border-color: #c7d8ff; color: var(--blue-mid); }
+.pt-sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 500; white-space: nowrap; border: 1px solid transparent;
+}
+.pill-id   { background: var(--blue-pale); color: var(--blue-mid); border-color: #c7d8ff; font-family: var(--mono); }
+.pill-gray { background: var(--bg); color: var(--text-mid); border-color: var(--border); }
+.pill-cohort{ background: #fffbeb; color: #92400e; border-color: #fde68a; font-size: 10px; }
+.pt-spacer { flex: 1; }
+.baseline-wrap { display: flex; align-items: center; gap: 6px; }
+.pt-label { font-size: 11px; color: var(--text-light); }
+.baseline-select {
+  height: 26px; padding: 0 8px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); color: var(--text-dark);
+  font-size: 11px; font-family: var(--font);
+  outline: none; cursor: pointer; appearance: none;
+}
+.baseline-select:hover { background: var(--blue-pale); }
+.btn {
+  padding: 5px 13px; border-radius: var(--radius);
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text-mid); font-family: var(--font); transition: all 0.15s;
+}
+.btn:hover { background: var(--bg); }
+.btn-primary { background: var(--blue); color: #fff; border-color: var(--blue-mid); }
+
+/* ── Legend bar ── */
+#legend-bar {
+  background: var(--blue-pale); border-bottom: 1px solid var(--border);
+  padding: 6px 20px; display: flex; align-items: center; gap: 14px;
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.phase-group { display: flex; align-items: center; gap: 8px; }
+.phase-chip { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-mid); }
+.ph-dot { width: 8px; height: 8px; border-radius: 2px; }
+.ph-e { background: #94a3b8; }
+.ph-t { background: var(--blue); }
+.ph-f { background: var(--blue-dark); }
+.leg-div { width: 1px; height: 14px; background: #c7d4ea; }
+.data-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.leg-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-mid); }
+.ldot { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); }
+.lline { width: 18px; height: 3px; border-radius: 2px; }
+.lline-blue { background: var(--blue); }
+
+/* ── Main ── */
+#main { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: #fff;}
+.tl-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.tl-scroll { flex: 1; overflow: auto; position: relative; }
+.tl-table { width: max-content; min-width: 100%; border-collapse: collapse; }
+
+/* Header */
+.thead-group th {
+  position: sticky; top: 0; z-index: 20;
+  background: #fff; border-bottom: 1px solid var(--border);
+  font-weight: 500; text-align: center; padding: 0;
+}
+.thead-group th.col-label { left: 0; z-index: 30; text-align: left; width: 190px; min-width: 190px; }
+
+.tp-header { padding: 6px 10px 5px; min-width: 88px; }
+.tp-date { font-size: 10px; color: var(--text-light); font-family: var(--mono); display: block; margin-bottom: 1px; }
+.tp-name { font-size: 11px; font-weight: 600; display: block; }
+.tp-win  { font-size: 10px; color: var(--text-light); display: block; margin-top: 1px; }
+.tp-header.ph-e-bg { background: rgba(148,163,184,0.06); }
+.tp-header.ph-e-bg .tp-name { color: #475569; }
+.tp-header.ph-t-bg { background: rgba(61,126,255,0.07); }
+.tp-header.ph-t-bg .tp-name { color: var(--blue-mid); }
+.tp-header.ph-f-bg { background: rgba(30,58,138,0.07); }
+.tp-header.ph-f-bg .tp-name { color: var(--blue-dark); }
+
+/* Label column (Sticky Left) */
+td.row-label {
+  position: sticky; left: 0; z-index: 10;
+  background: #fff; border-right: 1px solid var(--border);
+  padding: 0 0 0 10px; white-space: nowrap;
+  font-size: 11px; color: var(--text-mid); height: 32px;
+}
+td.row-label.sec-hd {
+  background: var(--blue-pale); font-size: 11px; font-weight: 700;
+  color: var(--blue-mid); letter-spacing: 0.03em; text-transform: uppercase;
+  height: 26px; padding-left: 10px; border-top: 1px solid #c7d8ff;
+}
+td.row-label.sub-hd { background: #f8faff; font-weight: 600; color: var(--text-dark); height: 26px; padding-left: 20px; }
+td.row-label.item-row { padding-left: 32px; }
+td.row-label.sub-item { padding-left: 44px; color: var(--text-dark); font-weight: 500; }
+td.row-label.deep-item { padding-left: 56px; color: var(--text-light); }
+
+/* Collapse Icon */
+.toggle-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-mid); font-size: 10px;
+  padding: 0 6px 0 0; line-height: 1;
+  transition: transform 0.15s;
+  display: inline-block; vertical-align: middle;
+}
+.toggle-btn.collapsed { transform: rotate(-90deg); }
+
+/* Data cells */
+td.dc {
+  text-align: center; vertical-align: middle; height: 32px;
+  border-bottom: 1px dashed var(--border-dashed); 
+  position: relative; cursor: pointer; transition: background 0.1s;
+}
+td.dc:hover { background: rgba(61,126,255,0.04); }
+td.sec-cell { background: var(--blue-pale); border-bottom: 1px dashed #c7d8ff; height: 26px; border-top: 1px solid #c7d8ff; }
+td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light); height: 26px; }
+
+/* Dots */
+.dot {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  vertical-align: middle; cursor: pointer; transition: transform 0.12s; position: relative;
+  z-index: 2;
+}
+.dot:hover { transform: scale(1.35); }
+.dot-blue    { background: var(--blue); box-shadow: 0 0 0 2px rgba(61,126,255,0.15); }
+.dot-bluedark { background: var(--blue-dark); box-shadow: 0 0 0 2px rgba(30,58,138,0.15); }
+.dot-gray    { border: 1.5px solid #c7d4ea; background: #f5f7fa; }
+.dot-pending { border: 1.5px dashed #94a3b8; background: transparent; }
+
+.dot-wrap { position: relative; display: inline-block; }
+.dot-count {
+  position: absolute; top: -6px; right: -7px;
+  font-size: 8px; font-weight: 700;
+  background: var(--blue-mid); color: #fff;
+  border-radius: 50%; width: 12px; height: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); line-height: 1; pointer-events: none; z-index: 3;
+}
+.dot-surgery {
+  width: 9px; height: 9px; border-radius: 2px;
+  border: 1.5px solid var(--blue); background: transparent;
+  display: inline-block; vertical-align: middle;
+}
+
+/* Bars */
+.treatment-bar {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  height: 5px; border-radius: 3px; cursor: pointer;
+  transition: height 0.15s, opacity 0.15s; z-index: 2;
+}
+.treatment-bar:hover { height: 8px; opacity: 0.85; }
+
+/* Minimap */
+.tl-minimap {
+  height: 22px; background: #fff; border-top: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 190px 0 190px; flex-shrink: 0;
+}
+.mm-track { flex:1; height:5px; background:var(--bg); border-radius:3px; position:relative; cursor:pointer; }
+.mm-thumb { position:absolute; top:0; height:100%; background:#c7d8ff; border-radius:3px; min-width:40px; }
+
+/* Drawer & Tooltip */
+.drawer-overlay { position:fixed; inset:0; background:rgba(26,35,50,0.18); z-index:200; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.drawer-overlay.open { opacity:1; pointer-events:all; }
+.drawer { position:fixed; top:0; right:0; bottom:0; width:370px; background:#fff; border-left:1px solid var(--border); z-index:201; transform:translateX(100%); transition:transform 0.22s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; overflow:hidden; }
+.drawer.open { transform:translateX(0); }
+.drawer-head { padding:14px 16px 12px; border-bottom:1px solid var(--border); background:var(--blue-pale); display:flex; align-items:flex-start; gap:10px; }
+.drawer-title { font-size:14px; font-weight:600; color:var(--text-dark); }
+.drawer-sub   { font-size:11px; color:var(--text-light); margin-top:2px; font-family:var(--mono); }
+.drawer-close { margin-left:auto; background:none; border:none; cursor:pointer; font-size:16px; color:var(--text-light); padding:2px; }
+.drawer-body { flex:1; overflow-y:auto; padding:14px 16px; }
+.dsec { margin-bottom:16px; }
+.dsec-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--blue); margin-bottom:7px; padding-bottom:5px; border-bottom:1px solid var(--blue-soft); }
+.fr { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--border-light); font-size:12px; }
+.fl { color:var(--text-mid); } .fv { color:var(--text-dark); font-weight:500; text-align:right; }
+.badge { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:10px; font-size:11px; font-weight:500; }
+.badge-ok   { background:#f0fdf4; color:var(--blue-mid); } .badge-warn { background:#fef2f2; color:var(--red); } .badge-pend { background:var(--bg); color:var(--text-mid); border:1px solid var(--border); }
+
+.tooltip { position:fixed; background:var(--text-dark); color:#fff; font-size:11px; padding:6px 10px; border-radius:var(--radius); pointer-events:none; z-index:500; white-space:nowrap; opacity:0; transition:opacity 0.1s; line-height:1.7; }
+.tooltip.show { opacity:1; }
+</style>
 </head>
-
 <body>
-  <div id="top-header">
-    <img id="logo" src="image13215-yqx-200w.png" alt="Logo" onerror="this.style.display='none'">
-    <h3>詳細情報​</h3>
-  </div>
 
-  <div id="content-bar">
-    <button class="back-btn" onclick="goBack()">← 戻る</button>
-    <span class="bar-label">表示中：</span>
-    <span class="filter-tag cohort-tag" id="bar-id">M30011111</span>
-    <span class="filter-tag patient-tag" id="bar-age">56歳</span>
-    <span class="filter-tag cohort-tag" id="bar-sex">男性</span>
-    <span class="filter-tag patient-tag" id="bar-date">登録日：2024-06-24</span>
-    <span class="filter-tag cohort-tag">コホートB1：Up-front Surgery を施行する場合</span>
-    <span class="filter-tag patient-tag">結腸・直腸癌</span>
-    <span class="filter-tag cohort-tag">生存</span>
-    <div class="spacer"></div>
-    <div class="pending-chip" onclick="navigateToPendingPage()">
-      <div class="pending-avatar" id="pending-count">2</div>
-      確認待ち
+<div id="top-header">
+  <img id="logo" src="./image13215-yqx-200w.png" alt="Logo">
+  <h3>症例ポータル</h3>
+  <div class="hd-spacer"></div>
+</div>
+
+<div id="patient-bar">
+  <a href="../index.html" class="back-btn">← 戻る</a>
+  <div class="pt-sep"></div>
+  <span class="pt-label">患者ID</span>
+  <span class="pill pill-id">M30011111</span>
+  <span class="pill pill-gray">56歳 · 男性</span>
+  <span class="pill pill-gray">登録日：2024-06-24</span>
+  <div class="baseline-wrap">
+    <span class="pt-label">基準日：</span>
+    <select class="baseline-select" onchange="changeBaseline(this.value)">
+      <option value="none">選択してください</option>
+      <option value="registration">登録日</option>
+      <option value="treatment">治療開始日</option>
+      <option value="recurrence">増悪確認日</option>
+    </select>
+  </div>
+  <span class="pill pill-gray">コホートA</span>
+  <span class="pill pill-gray">結腸・直腸癌</span>
+  <span class="pill pill-gray">生存</span>
+  <div class="pt-spacer"></div>
+</div>
+
+<div id="legend-bar">
+  <div class="phase-group">
+    <div class="phase-chip"><div class="ph-dot ph-e"></div>登録期間</div>
+    <div class="phase-chip"><div class="ph-dot ph-t"></div>治療期間</div>
+    <div class="phase-chip"><div class="ph-dot ph-f"></div>フォローアップ</div>
+  </div>
+  <div class="leg-div"></div>
+  <div class="data-group">
+    <div class="leg-item"><div class="ldot"></div>EDC / 手術 / 臨床画像 / 病理画像 </div>
+    <div class="leg-item"><div class="lline lline-blue"></div>薬物療法 / 放射線治療 / 補助化学療法 </div>
+  </div>
+</div>
+
+<div id="main">
+  <div class="tl-wrap">
+    <div class="tl-scroll" id="tlScroll">
+      <table class="tl-table" id="tlTable">
+        <colgroup><col style="width:190px;min-width:190px;"></colgroup>
+        <thead id="tlHead"></thead>
+        <tbody id="tlBody"></tbody>
+      </table>
+    </div>
+    <div class="tl-minimap">
+      <div class="mm-track" id="mmTrack"><div class="mm-thumb" id="mmThumb"></div></div>
     </div>
   </div>
+</div>
 
-  <div id="main-content">
-    <div id="grid-wrap">
-      <table id="main-table"></table>
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <div class="drawer-title" id="drawerTitle">—</div>
+      <div class="drawer-sub"   id="drawerSub">—</div>
     </div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
   </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</div>
+<div class="tooltip" id="tooltip"></div>
 
-  <script>
-    /* Navigation */
-    function goBack() {
-      window.location.href = '../index.html';
+<script>
+const TPS = [
+  { id:'t0', date:'2024-06-24', name:'登録時',        win:'[-4w,+0w]', phase:'e' },
+  { id:'t1', date:'2024-08-19', name:'治療開始後8w',  win:'[-2w,+2w]', phase:'t' },
+  { id:'t2', date:'2024-10-14', name:'治療開始後16w', win:'[-2w,+2w]', phase:'t' },
+  { id:'t3', date:'2024-12-09', name:'治療開始後24w', win:'[-2w,+2w]', phase:'t' },
+  { id:'t4', date:'2025-02-03', name:'治療開始後32w', win:'[-2w,+2w]', phase:'t' },
+  { id:'t5', date:'2025-03-31', name:'治療開始後40w', win:'[-2w,+2w]', phase:'t' },
+  { id:'t6', date:'2025-06-26', name:'増悪時',        win:'[-2w,+2w]', phase:'t' },
+  { id:'t7', date:'2025-07-21', name:'治療開始後56w', win:'[-2w,+2w]', phase:'f' },
+];
+const N = TPS.length;
+const CL = {};
+
+function mkD(arr) {
+  const out = [];
+  for (let i = 0; i < N; i++) out.push(arr[i] !== undefined ? arr[i] : null);
+  return out;
+}
+
+const ROWS = [
+  { type:'sec', label:'EDC Visit 情報' },
+  { type:'dot', label:'登録・基本情報', indent:'item',
+    dots: mkD(['b','b','b','b','b','b','b','b']), drawerType:'edc' },
+
+  { type:'sec', label:'治療' },
+
+  { type:'sub', label:'手術', noToggle:true },
+  { type:'dot', label:'手術', indent:'item', dotStyle:'surgery',
+    dots: mkD([null,null,null,null,null,null,null,null]), drawerType:'surgery' },
+
+  { type:'sub', label:'放射線治療', toggleKey:'grp-radio' },
+  { type:'dot', label:'X線', indent:'item', collapseKey:'grp-radio',
+    dots: mkD([null,null,null,null,null,null,null,null]) },
+  { type:'dot', label:'Y線', indent:'item', collapseKey:'grp-radio',
+    dots: mkD([null,null,null,null,null,null,null,null]) },
+
+  /* === 薬物療法 === */
+  { type:'sub', label:'薬物療法', toggleKey:'grp-drug' },
+  
+  { type:'bar', label:'治療ライン 1', indent:'sub-item', collapseKey:'grp-drug', toggleKey:'grp-drug-line2',
+    start:1, end:6, color:'var(--blue)', dose:'500mg/month', barLabel:'FULVESTRANT (治療ライン 1)' },
+  { type:'dot', label:'レジメン名', indent:'deep', collapseKey:['grp-drug', 'grp-drug-line2'],
+    dots: mkD([null,null,null,null,null,null,null,null]) },
+
+  /* === 補助化学療法 === */
+  { type:'sub', label:'補助化学療法', toggleKey:'grp-adj-chemo' },
+  { type:'dot', label:'薬剤名', indent:'item', collapseKey:'grp-adj-chemo',
+    dots: mkD([null,null,null,null,null,null,null,null]) },
+
+  { type:'sec', label:'臨床画像 / 診断レポート' },
+  { type:'dot', label:'PET-CT', indent:'item',
+    dots: mkD([null,null,null,null,'b',null,'b',null]), drawerType:'img' },
+  { type:'dot', label:'CT', indent:'item',
+    dots: [{color:'b'}, null, null, {color:'b',count:2}, null, null, {color:'b'}, {color:'b'}], drawerType:'img' },
+  { type:'dot', label:'MRI', indent:'item',
+    dots: mkD([null,null,null,null,null,null,'b','b']), drawerType:'img' },
+  { type:'dot', label:'コンピュータX線撮影', indent:'item',
+    dots: mkD([null,null,'b',null,null,null,null,null]), drawerType:'img' },
+  { type:'dot', label:'内視鏡検査', indent:'item',
+    dots: mkD([null,'b',null,null,null,null,'b',null]), drawerType:'img' },
+
+  { type:'sec', label:'病理画像' },
+  { type:'dot', label:'HE染色', indent:'item',
+    dots: mkD([null,null,null,null,null,null,null,null]), drawerType:'path' }
+];
+
+function buildHead() {
+  let h = '<tr class="thead-group"><th class="col-label" style="border-right:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text-light);font-weight:600;text-align:left;"></th>';
+  TPS.forEach(tp => {
+    h += `<th id="th-${tp.id}"><div class="tp-header ph-${tp.phase}-bg">
+      <span class="tp-date">${tp.date}</span>
+      <span class="tp-name">${tp.name}</span>
+      <span class="tp-win">${tp.win}</span>
+    </div></th>`;
+  });
+  h += '</tr>';
+  document.getElementById('tlHead').innerHTML = h;
+}
+
+function buildBody() {
+  let h = '';
+  ROWS.forEach(row => {
+    if (row.collapseKey) {
+      const keys = Array.isArray(row.collapseKey) ? row.collapseKey : [row.collapseKey];
+      if (keys.some(k => CL[k])) return;
     }
 
-    function navigateToPendingPage() {
-      window.location.href = './chart/index.html';
+    if (row.type === 'sec') {
+      h += `<tr><td class="row-label sec-hd">${row.label}</td>${TPS.map(tp=>`<td class="sec-cell ph-${tp.phase}-bg"></td>`).join('')}</tr>`;
+      return;
     }
 
-    /* CSV Data */
-    const csvData = [
-      {
-        timepoint: '登録時', visit_info: '症例登錄票', status: '', hasFolder: true,
-        files: [
-          { image: 'CT', report: 'CT.pdf' },
-          { image: 'MRI', report: 'MRI.pdf' },
-          { image: '内視鏡検査', report: '内視鏡検査.pdf' },
-        ]
-      },
-      { timepoint: '手術時', visit_info: 'コホートB：手術', status: '', hasFolder: false },
-      { timepoint: '術後4w', visit_info: 'コホートB：再発（N）', status: '', hasFolder: false },
-      { timepoint: '術後12w', visit_info: 'コホートB：再発（N）', status: '', hasFolder: false },
-      {
-        timepoint: '術後24w', visit_info: 'コホートB：再発（6m）', status: '', hasFolder: true,
-        files: [
-          { image: 'CT', report: 'CT.pdf' },
-          { image: 'コンピュータX線撮影', report: 'コンピュータX線撮影.pdf' },
-          { image: '内視鏡検査', report: ' ' },
-        ]
-      },
-      { timepoint: '術後36w', visit_info: 'コホートB：再発（N）', status: '', hasFolder: false },
-      {
-        timepoint: '術後48w', visit_info: 'コホートB：再発（12m）', status: '', hasFolder: true,
-        files: [
-          // { image: 'CT', report: 'CT.pdf' },
-          // { image: 'MRI', report: 'MRI.pdf' },
-          { image: '内視鏡検査', report: '内視鏡検査.pdf' },
-        ]
-      },
-      {
-        timepoint: '術後72w', visit_info: 'コホートB：再発（18m）', status: '', hasFolder: true,
-        files: [
-          // { image: 'CT', report: 'CT.pdf' },
-          // { image: 'MRI', report: ' ' },
-          // { image: '内視鏡検査', report: ' ' },
-        ]
-      },
-    ];
-
-    /* SVG Icons */
-    const folderSVG = `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 14C6 12.34 7.34 11 9 11H20L24 15H39C40.66 15 42 16.34 42 18V38C42 39.66 40.66 41 39 41H9C7.34 41 6 39.66 6 38V14Z"
-            fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      <line x1="6" y1="21" x2="42" y2="21" stroke="currentColor" stroke-width="1.5"/>
-    </svg>`;
-    const imgSVG = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/>
-      <circle cx="5.5" cy="6.5" r="1.2" fill="currentColor"/>
-      <path d="M1 12l4-4 3 3 2.5-2.5L15 12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>`;
-    const rptSVG = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3 1.5h6.5l3 3V14a.5.5 0 01-.5.5H3a.5.5 0 01-.5-.5V2a.5.5 0 01.5-.5z" stroke="currentColor" stroke-width="1.3"/>
-      <path d="M9.5 1.5V4.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-      <line x1="4.5" y1="7.5" x2="11.5" y2="7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-      <line x1="4.5" y1="10" x2="9" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-    </svg>`;
-
-    /* Build Table */
-    const table = document.getElementById('main-table');
-    const thead = document.createElement('thead');
-
-    const rowTP = document.createElement('tr');
-    rowTP.className = 'row-timepoint';
-    addTh(rowTP, '', 'row-label');
-    csvData.forEach((d, i) => { const th = document.createElement('th'); th.textContent = d.timepoint; th.dataset.col = i; rowTP.appendChild(th); });
-    thead.appendChild(rowTP);
-
-    const rowVI = document.createElement('tr');
-    rowVI.className = 'row-visit';
-    addTh(rowVI, 'Visit情報', 'row-label');
-    csvData.forEach((d, i) => {
-      const th = document.createElement('th'); th.dataset.col = i;
-      const inner = document.createElement('div'); inner.className = 'visit-inner';
-      const name = document.createElement('div'); name.className = 'visit-name'; name.textContent = d.visit_info;
-      const sw = document.createElement('div'); sw.className = 'status-wrap';
-      sw.innerHTML = 'ステータス <span class="status-empty"></span>';
-      inner.appendChild(name); inner.appendChild(sw); th.appendChild(inner); rowVI.appendChild(th);
-    });
-    thead.appendChild(rowVI);
-    table.appendChild(thead);
-
-    const tbody = document.createElement('tbody');
-    const rowImg = document.createElement('tr');
-    const tdLabel = document.createElement('td'); tdLabel.className = 'row-label'; tdLabel.innerHTML = '臨床画像'; rowImg.appendChild(tdLabel);
-
-    let activeCol = null, expandRow = null;
-
-    csvData.forEach((d, i) => {
-      const td = document.createElement('td'); td.dataset.col = i;
-      if (d.hasFolder) {
-        const btn = document.createElement('div'); btn.className = 'folder-btn'; btn.id = `btn-${i}`;
-        btn.innerHTML = folderSVG + `<span>+${d.files.length}</span>`;
-        btn.addEventListener('click', () => {
-          if (activeCol === i) { collapseExpand(); }
-          else { collapseExpand(); activeCol = i; btn.classList.add('active'); insertExpandRow(d, i); }
-        });
-        td.appendChild(btn);
-      }
-      rowImg.appendChild(td);
-    });
-    tbody.appendChild(rowImg);
-    table.appendChild(tbody);
-
-    /* Expand Row */
-    function insertExpandRow(d, colIndex) {
-      expandRow = document.createElement('tr'); expandRow.className = 'expand-row';
-      const td = document.createElement('td'); td.colSpan = csvData.length + 1;
-      const panel = document.createElement('div'); panel.className = 'expand-panel';
-      const hdr = document.createElement('div'); hdr.className = 'expand-header';
-      hdr.innerHTML = `<span style="font-size:16px">📁</span><span class="expand-title">${d.timepoint} — ファイル一覧</span><button class="expand-close" title="閉じる">×</button>`;
-      hdr.querySelector('.expand-close').addEventListener('click', collapseExpand);
-      panel.appendChild(hdr);
-
-      const body = document.createElement('div'); body.className = 'expand-body';
-      const leftCol = document.createElement('div'); leftCol.className = 'expand-left';
-      const et = document.createElement('table'); et.className = 'expand-table';
-      et.innerHTML = `<thead><tr><th style="width:32px;color:#94a3b8;text-align:left">#</th><th>臨床画像 / 診断レポート</th><th style="width:24px"></th></tr></thead>`;
-      const etb = document.createElement('tbody');
-
-      (d.files || []).forEach((f, idx) => {
-        const tr = document.createElement('tr');
-        const numTd = document.createElement('td'); numTd.style.cssText = 'color:#94a3b8;font-size:11px;vertical-align:top;padding-top:14px;'; numTd.textContent = idx + 1;
-        const stackTd = document.createElement('td'); stackTd.style.cssText = 'text-align:left;';
-        const stack = document.createElement('div'); stack.className = 'file-stack';
-
-        const imgCell = document.createElement('span'); imgCell.className = 'file-cell file-cell-image';
-        imgCell.innerHTML = imgSVG + f.image; imgCell.title = '画像を開く';
-        imgCell.addEventListener('click', (e) => { e.stopPropagation(); navigateToImageViewer(f, d, imgCell, panel, rightCol); });
-
-        const rptCell = document.createElement('span'); rptCell.className = 'file-cell file-cell-report';
-        rptCell.innerHTML = rptSVG + f.report; rptCell.title = 'レポートを開く';
-        rptCell.addEventListener('click', (e) => { e.stopPropagation(); navigateToReportViewer(f, d, rptCell, panel, rightCol); });
-
-        stack.appendChild(imgCell); stack.appendChild(rptCell); stackTd.appendChild(stack);
-        const arrowTd = document.createElement('td'); arrowTd.style.cssText = 'vertical-align:top;padding-top:14px;';
-        arrowTd.innerHTML = '<span class="row-link-arrow">›</span>';
-        tr.appendChild(numTd); tr.appendChild(stackTd); tr.appendChild(arrowTd);
-        tr.addEventListener('click', () => navigateToImageViewer(f, d, imgCell, panel, rightCol));
-        etb.appendChild(tr);
-      });
-
-      et.appendChild(etb); leftCol.appendChild(et);
-      const rightCol = document.createElement('div'); rightCol.className = 'expand-right';
-      body.appendChild(leftCol); body.appendChild(rightCol);
-      panel.appendChild(body); td.appendChild(panel); expandRow.appendChild(td);
-      tbody.insertBefore(expandRow, rowImg.nextSibling);
+    if (row.type === 'sub') {
+      const ic = row.toggleKey ? !!CL[row.toggleKey] : false;
+      const btn = row.toggleKey ? `<button class="toggle-btn ${ic?'collapsed':''}" onclick="toggleGrp('${row.toggleKey}')">▼</button>` : '';
+      h += `<tr><td class="row-label sub-hd">${btn}${row.label}</td>${TPS.map(tp=>`<td class="sub-cell ph-${tp.phase}-bg"></td>`).join('')}</tr>`;
+      return;
     }
 
-    function collapseExpand() {
-      if (activePreviewCell) { activePreviewCell.classList.remove('active-preview'); activePreviewCell = null; }
-      if (expandRow) { expandRow.remove(); expandRow = null; }
-      if (activeCol !== null) { const btn = document.getElementById(`btn-${activeCol}`); if (btn) btn.classList.remove('active'); activeCol = null; }
+    if (row.type === 'sub2') {
+      const ic = row.toggleKey ? !!CL[row.toggleKey] : false;
+      const btn = row.toggleKey ? `<button class="toggle-btn ${ic?'collapsed':''}" onclick="toggleGrp('${row.toggleKey}')">▼</button>` : '';
+      h += `<tr><td class="row-label sub-item" style="padding-left:36px;">${btn}${row.label}</td>${TPS.map(tp=>`<td class="sub-cell ph-${tp.phase}-bg"></td>`).join('')}</tr>`;
+      return;
     }
 
-    let activePreviewCell = null;
+    if (row.type === 'bar') {
+      const sp = (row.start / N) * 100;
+      const ep = ((row.end + 1) / N) * 100;
+      const w  = ep - sp;
+      const sd = TPS[row.start]?.date||'';
+      const ed = TPS[row.end]?.date||'';
+      const px = {item:32,'sub-item':44,deep:56}[row.indent]||32;
+      const cls = {item:'item-row','sub-item':'sub-item',deep:'deep-item'}[row.indent]||'item-row';
+      const ic = row.toggleKey ? !!CL[row.toggleKey] : false;
+      const btn = row.toggleKey ? `<button class="toggle-btn ${ic?'collapsed':''}" onclick="toggleGrp('${row.toggleKey}')">▼</button>` : '';
 
-    function showPreview(container, type, leftSrc, rightSrc) {
-      container.innerHTML = '';
-      const section = document.createElement('div');
-      section.className = 'preview-section theme-' + type.toLowerCase();
-      let contentHTML = '', previewTitle = '';
-      if (type === 'CT') {
-        previewTitle = '臨床画像：CT';
-        contentHTML = `<div class="preview-grid type-ct"><div class="pane-left"><div class="preview-pane-frame"><img src="${leftSrc}" alt="CT Thumbnail List"/></div></div><div class="pane-right"><img src="${rightSrc}" alt="CT Main View"/></div></div>`;
-      } else if (type === 'PDF') {
-        previewTitle = '診断レポート：CT';
-        contentHTML = `<div class="preview-grid type-pdf"><div class="preview-pane-single"><img src="${leftSrc}" alt="PDF Document"/></div></div>`;
-      }
-      section.innerHTML = `<div class="preview-header"><button class="preview-close-btn" title="閉じる"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button><div class="preview-title">${previewTitle}</div></div>${contentHTML}`;
-      section.querySelector('.preview-close-btn').addEventListener('click', (e) => {
-        e.stopPropagation(); container.innerHTML = '';
-        if (activePreviewCell) { activePreviewCell.classList.remove('active-preview'); activePreviewCell = null; }
-      });
-      container.appendChild(section);
+      h += `<tr>
+        <td class="row-label ${cls}" style="padding-left:${px}px;">${btn}${row.label}</td>
+        <td colspan="${N}" style="padding:0;border-bottom:1px dashed var(--border-dashed);position:relative;height:32px;">
+          <div class="treatment-bar"
+            style="left:${sp}%;width:${w}%;background:${row.color};"
+            onmouseenter="showTip(event,'${row.barLabel||row.label}','${sd}','${ed}','${row.dose||''}')"
+            onmouseleave="hideTip()"
+            onclick="openBarDrawer('${row.barLabel||row.label}','${sd}','${ed}','${row.dose||''}','${row.color}')">
+          </div>
+        </td>
+      </tr>`;
+      return;
     }
 
-    function navigateToImageViewer(file, data, cellEl, panel, container) {
-      if (file.image === 'CT') {
-        if (activePreviewCell === cellEl) { container.innerHTML = ''; cellEl.classList.remove('active-preview'); activePreviewCell = null; return; }
-        if (activePreviewCell) activePreviewCell.classList.remove('active-preview');
-        activePreviewCell = cellEl; cellEl.classList.add('active-preview');
-        showPreview(container, 'CT', './CTTTL.png', './CTTTR.png');
-      }
-    }
+    const px = {item:32,'sub-item':44,deep:56}[row.indent]||32;
+    const cls = {item:'item-row','sub-item':'sub-item',deep:'deep-item'}[row.indent]||'item-row';
+    const ic = row.toggleKey ? !!CL[row.toggleKey] : false;
+    const btn = row.toggleKey ? `<button class="toggle-btn ${ic?'collapsed':''}" onclick="toggleGrp('${row.toggleKey}')">▼</button>` : '';
+    
+    h += `<tr>
+      <td class="row-label ${cls}" style="padding-left:${px}px;">${btn}${row.label}</td>
+      ${TPS.map((tp,ci)=>{
+        const d = row.dots ? row.dots[ci] : null;
+        const dh = renderDot(d, row.dotStyle);
+        const dLabel = typeof d==='object'&&d ? d.color : (d||'null');
+        return `<td class="dc ph-${tp.phase}-bg" onclick="openDotDrawer('${row.label}','${tp.name}','${tp.date}','${dLabel}','${row.drawerType||''}')">${dh}</td>`;
+      }).join('')}
+    </tr>`;
+  });
+  document.getElementById('tlBody').innerHTML = h;
+}
 
-    function navigateToReportViewer(file, data, cellEl, panel, container) {
-      if (file.report === 'CT.pdf') {
-        if (activePreviewCell === cellEl) { container.innerHTML = ''; cellEl.classList.remove('active-preview'); activePreviewCell = null; return; }
-        if (activePreviewCell) activePreviewCell.classList.remove('active-preview');
-        activePreviewCell = cellEl; cellEl.classList.add('active-preview');
-        showPreview(container, 'PDF', './CTTTpdf.png');
-      }
-    }
+function renderDot(d, style) {
+  if (!d) return '';
+  if (style === 'surgery') return '<span class="dot-surgery"></span>';
+  let color, count;
+  if (typeof d === 'object') { color = d.color; count = d.count; }
+  else color = d;
+  const cm = {g:'dot-blue', b:'dot-blue', blue:'dot-blue', r:'dot-blue', red:'dot-blue', gray:'dot-gray', pend:'dot-pending'};
+  const cls = cm[color] || 'dot-gray';
+  if (count && count > 1) {
+    return `<span class="dot-wrap"><span class="dot ${cls}"></span><span class="dot-count">${count}</span></span>`;
+  }
+  return `<span class="dot ${cls}"></span>`;
+}
 
-    function addTh(row, text, cls) {
-      const th = document.createElement('th'); th.className = cls || ''; th.textContent = text; row.appendChild(th);
+function toggleGrp(key) { CL[key]=!CL[key]; buildBody(); syncMinimap(); }
+
+const tt = document.getElementById('tooltip');
+function showTip(e,name,start,end,dose) { tt.innerHTML=`<strong>${name}</strong><br>開始：${start}<br>終了：${end}${dose?'<br>用量：'+dose:''}`; tt.classList.add('show'); posTip(e); }
+function hideTip() { tt.classList.remove('show'); }
+function posTip(e) { tt.style.left=(e.clientX+12)+'px'; tt.style.top=(e.clientY-10)+'px'; }
+document.addEventListener('mousemove',e=>{ if(tt.classList.contains('show')) posTip(e); });
+
+function openDotDrawer(label,tpName,tpDate,status,dtype) {
+  document.getElementById('drawerTitle').textContent=label;
+  document.getElementById('drawerSub').textContent=`${tpName}  ·  ${tpDate}`;
+  const sm={g:'<span class="badge badge-ok">● protocol適合</span>',b:'<span class="badge badge-ok">● protocol適合</span>',blue:'<span class="badge badge-ok">● protocol適合</span>',gray:'<span class="badge badge-pend">◌ 未アップロード</span>',null:'<span class="badge badge-pend">— 対象外</span>'};
+  const st=sm[status]||sm['null'];
+  let extra='';
+  if(dtype==='edc'){extra=`
+    <div class="dsec"><div class="dsec-title">登録・基本情報</div>
+      <div class="fr"><span class="fl">患者ID</span><span class="fv" style="font-family:var(--mono)">M30011111</span></div>
+      <div class="fr"><span class="fl">登録日</span><span class="fv" style="font-family:var(--mono)">2024-06-24</span></div>
+      <div class="fr"><span class="fl">生年月日</span><span class="fv" style="font-family:var(--mono)">1968-03-15</span></div>
+      <div class="fr"><span class="fl">性別</span><span class="fv">男性</span></div>
+      <div class="fr"><span class="fl">疾患名</span><span class="fv">結腸・直腸癌</span></div>
+    </div>`;}
+  document.getElementById('drawerBody').innerHTML=`
+    <div class="dsec"><div class="dsec-title">データ状態</div>
+      <div class="fr"><span class="fl">ステータス</span><span class="fv">${st}</span></div>
+      <div class="fr"><span class="fl">項目名</span><span class="fv">${label}</span></div>
+      <div class="fr"><span class="fl">タイムポイント</span><span class="fv">${tpName}</span></div>
+    </div>
+    ${extra}`;
+  openDrawer();
+}
+
+function openBarDrawer(name,start,end,dose,color) {
+  document.getElementById('drawerTitle').textContent=name;
+  document.getElementById('drawerSub').textContent=`${start} 〜 ${end}`;
+  document.getElementById('drawerBody').innerHTML=`<div class="dsec"><div class="dsec-title">治療情報</div><div class="fr"><span class="fl">治療名</span><span class="fv">${name}</span></div></div>`;
+  openDrawer();
+}
+
+function openDrawer()  { document.getElementById('drawer').classList.add('open');    document.getElementById('drawerOverlay').classList.add('open'); }
+function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); }
+
+function syncMinimap() {
+  const scr=document.getElementById('tlScroll');
+  const thumb=document.getElementById('mmThumb');
+  const ratio=scr.clientWidth/scr.scrollWidth;
+  thumb.style.width=Math.max(30,ratio*100)+'%';
+  thumb.style.left=(scr.scrollLeft/scr.scrollWidth*100)+'%';
+}
+document.getElementById('tlScroll').addEventListener('scroll',()=>{ syncMinimap(); });
+
+function changeBaseline(v){
+  let targetId = '';
+  if(v === 'registration') targetId = 't0';
+  else if(v === 'treatment') targetId = 't1';
+  else if(v === 'recurrence') targetId = 't6';
+
+  if(targetId) {
+    const th = document.getElementById(`th-${targetId}`);
+    if(th) {
+      const scr = document.getElementById('tlScroll');
+      const offset = th.offsetLeft - 190;
+      scr.scrollTo({ left: offset, behavior: 'smooth' });
     }
-  </script>
+  }
+}
+
+buildHead();
+buildBody();
+setTimeout(()=>{ syncMinimap(); },150);
+window.addEventListener('resize',()=>{ syncMinimap(); });
+</script>
 </body>
-
 </html>
