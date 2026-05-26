@@ -434,6 +434,28 @@
             text-decoration: underline;
         }
 
+        .btn-kakunin {
+            display: inline-block;
+            margin-left: 8px;
+            font-size: 10px;
+            font-weight: 500;
+            font-family: 'Noto Sans JP', sans-serif;
+            padding: 2px 9px;
+            border-radius: 10px;
+            border: 1px solid #f59e0b;
+            background: #fef3c7;
+            color: #92400e;
+            cursor: pointer;
+            vertical-align: middle;
+            transition: background 0.12s, border-color 0.12s;
+            white-space: nowrap;
+        }
+
+        .btn-kakunin:hover {
+            background: #fde68a;
+            border-color: #d97706;
+        }
+
         .badge {
             display: inline-block;
             font-size: 11px;
@@ -769,7 +791,7 @@
 
     <script>
         const rawData = [
-            { id: 'M30011111', age: 56, gender: '男性', regdate: '2024-06-24', cohort: 'B1：Up-front Surgery を施行する場合', cancer: '結腸・直腸癌', survival: '生存', deathdate: '' },
+            { id: 'M30011111', age: 56, gender: '男性', regdate: '2024-06-24', cohort: 'A：根治治療不能であり、緩和的薬物療法', cancer: '結腸・直腸癌', survival: '生存', deathdate: '' },
             { id: 'M30022222', age: 75, gender: '男性', regdate: '2019-07-31', cohort: 'B1：Up-front Surgery を施行する場合', cancer: '大腸癌', survival: '生存', deathdate: '' },
             { id: 'M30033333', age: 81, gender: '男性', regdate: '2019-08-06', cohort: 'B2：術前化学療法・術前化学放射線療法を施行する場合', cancer: '胃癌', survival: '生存', deathdate: '' },
             { id: 'M30044444', age: 80, gender: '女性', regdate: '2019-08-30', cohort: 'A：根治治療不能であり、緩和的薬物療法', cancer: '乳癌', survival: '生存', deathdate: '' },
@@ -850,8 +872,11 @@
             data.forEach(d => {
                 const tr = document.createElement('tr');
                 tr.className = 'data-row';
+                const kakuninBtn = d.id === 'M30022222'
+                    ? `<button class="btn-kakunin" onclick="event.stopPropagation();window.location.href='./doc/chart/index.html'">確認待ち</button>`
+                    : '';
                 tr.innerHTML = `
-          <td class="col-id" onclick="navigateToParticipant('${d.id}')">${d.id}</td>
+          <td class="col-id" onclick="navigateToParticipant('${d.id}')">${d.id}${kakuninBtn}</td>
           <td>${d.age}</td>
           <td>${d.gender}</td>
           <td>${d.regdate}</td>
