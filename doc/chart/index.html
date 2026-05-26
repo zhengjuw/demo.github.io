@@ -164,17 +164,6 @@
             box-shadow: 0 2px 4px rgba(82, 196, 26, 0.2)
         }
 
-        .btn-cancel {
-            background: #f5f5f5;
-            color: #666;
-            border: 1px solid #d9d9d9
-        }
-
-        .btn-cancel:hover {
-            background: #eeeeee;
-            color: #333
-        }
-
         /* MAIN */
         #main-content {
             flex: 1;
@@ -281,7 +270,6 @@
             border: 1px solid #ffa39e;
         }
 
-        /* 判定用样式 */
         .radio-label {
             font-size: 14px;
             cursor: pointer;
@@ -473,17 +461,16 @@
     </div>
 
     <div id="content-bar">
-        <button class="back-btn" onclick="window.location.href='../index.html'">← 戻る</button>
+        <button class="back-btn" onclick="window.location.href='../../index.html'">← 戻る</button>
         <span class="bar-label">表示中：</span>
-        <span class="filter-tag cohort-tag">M30011111</span>
-        <span class="filter-tag patient-tag">56歳</span>
+        <span class="filter-tag cohort-tag">M30022222</span>
+        <span class="filter-tag patient-tag">75歳</span>
         <span class="filter-tag cohort-tag">男性</span>
-        <span class="filter-tag patient-tag">登録日：2024-06-24</span>
+        <span class="filter-tag patient-tag">登録日：2019-07-31</span>
         <span class="filter-tag cohort-tag">コホートB1：Up-front Surgery を施行する場合</span>
-        <span class="filter-tag patient-tag">結腸・直腸癌</span>
+        <span class="filter-tag patient-tag">大腸癌</span>
         <span class="filter-tag patient-tag">生存</span>
         <div class="spacer"></div>
-        <button class="btn-nav btn-cancel" id="nav-cancel">破棄</button>
         <button class="btn-nav btn-save" id="nav-save">保存</button>
     </div>
 
@@ -555,8 +542,6 @@
                     <tbody id="pop-table-body"></tbody>
                 </table>
             </div>
-
-
         </div>
     </div>
 
@@ -574,8 +559,8 @@
           <div class="modal-title" style="font-size:18px">${opts.icon || ''} ${opts.title}</div>
           <div class="modal-body">${opts.body}</div>
           <div class="modal-btns">
-            <button class="modal-btn modal-btn-cancel" id="modal-cancel-btn">${opts.cancelText || '破棄'}</button>
             <button class="modal-btn ${opts.confirmClass || 'modal-btn-confirm'}" id="modal-confirm-btn">${opts.confirmText || 'はい'}</button>
+            <button class="modal-btn modal-btn-cancel" id="modal-cancel-btn">${opts.cancelText || 'キャンセル'}</button>
           </div>
         </div>
       `;
@@ -584,8 +569,8 @@
             overlay.querySelector('#modal-cancel-btn').onclick = () => { overlay.remove(); if (opts.onCancel) opts.onCancel(); };
         }
 
-        const registrationDate = new Date('2024-06-24');
-        const surgeryDate = new Date('2024-07-25');
+        const registrationDate = new Date('2019-07-31');
+        const surgeryDate = new Date('2019-08-31');
         function addDays(baseDate, days) {
             const d = new Date(baseDate);
             d.setDate(d.getDate() + days);
@@ -597,13 +582,13 @@
         const surgery2Date = new Date(addDays(recurrenceDate, W(7)));
 
         function getTargetDateStr(name) {
-            if (name === '登録時') return '2024-06-24';
-            if (name === '手術時') return '2024-07-25';
+            if (name === '登録時') return '2019-07-31';
+            if (name === '手術時') return '2019-08-31';
             if (name === '再発時') return recurrenceDate.toISOString().split('T')[0];
             if (name === '初回再発後手術時') return surgery2Date.toISOString().split('T')[0];
             if (name === '初回再発後術後4w') return addDays(surgery2Date, W(4));
             const match = name.match(/術後(\d+)w/);
-            if (match) return addDays('2024-07-25', parseInt(match[1], 10) * 7);
+            if (match) return addDays('2019-08-31', parseInt(match[1], 10) * 7);
             return '';
         }
 
@@ -670,80 +655,136 @@
         }
 
         let patientData = [
-            { date: (() => { const b = bands.find(b => b.name === '登録時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '登録時 - 症例登録票' },
+            // 登録時 CT
             {
-                date: computeDotDate([
-                    { name: 'CT画像', actualDate: addDays(registrationDate, -7) },
-                    { name: 'CTレポート', actualDate: addDays(registrationDate, -7) },
-                    { name: 'MRI画像', actualDate: addDays(registrationDate, -7) },
-                    { name: 'MRIレポート', actualDate: addDays(registrationDate, -7) },
-                    { name: '内視鏡検査画像', actualDate: addDays(registrationDate, -7) },
-                    { name: '内視鏡検査レポート', actualDate: addDays(registrationDate, -7) }
-                ], '登録時'),
-                type: '臨床画像', status: 'green', visit: '登録時 - 臨床画像',
+                date: computeDotDate([{ name: 'CT画像', actualDate: addDays(registrationDate, -7) }, { name: 'CTレポート', actualDate: addDays(registrationDate, -7) }], '登録時'),
+                type: 'CT', status: 'green', visit: '登録時 - CT',
                 requiresJudgment: false, originalAssignedTP: '登録時',
                 files: [
                     { name: 'CT画像', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' },
-                    { name: 'CTレポート', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' },
+                    { name: 'CTレポート', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' }
+                ]
+            },
+            // 登録時 MRI
+            {
+                date: computeDotDate([{ name: 'MRI画像', actualDate: addDays(registrationDate, -7) }, { name: 'MRIレポート', actualDate: addDays(registrationDate, -7) }], '登録時'),
+                type: 'MRI', status: 'green', visit: '登録時 - MRI',
+                requiresJudgment: false, originalAssignedTP: '登録時',
+                files: [
                     { name: 'MRI画像', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' },
-                    { name: 'MRIレポート', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' },
+                    { name: 'MRIレポート', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' }
+                ]
+            },
+            // 登録時 内視鏡検査
+            {
+                date: computeDotDate([{ name: '内視鏡検査画像', actualDate: addDays(registrationDate, -7) }, { name: '内視鏡検査レポート', actualDate: addDays(registrationDate, -7) }], '登録時'),
+                type: '内視鏡検査', status: 'green', visit: '登録時 - 内視鏡検査',
+                requiresJudgment: false, originalAssignedTP: '登録時',
+                files: [
                     { name: '内視鏡検査画像', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' },
                     { name: '内視鏡検査レポート', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' }
                 ]
             },
-            { date: (() => { const b = bands.find(b => b.name === '手術時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '手術時 - コホートB：手術' },
-            { date: (() => { const b = bands.find(b => b.name === '術後4w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後4w - コホートB：再発（1m）' },
-            { date: (() => { const b = bands.find(b => b.name === '術後12w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後12w - コホートB：再発（3m）' },
-            { date: (() => { const b = bands.find(b => b.name === '術後24w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後24w - コホートB：再発（6m）' },
+            // PET-CT ドット
             {
-                date: computeDotDate([
-                    { name: 'CT画像', actualDate: addDays(surgeryDate, W(24)) },
-                    { name: 'CTレポート', actualDate: addDays(surgeryDate, W(24)) },
-                    { name: 'コンピュータX線撮影画像', actualDate: addDays(surgeryDate, W(24)) },
-                    { name: 'コンピュータX線撮影レポート', actualDate: addDays(surgeryDate, W(24)) },
-                    { name: '内視鏡検査画像', actualDate: addDays(surgeryDate, W(24)) },
-                ], '術後24w'),
-                type: '臨床画像', status: 'green', visit: '術後24w - 臨床画像',
+                date: computeDotDate([{ name: 'PET-CT画像', actualDate: addDays(registrationDate, -7) }, { name: 'PET-CTレポート', actualDate: addDays(registrationDate, -7) }], '登録時'),
+                type: 'PET-CT', status: 'green', visit: '登録時 - PET-CT',
+                requiresJudgment: false, originalAssignedTP: '登録時',
+                files: [
+                    { name: 'PET-CT画像', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' },
+                    { name: 'PET-CTレポート', actualDate: addDays(registrationDate, -7), isDelayed: false, assignedTP: '登録時', reason: '予定通り' }
+                ]
+            },
+            {
+                date: computeDotDate([{ name: 'PET-CT画像', actualDate: addDays(surgeryDate, W(24)) }, { name: 'PET-CTレポート', actualDate: addDays(surgeryDate, W(24)) }], '術後24w'),
+                type: 'PET-CT', status: 'green', visit: '術後24w - PET-CT',
+                requiresJudgment: false, originalAssignedTP: '術後24w',
+                files: [
+                    { name: 'PET-CT画像', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' },
+                    { name: 'PET-CTレポート', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' }
+                ]
+            },
+            {
+                date: computeDotDate([{ name: 'PET-CT画像', actualDate: addDays(surgeryDate, W(48)) }, { name: 'PET-CTレポート', actualDate: addDays(surgeryDate, W(48)) }], '術後48w'),
+                type: 'PET-CT', status: 'green', visit: '術後48w - PET-CT',
+                requiresJudgment: false, originalAssignedTP: '術後48w',
+                files: [
+                    { name: 'PET-CT画像', actualDate: addDays(surgeryDate, W(48)), isDelayed: false, assignedTP: '術後48w', reason: '予定通り' },
+                    { name: 'PET-CTレポート', actualDate: addDays(surgeryDate, W(48)), isDelayed: false, assignedTP: '術後48w', reason: '予定通り' }
+                ]
+            },
+            {
+                date: computeDotDate([{ name: 'PET-CT画像', actualDate: recurrenceDate.toISOString().split('T')[0] }, { name: 'PET-CTレポート', actualDate: recurrenceDate.toISOString().split('T')[0] }], '再発時'),
+                type: 'PET-CT', status: 'green', visit: '再発時 - PET-CT',
+                requiresJudgment: false, originalAssignedTP: '再発時',
+                files: [
+                    { name: 'PET-CT画像', actualDate: recurrenceDate.toISOString().split('T')[0], isDelayed: false, assignedTP: '再発時', reason: '予定通り' },
+                    { name: 'PET-CTレポート', actualDate: recurrenceDate.toISOString().split('T')[0], isDelayed: false, assignedTP: '再発時', reason: '予定通り' }
+                ]
+            },
+            // 術後24w CT
+            {
+                date: computeDotDate([{ name: 'CT画像', actualDate: addDays(surgeryDate, W(24)) }, { name: 'CTレポート', actualDate: addDays(surgeryDate, W(24)) }], '術後24w'),
+                type: 'CT', status: 'green', visit: '術後24w - CT',
                 requiresJudgment: false, originalAssignedTP: '術後24w',
                 files: [
                     { name: 'CT画像', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' },
-                    { name: 'CTレポート', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' },
+                    { name: 'CTレポート', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' }
+                ]
+            },
+            // 術後24w コンピュータX線撮影
+            {
+                date: computeDotDate([{ name: 'コンピュータX線撮影画像', actualDate: addDays(surgeryDate, W(24)) }, { name: 'コンピュータX線撮影レポート', actualDate: addDays(surgeryDate, W(24)) }], '術後24w'),
+                type: 'コンピュータX線撮影', status: 'green', visit: '術後24w - コンピュータX線撮影',
+                requiresJudgment: false, originalAssignedTP: '術後24w',
+                files: [
                     { name: 'コンピュータX線撮影画像', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' },
-                    { name: 'コンピュータX線撮影レポート', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' },
+                    { name: 'コンピュータX線撮影レポート', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' }
+                ]
+            },
+            // 術後24w 内視鏡検査
+            {
+                date: computeDotDate([{ name: '内視鏡検査画像', actualDate: addDays(surgeryDate, W(24)) }], '術後24w'),
+                type: '内視鏡検査', status: 'green', visit: '術後24w - 内視鏡検査',
+                requiresJudgment: false, originalAssignedTP: '術後24w',
+                files: [
                     { name: '内視鏡検査画像', actualDate: addDays(surgeryDate, W(24)), isDelayed: false, assignedTP: '術後24w', reason: '予定通り' }
                 ]
             },
-            { date: (() => { const b = bands.find(b => b.name === '術後36w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後36w - コホートB：再発（9m）' },
-            { date: (() => { const b = bands.find(b => b.name === '術後48w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後48w - コホートB：再発（12m）' },
-
+            // 術後48w MRI
             {
-                date: computeDotDate([
-                    { name: 'MRI画像', actualDate: addDays(surgeryDate, W(48)) },
-                    { name: 'MRIレポート', actualDate: addDays(surgeryDate, W(48)) },
-                    { name: '内視鏡検査画像', actualDate: addDays(surgeryDate, W(48)) },
-                    { name: '内視鏡検査レポート', actualDate: addDays(surgeryDate, W(48)) }
-                ], '術後48w'),
-                type: '臨床画像', status: 'green', visit: '術後48w - 臨床画像',
+                date: computeDotDate([{ name: 'MRI画像', actualDate: addDays(surgeryDate, W(48)) }, { name: 'MRIレポート', actualDate: addDays(surgeryDate, W(48)) }], '術後48w'),
+                type: 'MRI', status: 'green', visit: '術後48w - MRI',
                 requiresJudgment: false, originalAssignedTP: '術後48w',
                 files: [
                     { name: 'MRI画像', actualDate: addDays(surgeryDate, W(48)), isDelayed: false, assignedTP: '術後48w', reason: '予定通り' },
-                    { name: 'MRIレポート', actualDate: addDays(surgeryDate, W(48)), isDelayed: false, assignedTP: '術後48w', reason: '予定通り' },
+                    { name: 'MRIレポート', actualDate: addDays(surgeryDate, W(48)), isDelayed: false, assignedTP: '術後48w', reason: '予定通り' }
+                ]
+            },
+            // 術後48w 内視鏡検査
+            {
+                date: computeDotDate([{ name: '内視鏡検査画像', actualDate: addDays(surgeryDate, W(48)) }, { name: '内視鏡検査レポート', actualDate: addDays(surgeryDate, W(48)) }], '術後48w'),
+                type: '内視鏡検査', status: 'green', visit: '術後48w - 内視鏡検査',
+                requiresJudgment: false, originalAssignedTP: '術後48w',
+                files: [
                     { name: '内視鏡検査画像', actualDate: addDays(surgeryDate, W(48)), isDelayed: false, assignedTP: '術後48w', reason: '予定通り' },
                     { name: '内視鏡検査レポート', actualDate: addDays(surgeryDate, W(48)), isDelayed: false, assignedTP: '術後48w', reason: '予定通り' }
                 ]
             },
+            // 術後48w CT (遅延・要判定)
             {
                 date: addDays(surgeryDate, W(48) + 35),
-                type: '臨床画像', status: 'red', visit: '臨床画像',
+                type: 'CT', status: 'red', visit: 'CT',
                 requiresJudgment: true, originalAssignedTP: '術後48w',
                 files: [
                     { name: 'CT画像', actualDate: addDays(surgeryDate, W(48) + 35), isDelayed: true, assignedTP: '', reason: '', originalDate: addDays(surgeryDate, W(48) + 35) },
                     { name: 'CTレポート', actualDate: addDays(surgeryDate, W(48) + 35), isDelayed: true, assignedTP: '', reason: '', originalDate: addDays(surgeryDate, W(48) + 35) }
                 ]
             },
+            // 術後48w MRI (遅延・要判定)
             {
                 date: addDays(surgeryDate, W(48) + 40),
-                type: '臨床画像', status: 'red', visit: '臨床画像',
+                type: 'MRI', status: 'red', visit: 'MRI',
                 requiresJudgment: true, originalAssignedTP: '術後48w',
                 files: [
                     { name: 'MRI画像', actualDate: addDays(surgeryDate, W(48) + 40), isDelayed: true, assignedTP: '', reason: '', originalDate: addDays(surgeryDate, W(48) + 40) },
@@ -751,27 +792,17 @@
                 ]
             },
 
-            { date: (() => { const b = bands.find(b => b.name === '再発時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '再発時 - 初回再発確認' },
-            {
-                date: (() => { const b = bands.find(b => b.name === '再発時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(),
-                type: '臨床画像', status: 'missing_expected', visit: '再発時 - 臨床画像 (未取得)',
-                requiresJudgment: false, isMissingExpected: true, originalAssignedTP: '再発時',
-                files: []
-            },
-            { date: (() => { const b = bands.find(b => b.name === '初回再発後手術時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '手術時 - 初回再発後手術' },
             {
                 date: (() => { const b = bands.find(b => b.name === '初回再発後手術時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(),
-                type: '病理画像', status: 'green', visit: '手術時 - 病理画像（初回再発後）',
+                type: 'コンピュータX線撮影', status: 'green', visit: '手術時 - 病理画像（初回再発後）',
                 requiresJudgment: false, originalAssignedTP: '初回再発後手術時',
                 files: [
                     { name: 'HE染色', actualDate: addDays(surgery2Date, 0), isDelayed: false, assignedTP: '初回再発後手術時', reason: '予定通り' }
                 ]
             },
-            { date: (() => { const b = bands.find(b => b.name === '初回再発後術後4w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後4w - 初回再発後術後4w' },
-            { date: (() => { const b = bands.find(b => b.name === '術後720w'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(), type: 'EDC Visit', status: 'green', visit: '術後720w - 長期追跡調査' },
             {
                 date: (() => { const b = bands.find(b => b.name === '手術時'); const mid = new Date((new Date(b.startDate).getTime() + new Date(b.endDate).getTime()) / 2); return mid.toISOString().split('T')[0]; })(),
-                type: '病理画像', status: 'green', visit: '手術時 - 病理画像',
+                type: 'コンピュータX線撮影', status: 'green', visit: '手術時 - 病理画像',
                 requiresJudgment: false, originalAssignedTP: '手術時',
                 files: [
                     { name: 'HE染色', actualDate: addDays(surgeryDate, 0), isDelayed: false, assignedTP: '手術時', reason: '予定通り' }
@@ -930,25 +961,13 @@
                 dataZoom: [{ type: 'slider', show: true, xAxisIndex: [0], bottom: 15, height: 24, start: 0, end: 20 }, { type: 'inside', xAxisIndex: [0], zoomOnMouseWheel: true, moveOnMouseMove: true }],
                 xAxis: [{ type: 'time', position: 'bottom', min: xMin, max: xMax, axisLabel: { show: false }, splitLine: { show: false }, axisLine: { lineStyle: { color: '#e8ecf2' } }, axisTick: { show: false } }],
                 yAxis: [
-                    { type: 'category', data: ['EDC Visit', '臨床画像', '病理画像'], inverse: true, boundaryGap: true, axisLine: { show: false }, axisLabel: { color: '#1e3a5f', fontWeight: 'bold', margin: 16, fontSize: 13 } },
+                    { type: 'category', data: ['臨床画像', 'PET-CT', 'CT', 'MRI', 'コンピュータX線撮影', '内視鏡検査'], inverse: true, boundaryGap: true, axisLine: { show: false }, axisLabel: { color: '#1e3a5f', fontWeight: 'bold', margin: 16, fontSize: 13 } },
                     { type: 'value', min: 0, max: 1, inverse: true, show: false }
                 ],
                 series: [
                     {
                         type: 'scatter', yAxisIndex: 0, symbolSize: 15,
                         data: patientData.map((d, i) => {
-                            if (d.status === 'missing_expected') {
-                                return {
-                                    value: [d.date, d.type], idx: i,
-                                    symbol: 'circle', symbolSize: 18,
-                                    itemStyle: {
-                                        color: 'transparent',
-                                        borderColor: '#aaaaaa',
-                                        borderWidth: 2,
-                                        borderType: 'dashed'
-                                    }
-                                };
-                            }
                             let c = '#52c41a';
                             if (d.status === 'red') c = '#ff4d4f';
                             if (d.status === 'yellow') c = '#faad14';
@@ -970,9 +989,6 @@
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        //  UI Interaction Logic
-        // ═══════════════════════════════════════════════════════════
         window.updateRowState = function (i) {
             const checkedObj = document.querySelector(`input[name="dec-${i}"]:checked`);
             if (!checkedObj) return;
@@ -993,7 +1009,6 @@
                     </button>
                 `;
             } else if (radioVal === 'exclude') {
-                // ★ 修正: 除外理由の選択プルダウンを削除。コメント入力は任意（必須ではない）。
                 detailCell.innerHTML = `
                     <input type="text" id="inp-excl-comm-${i}" class="detail-input" placeholder="コメント（任意）" oninput="checkSingleValid(${i})">
                     <button class="single-save-btn" id="save-btn-${i}" onclick="saveSingleDecision(${i})">
@@ -1004,23 +1019,19 @@
             checkSingleValid(i);
         };
 
-
         window.checkSingleValid = function (i) {
             const checkedObj = document.querySelector(`input[name="dec-${i}"]:checked`);
             const btn = document.getElementById(`save-btn-${i}`);
             if (!checkedObj || !btn) return;
 
             let valid = false;
-
             if (checkedObj.value === 'include') {
                 const tp = document.getElementById(`sel-tp-${i}`);
                 const rs = document.getElementById(`sel-rs-${i}`);
                 valid = !!(tp && rs && tp.value && rs.value);
             } else {
-                // ★ 修正: 除外の場合はラジオボタンが選択されていれば常に有効（コメントは任意）
                 valid = true;
             }
-
             btn.disabled = !valid;
         };
 
@@ -1058,16 +1069,11 @@
                 });
 
                 const targetBand = bands.find(b => b.name === tpVal);
-
                 if (targetBand) {
                     const yellowDate = targetBand.endDate;
-
                     const existingYellowNode = patientData.find(d =>
-                        d.status === 'yellow' &&
-                        d.type === pd.type &&
-                        d.visit.includes(tpVal)
+                        d.status === 'yellow' && d.type === pd.type && d.visit.includes(tpVal)
                     );
-
                     if (existingYellowNode) {
                         existingYellowNode.files.push(f);
                     } else {
@@ -1083,9 +1089,7 @@
                 }
 
             } else {
-                // ★ 修正: 除外理由の選択プルダウンを削除したため、excludeReasonは記録しない
                 const commVal = document.getElementById(`inp-excl-comm-${i}`) ? document.getElementById(`inp-excl-comm-${i}`).value.trim() : '';
-
                 auditLog.push({
                     actionType: 'exclude',
                     visit: pd.visit,
@@ -1100,30 +1104,19 @@
                 });
             }
 
-            // 从红点中移除当前文件
             pd.files.splice(i, 1);
 
-            // 如果红点已经没有文件了，则删除红点
             if (pd.files.length === 0) {
                 const idx = patientData.indexOf(pd);
-                if (idx !== -1) {
-                    patientData.splice(idx, 1);
-                }
+                if (idx !== -1) patientData.splice(idx, 1);
                 closePopup();
             } else {
-                // 重新刷新当前popup
                 popup.style.display = 'none';
                 draw();
-
                 setTimeout(() => {
                     activeDataIndex = patientData.indexOf(pd);
-
                     if (activeDataIndex !== -1) {
-                        myChart.dispatchAction({
-                            type: 'highlight',
-                            seriesIndex: 0,
-                            dataIndex: activeDataIndex
-                        });
+                        myChart.dispatchAction({ type: 'highlight', seriesIndex: 0, dataIndex: activeDataIndex });
                     }
                 }, 50);
             }
@@ -1132,130 +1125,9 @@
             draw();
         };
 
-        window.checkAllValid = function () {
-            if (activeDataIndex === null) return;
-            const pd = patientData[activeDataIndex];
-            let allValid = true;
-            let hasJudged = false;
-
-            pd.files.forEach((f, i) => {
-                if (pd.requiresJudgment && f.isDelayed && !f.isMissing) {
-                    hasJudged = true;
-                    const checkedObj = document.querySelector(`input[name="dec-${i}"]:checked`);
-                    if (!checkedObj) {
-                        allValid = false;
-                        return;
-                    }
-                    const radioVal = checkedObj.value;
-                    if (radioVal === 'include') {
-                        const tp = document.getElementById(`sel-tp-${i}`);
-                        const rs = document.getElementById(`sel-rs-${i}`);
-                        if (!tp || !rs || !tp.value || !rs.value) allValid = false;
-                    }
-                    // ★ 修正: excludeの場合は常に有効（コメントは任意）
-                }
-            });
-
-            document.getElementById('pop-confirm-btn').disabled = !(hasJudged && allValid);
-        };
-
-        window.confirmDecisions = function () {
-            if (activeDataIndex === null) return;
-            const pd = patientData[activeDataIndex];
-            const movedFilesMap = {};
-            const remainingFiles = [];
-            let hasRemainingMissing = false;
-
-            const now = new Date();
-            const ts = now.toLocaleDateString('ja-JP') + ' ' + now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-
-            pd.files.forEach((f, i) => {
-                if (pd.requiresJudgment && f.isDelayed && !f.isMissing) {
-                    const radioVal = document.querySelector(`input[name="dec-${i}"]:checked`).value;
-                    if (radioVal === 'include') {
-                        const tpVal = document.getElementById(`sel-tp-${i}`).value;
-                        const rsVal = document.getElementById(`sel-rs-${i}`).value;
-                        f.assignedTP = tpVal;
-                        f.reason = rsVal;
-                        f.modifiedBy = 'Dr. 山田';
-                        if (!movedFilesMap[tpVal]) movedFilesMap[tpVal] = [];
-                        movedFilesMap[tpVal].push(f);
-                    } else if (radioVal === 'exclude') {
-                        // ★ 修正: 除外理由の選択プルダウンを削除。コメントは任意。
-                        const commVal = document.getElementById(`inp-excl-comm-${i}`) ? document.getElementById(`inp-excl-comm-${i}`).value.trim() : '';
-
-                        auditLog.push({
-                            actionType: 'exclude',
-                            visit: pd.visit,
-                            type: pd.type,
-                            comment: commVal || '—',
-                            timestamp: ts,
-                            operator: 'Dr. 山田',
-                            files: [{ name: f.name, actualDate: f.actualDate || '未取得' }]
-                        });
-                        // 被除外的文件不加入 remainingFiles
-                    }
-                } else {
-                    remainingFiles.push(f);
-                    if (f.isMissing) hasRemainingMissing = true;
-                }
-            });
-
-            // 记录 Include 到 AuditLog 并分配到新节点
-            for (const tpName in movedFilesMap) {
-                auditLog.push({
-                    actionType: 'include',
-                    visit: pd.visit,
-                    type: pd.type,
-                    operator: 'Dr. 山田',
-                    timestamp: ts,
-                    files: movedFilesMap[tpName].map(f => ({ name: f.name, actualDate: f.actualDate, assignedTP: f.assignedTP, reason: f.reason }))
-                });
-
-                const targetBand = bands.find(b => b.name === tpName);
-                if (targetBand) {
-                    const yellowDate = targetBand.endDate;
-                    const existingYellowNode = patientData.find(d =>
-                        d.status === 'yellow' && d.type === pd.type && d.visit.includes(tpName));
-                    if (existingYellowNode) {
-                        existingYellowNode.files.push(...movedFilesMap[tpName]);
-                    } else {
-                        patientData.push({
-                            date: yellowDate, type: pd.type, status: 'yellow',
-                            visit: `${tpName} - ${pd.type}`,
-                            requiresJudgment: false, files: movedFilesMap[tpName]
-                        });
-                    }
-                }
-            }
-
-            // 更新原节点状态
-            pd.files = remainingFiles;
-            if (pd.files.length === 0) {
-                const selfIdx = patientData.indexOf(pd);
-                if (selfIdx !== -1) patientData.splice(selfIdx, 1);
-            } else if (hasRemainingMissing) {
-                pd.status = 'red'; pd.requiresJudgment = false;
-                pd.date = computeDotDate(remainingFiles, pd.originalAssignedTP);
-            } else {
-                const selfIdx = patientData.indexOf(pd);
-                if (selfIdx !== -1) patientData.splice(selfIdx, 1);
-            }
-
-            activeDataIndex = null;
-            updateAuditBadge();
-            closePopup();
-            draw();
-        };
-
-        // ═══════════════════════════════════════════════════════════
-        //  CHART CLICK
-        // ═══════════════════════════════════════════════════════════
         myChart.on('click', (params) => {
             if (params.componentType === 'series' && params.seriesIndex === 0) {
                 const pd = patientData[params.data.idx];
-
-                if (pd.isMissingExpected) return;
 
                 if (pd.files) {
                     activeDataIndex = params.data.idx;
@@ -1313,7 +1185,7 @@
                                     <tr>
                                         <td>${f.name}</td>
                                         <td>${f.actualDate || '未取得'}</td>
-                                        <td >
+                                        <td>
                                             <div style="color:#64748b; font-size: 13px;">
                                                 判定済: ${tpCell} <br>
                                                 <span style="font-size:12px;">理由: ${f.reason || '—'}</span>
@@ -1324,7 +1196,6 @@
                         });
                     }
                     tbody.innerHTML = rowsHtml;
-
                     popup.style.display = 'block';
                 } else {
                     closePopup();
@@ -1371,22 +1242,11 @@
         window.addEventListener('resize', () => { myChart.resize(); closePopup(); updateBandOverlays(); });
         draw();
 
-        const navSave = document.getElementById('nav-save');
-        const navCancel = document.getElementById('nav-cancel');
-
-        navSave.onclick = () => {
+        document.getElementById('nav-save').onclick = () => {
             showModal({
                 icon: '💾', title: '変更を保存しますか？', body: ' ',
-                confirmText: '保存して戻る', confirmClass: 'modal-btn-confirm', cancelText: '破棄',
+                confirmText: '保存して戻る', confirmClass: 'modal-btn-confirm', cancelText: 'キャンセル',
                 onConfirm: () => { sessionStorage.setItem('saveSuccess', 'true'); window.location.href = '../index.html'; }
-            });
-        };
-
-        navCancel.onclick = () => {
-            showModal({
-                icon: '⚠️', title: '変更を破棄しますか？', body: ' ',
-                confirmText: 'YES', confirmClass: 'modal-btn-cancel', cancelText: 'No',
-                onConfirm: () => { window.location.href = '../index.html'; }
             });
         };
 
