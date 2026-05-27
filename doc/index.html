@@ -248,6 +248,16 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 
 .tooltip { position:fixed; background:var(--text-dark); color:#fff; font-size:11px; padding:6px 10px; border-radius:var(--radius); pointer-events:none; z-index:500; white-space:nowrap; opacity:0; transition:opacity 0.1s; line-height:1.7; }
 .tooltip.show { opacity:1; }
+.btn-dicom {
+  padding: 7px 16px; border-radius: var(--radius);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  background: var(--blue); color: #fff;
+  border: none; font-family: var(--font);
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 1px 4px rgba(61,126,255,0.25);
+}
+.btn-dicom:hover { background: var(--blue-mid); box-shadow: 0 2px 8px rgba(61,126,255,0.35); }
 </style>
 </head>
 <body>
@@ -496,7 +506,7 @@ document.addEventListener('mousemove',e=>{ if(tt.classList.contains('show')) pos
 function openDotDrawer(label,tpName,tpDate,status,dtype) {
   document.getElementById('drawerTitle').textContent=label;
   document.getElementById('drawerSub').textContent=`${tpName}  ·  ${tpDate}`;
-  const sm={g:'<span class="badge badge-ok">● protocol適合</span>',b:'<span class="badge badge-ok">● protocol適合</span>',blue:'<span class="badge badge-ok">● protocol適合</span>',gray:'<span class="badge badge-pend">◌ 未アップロード</span>',null:'<span class="badge badge-pend">— 対象外</span>'};
+  const sm={g:'<span class="badge badge-ok">● データあり</span>',b:'<span class="badge badge-ok">● データあり</span>',blue:'<span class="badge badge-ok">● データあり</span>',gray:'<span class="badge badge-pend">◌ 未アップロード</span>',null:'<span class="badge badge-pend">— 対象外</span>'};
   const st=sm[status]||sm['null'];
   let extra='';
   if(dtype==='edc'){extra=`
@@ -507,20 +517,61 @@ function openDotDrawer(label,tpName,tpDate,status,dtype) {
       <div class="fr"><span class="fl">性別</span><span class="fv">男性</span></div>
       <div class="fr"><span class="fl">疾患名</span><span class="fv">結腸・直腸癌</span></div>
     </div>`;}
+  let dicomBtn = '';
+  if(dtype==='img' && status !== 'null' && status !== null && status !== 'gray'){
+    dicomBtn = `<div style="display:flex;justify-content:flex-end;margin-top:14px;">
+      <button class="btn btn-dicom" onclick="window.open('dicom-viewer.html','_blank')">画像閲覧</button>
+    </div>`;}
   document.getElementById('drawerBody').innerHTML=`
     <div class="dsec"><div class="dsec-title">データ状態</div>
-      <div class="fr"><span class="fl">ステータス</span><span class="fv">${st}</span></div>
       <div class="fr"><span class="fl">項目名</span><span class="fv">${label}</span></div>
       <div class="fr"><span class="fl">タイムポイント</span><span class="fv">${tpName}</span></div>
+      <div class="fr"><span class="fl">収集日</span><span class="fv" style="font-family:var(--mono)">${tpDate}</span></div>
     </div>
-    ${extra}`;
+    ${extra}${dicomBtn}`;
   openDrawer();
 }
+
+// Treatment line metadata keyed by barLabel
+const TREATMENT_META = {
+  'FULVESTRANT (治療ライン 1)': {
+    drug: 'フルベストラント (FULVESTRANT)',
+    regimen: 'フルベストラント単剤療法',
+    purpose: '転移性乳癌に対するホルモン療法（ER陽性）',
+    line: '1st line',
+    route: '筋肉内注射',
+    dose: '500 mg/月',
+  }
+};
 
 function openBarDrawer(name,start,end,dose,color) {
   document.getElementById('drawerTitle').textContent=name;
   document.getElementById('drawerSub').textContent=`${start} 〜 ${end}`;
-  document.getElementById('drawerBody').innerHTML=`<div class="dsec"><div class="dsec-title">治療情報</div><div class="fr"><span class="fl">治療名</span><span class="fv">${name}</span></div></div>`;
+  const meta = TREATMENT_META[name] || {};
+  const drugName   = meta.drug    || name;
+  const regimen    = meta.regimen || '—';
+  const purpose    = meta.purpose || '—';
+  const line       = meta.line    || '—';
+  const route      = meta.route   || '—';
+  const doseVal    = meta.dose    || dose || '—';
+  document.getElementById('drawerBody').innerHTML=`
+    <div class="dsec">
+      <div class="dsec-title">治療ライン情報</div>
+      <div class="fr"><span class="fl">薬剤名</span><span class="fv">${drugName}</span></div>
+      <div class="fr"><span class="fl">レジメン</span><span class="fv">${regimen}</span></div>
+      <div class="fr"><span class="fl">治療ライン</span><span class="fv">${line}</span></div>
+      <div class="fr"><span class="fl">投与経路</span><span class="fv">${route}</span></div>
+      <div class="fr"><span class="fl">用量</span><span class="fv" style="font-family:var(--mono)">${doseVal}</span></div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-title">期間</div>
+      <div class="fr"><span class="fl">開始日</span><span class="fv" style="font-family:var(--mono)">${start}</span></div>
+      <div class="fr"><span class="fl">終了日</span><span class="fv" style="font-family:var(--mono)">${end}</span></div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-title">治療目的</div>
+      <div style="font-size:12px;color:var(--text-dark);line-height:1.7;padding-top:4px;">${purpose}</div>
+    </div>`;
   openDrawer();
 }
 
