@@ -520,7 +520,7 @@ function openDotDrawer(label,tpName,tpDate,status,dtype) {
   let dicomBtn = '';
   if(dtype==='img' && status !== 'null' && status !== null && status !== 'gray'){
     dicomBtn = `<div style="display:flex;justify-content:flex-end;margin-top:14px;">
-      <button class="btn btn-dicom" onclick="window.open('dicom-viewer.html','_blank')">画像閲覧</button>
+      <button class="btn btn-dicom" onclick="">画像閲覧</button>
     </div>`;}
   document.getElementById('drawerBody').innerHTML=`
     <div class="dsec"><div class="dsec-title">データ状態</div>
