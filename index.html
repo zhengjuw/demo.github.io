@@ -873,7 +873,7 @@
                 const tr = document.createElement('tr');
                 tr.className = 'data-row';
                 const kakuninBtn = d.id === 'M30022222'
-                    ? `<button class="btn-kakunin" onclick="event.stopPropagation();window.location.href='./doc/chart/index.html'">確認待ち</button>`
+                    ? `<span class="btn-kakunin">確認待ち</span>`
                     : '';
                 tr.innerHTML = `
           <td class="col-id" onclick="navigateToParticipant('${d.id}')">${d.id}${kakuninBtn}</td>
@@ -1159,6 +1159,11 @@
             // 示例：点击指定ID跳转
             if (id === 'M30011111') {
                 window.location.href = './doc/index.html';
+                return;
+            }
+
+            if (id === 'M30022222') {
+                window.location.href = './doc/chart/index.html';
                 return;
             }
 
