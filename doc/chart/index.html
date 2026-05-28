@@ -164,6 +164,37 @@
             box-shadow: 0 2px 4px rgba(82, 196, 26, 0.2)
         }
 
+        /* 基準日選択用スタイル */
+        .baseline-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 12px;
+        }
+
+        .pt-label {
+            font-size: 12px;
+            color: var(--text-light);
+            white-space: nowrap;
+        }
+
+        .baseline-select {
+            height: 28px;
+            padding: 0 8px;
+            border: 1px solid var(--sidebar-border);
+            border-radius: 4px;
+            background: var(--bg);
+            color: var(--text-dark);
+            font-size: 12px;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .baseline-select:hover {
+            background: var(--blue-light);
+        }
+
         /* MAIN */
         #main-content {
             flex: 1;
@@ -470,6 +501,17 @@
         <span class="filter-tag cohort-tag">コホートB1：Up-front Surgery を施行する場合</span>
         <span class="filter-tag patient-tag">大腸癌</span>
         <span class="filter-tag patient-tag">生存</span>
+        
+        <div class="baseline-wrap">
+            <span class="pt-label">基準日：</span>
+            <select class="baseline-select" onchange="changeBaseline(this.value)">
+                <option value="登録時">登録時</option>
+                <option value="手術時">手術時</option>
+                <option value="再発時">再発時</option>
+                <option value="初回再発後手術時">初回再発後手術時</option>
+            </select>
+        </div>
+
         <div class="spacer"></div>
         <button class="btn-nav btn-save" id="nav-save">保存</button>
     </div>
@@ -905,6 +947,39 @@
             activeDataIndex = null;
         }
 
+        // 基準日変更時のチャート移動処理（選択日～次の基準日）
+        window.changeBaseline = function (val) {
+            // プルダウンの並び順を定義
+            const baselineOrder = ['登録時', '手術時', '再発時', '初回再発後手術時'];
+            const currentIndex = baselineOrder.indexOf(val);
+            
+            // 開始日を取得
+            const startDateStr = getTargetDateStr(val);
+            if (!startDateStr) return;
+            const startD = new Date(startDateStr);
+            startD.setDate(startD.getDate() - 7); // 左側に7日間のバッファを持たせる
+
+            let endD;
+            // 「次の基準日」が存在するか確認
+            if (currentIndex !== -1 && currentIndex < baselineOrder.length - 1) {
+                const nextVal = baselineOrder[currentIndex + 1];
+                const nextDateStr = getTargetDateStr(nextVal);
+                endD = new Date(nextDateStr);
+                endD.setDate(endD.getDate() + 7); // 右側に7日間のバッファを持たせる
+            } else {
+                // 最後の基準日（初回再発後手術时）の場合、適当な未来（例: 12週間後）をセット
+                endD = new Date(startDateStr);
+                endD.setDate(endD.getDate() + 84); // +12weeks
+            }
+
+            // EChartsのdataZoomアクションを発火して表示範囲を移動
+            myChart.dispatchAction({
+                type: 'dataZoom',
+                startValue: startD.getTime(),
+                endValue: endD.getTime()
+            });
+        };
+
         function draw() {
             const xMin = addDays(registrationDate, -W(10));
             const xMax = bands[bands.length - 1].endDate;
@@ -1246,7 +1321,7 @@
             showModal({
                 icon: '💾', title: '変更を保存しますか？', body: ' ',
                 confirmText: '保存して戻る', confirmClass: 'modal-btn-confirm', cancelText: 'キャンセル',
-                onConfirm: () => { sessionStorage.setItem('saveSuccess', 'true'); window.location.href = '../../index.html'; }
+                onConfirm: () => { sessionStorage.setItem('saveSuccess', 'true'); window.location.href = '../index.html'; }
             });
         };
 
