@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CT DICOM Viewer</title>
+  <link rel="stylesheet" href="./viewer.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../index.html" aria-label="Back">‹</a>
+    <div>
+      <div class="eyebrow">DICOM Viewer</div>
+      <h1>CT Image Review</h1>
+    </div>
+    <div class="spacer"></div>
+    <input id="localFileInput" class="hidden-input" type="file" webkitdirectory multiple>
+    <button id="resetBtn" class="tool-button" type="button">Reset</button>
+  </header>
+
+  <nav class="workbar" aria-label="Viewer tools">
+    <div class="viewer-tab"><span>▦</span><strong>UNKNOWN</strong><button type="button">×</button></div>
+    <div class="work-status">Research viewer prototype</div>
+  </nav>
+
+  <main class="viewer-shell">
+    <aside class="side-panel">
+      <div class="patient-card">
+        <div class="explorer-filters">
+          <select id="patientSelect" aria-label="Patient filter"><option>UNKNOWN</option><option>M30011111</option></select>
+          <select id="examTypeSelect" aria-label="Exam type"></select>
+          <select id="timepointSelect" aria-label="Timepoint"></select>
+        </div>
+        <button id="localOpenBtn" class="upload-folder-button" type="button">Upload DICOM Folder</button>
+        <div class="patient-row"><span>Age / Sex</span><strong>56 / Male</strong></div>
+        <div class="patient-row"><span>Registered</span><strong>2024-06-24</strong></div>
+        <div class="patient-row"><span>Disease</span><strong>Colorectal Ca.</strong></div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-title" id="seriesSectionTitle">CT Series</div>
+        <div id="seriesList" class="series-list"></div>
+      </div>
+    </aside>
+
+    <section class="canvas-wrap" id="canvasWrap">
+      <div class="viewport-tab">
+        <span>CT</span>
+        <strong id="viewportSeriesTitle">SN-0015</strong>
+      </div>
+      <canvas id="dicomCanvas"></canvas>
+      <div class="overlay top-left" id="overlayLeft"></div>
+      <div class="overlay top-right" id="overlayRight"></div>
+      <div class="overlay bottom-left" id="overlayBottom"></div>
+      <div class="loading" id="loading">Loading DICOM series...</div>
+    </section>
+
+    <aside class="right-toolbar">
+      <button class="rail-button active" type="button" data-panel="display">Display</button>
+      <button class="rail-button" type="button" data-panel="imageTools">Image Tools</button>
+      <button class="rail-button" type="button" data-panel="measure">Draw & Measure</button>
+      <button class="rail-button" type="button" data-panel="attributes">DICOM Attributes</button>
+    </aside>
+  </main>
+
+  <section class="tool-drawer" id="toolDrawer" aria-label="Tool panel">
+    <div class="tool-drawer-head">
+      <strong id="toolDrawerTitle">Image Tools</strong>
+      <button id="toolDrawerClose" type="button">×</button>
+    </div>
+    <div id="toolDrawerBody" class="tool-drawer-body"></div>
+  </section>
+
+  <div class="hidden-meta" aria-hidden="true">
+    <span id="patientValue"></span>
+    <span id="seriesValue"></span>
+    <span id="modalityValue"></span>
+    <span id="imageValue"></span>
+    <span id="pixelValue"></span>
+    <span id="thicknessValue"></span>
+    <span id="locationValue"></span>
+    <span id="timeValue"></span>
+    <span id="transferValue"></span>
+    <span id="tagSummary"></span>
+    <input id="sliceSlider" type="range" min="0" max="0" value="0">
+    <input id="centerInput" type="number">
+    <input id="widthInput" type="number">
+    <button class="preset" data-center="40" data-width="400" type="button"></button>
+    <button class="preset" data-center="-600" data-width="1500" type="button"></button>
+    <button class="preset" data-center="300" data-width="1600" type="button"></button>
+    <span id="sliceCount"></span>
+  </div>
+
+  <script src="./viewer.js"></script>
+</body>
+</html>
