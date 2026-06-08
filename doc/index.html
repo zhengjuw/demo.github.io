@@ -86,16 +86,7 @@ body {
 .pill-gray { background: var(--bg); color: var(--text-mid); border-color: var(--border); }
 .pill-cohort{ background: #fffbeb; color: #92400e; border-color: #fde68a; font-size: 10px; }
 .pt-spacer { flex: 1; }
-.baseline-wrap { display: flex; align-items: center; gap: 6px; }
 .pt-label { font-size: 11px; color: var(--text-light); }
-.baseline-select {
-  height: 26px; padding: 0 8px;
-  border: 1px solid var(--border); border-radius: var(--radius);
-  background: var(--bg); color: var(--text-dark);
-  font-size: 11px; font-family: var(--font);
-  outline: none; cursor: pointer; appearance: none;
-}
-.baseline-select:hover { background: var(--blue-pale); }
 .btn {
   padding: 5px 13px; border-radius: var(--radius);
   font-size: 12px; font-weight: 500; cursor: pointer;
@@ -141,7 +132,6 @@ body {
 .tp-header { padding: 6px 10px 5px; min-width: 88px; }
 .tp-date { font-size: 10px; color: var(--text-light); font-family: var(--mono); display: block; margin-bottom: 1px; }
 .tp-name { font-size: 11px; font-weight: 600; display: block; }
-.tp-win  { font-size: 10px; color: var(--text-light); display: block; margin-top: 1px; }
 .tp-header.ph-e-bg { background: rgba(148,163,184,0.06); }
 .tp-header.ph-e-bg .tp-name { color: #475569; }
 .tp-header.ph-t-bg { background: rgba(61,126,255,0.07); }
@@ -183,7 +173,12 @@ td.dc {
   position: relative; cursor: pointer; transition: background 0.1s;
 }
 td.dc:hover { background: rgba(61,126,255,0.04); }
+td.dc.no-click { cursor: default; }
+td.dc.no-click:hover { background: transparent; }
+td.sec-cell.no-click { cursor: default; }
+td.sec-cell.no-click .dot { cursor: default; }
 td.sec-cell { background: var(--blue-pale); border-bottom: 1px dashed #c7d8ff; height: 26px; border-top: 1px solid #c7d8ff; }
+td.sec-cell { text-align: center; vertical-align: middle; }
 td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light); height: 26px; }
 
 /* Dots */
@@ -239,6 +234,26 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 .drawer-sub   { font-size:11px; color:var(--text-light); margin-top:2px; font-family:var(--mono); }
 .drawer-close { margin-left:auto; background:none; border:none; cursor:pointer; font-size:16px; color:var(--text-light); padding:2px; }
 .drawer-body { flex:1; overflow-y:auto; padding:14px 16px; }
+.popup-overlay { position:fixed; inset:0; background:rgba(26,35,50,0.22); z-index:300; opacity:0; pointer-events:none; transition:opacity 0.16s; display:flex; align-items:center; justify-content:center; padding:24px; }
+.popup-overlay.open { opacity:1; pointer-events:all; }
+.popup { width:min(420px,100%); background:#fff; border:1px solid var(--border); border-radius:8px; box-shadow:0 18px 36px rgba(15,23,42,0.18); overflow:hidden; }
+.popup-head { padding:14px 16px 12px; border-bottom:1px solid var(--border); background:var(--blue-pale); display:flex; align-items:flex-start; gap:10px; }
+.popup-title { font-size:14px; font-weight:600; color:var(--text-dark); }
+.popup-sub { font-size:11px; color:var(--text-light); margin-top:2px; font-family:var(--mono); }
+.popup-close { margin-left:auto; background:none; border:none; cursor:pointer; font-size:16px; color:var(--text-light); padding:2px; }
+.popup-body { padding:14px 16px 16px; }
+.popup-pager { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:14px; padding-top:12px; border-top:1px dashed var(--border); }
+.popup-page-btn { border:1px solid var(--border); background:var(--surface); color:var(--text-mid); border-radius:var(--radius); padding:5px 10px; cursor:pointer; font-family:var(--font); font-size:12px; }
+.popup-page-btn:disabled { opacity:0.35; cursor:default; }
+.popup-page-indicator { font-size:11px; color:var(--text-light); font-family:var(--mono); }
+.popup-actions { display:flex; gap:8px; margin-top:14px; }
+.popup-action-btn { flex:1; border:1px solid var(--blue-mid); background:var(--blue); color:#fff; border-radius:var(--radius); padding:8px 10px; cursor:pointer; font-family:var(--font); font-size:12px; font-weight:600; }
+.popup-action-btn.secondary { background:#fff; color:var(--blue-mid); }
+.pdf-overlay { position:fixed; inset:0; z-index:400; background:rgba(15,23,42,0.72); display:none; align-items:center; justify-content:center; padding:24px; }
+.pdf-overlay.open { display:flex; }
+.pdf-frame { max-width:calc(100vw - 48px); max-height:calc(100vh - 48px); background:#fff; border-radius:8px; box-shadow:0 24px 48px rgba(0,0,0,0.32); overflow:hidden; position:relative; }
+.pdf-frame img { display:block; max-width:calc(100vw - 48px); max-height:calc(100vh - 48px); width:auto; height:auto; object-fit:contain; }
+.pdf-close { position:absolute; top:8px; right:8px; border:none; background:rgba(15,23,42,0.72); color:#fff; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px; line-height:28px; }
 .dsec { margin-bottom:16px; }
 .dsec-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--blue); margin-bottom:7px; padding-bottom:5px; border-bottom:1px solid var(--blue-soft); }
 .fr { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--border-light); font-size:12px; }
@@ -258,6 +273,17 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
   box-shadow: 0 1px 4px rgba(61,126,255,0.25);
 }
 .btn-dicom:hover { background: var(--blue-mid); box-shadow: 0 2px 8px rgba(61,126,255,0.35); }
+.section-label-with-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-label-with-action .btn-dicom {
+  padding: 4px 10px;
+  font-size: 11px;
+  line-height: 1.2;
+  box-shadow: none;
+}
 </style>
 </head>
 <body>
@@ -275,15 +301,6 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
   <span class="pill pill-id">M30011111</span>
   <span class="pill pill-gray">56歳 · 男性</span>
   <span class="pill pill-gray">登録日：2024-06-24</span>
-  <div class="baseline-wrap">
-    <span class="pt-label">基準日：</span>
-    <select class="baseline-select" onchange="changeBaseline(this.value)">
-      <option value="none">選択してください</option>
-      <option value="registration">登録日</option>
-      <option value="treatment">治療開始日</option>
-      <option value="recurrence">増悪確認日</option>
-    </select>
-  </div>
   <span class="pill pill-gray">コホートA</span>
   <span class="pill pill-gray">結腸・直腸癌</span>
   <span class="pill pill-gray">生存</span>
@@ -329,18 +346,36 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
   </div>
   <div class="drawer-body" id="drawerBody"></div>
 </div>
+<div class="popup-overlay" id="imagePopupOverlay" onclick="closeImagePopup(event)">
+  <div class="popup" onclick="event.stopPropagation()">
+    <div class="popup-head">
+      <div>
+        <div class="popup-title" id="imagePopupTitle">—</div>
+        <div class="popup-sub" id="imagePopupSub">—</div>
+      </div>
+      <button class="popup-close" onclick="closeImagePopup()">✕</button>
+    </div>
+    <div class="popup-body" id="imagePopupBody"></div>
+  </div>
+</div>
+<div class="pdf-overlay" id="pdfOverlay" onclick="closeReportPdf(event)">
+  <div class="pdf-frame" onclick="event.stopPropagation()">
+    <button class="pdf-close" type="button" onclick="closeReportPdf()">×</button>
+    <img src="./CTTTpdf.png" alt="report pdf">
+  </div>
+</div>
 <div class="tooltip" id="tooltip"></div>
 
 <script>
 const TPS = [
-  { id:'t0', date:'2024-06-24', name:'登録時',        win:'[-4w,+0w]', phase:'e' },
-  { id:'t1', date:'2024-08-19', name:'治療開始後8w',  win:'[-2w,+2w]', phase:'t' },
-  { id:'t2', date:'2024-10-14', name:'治療開始後16w', win:'[-2w,+2w]', phase:'t' },
-  { id:'t3', date:'2024-12-09', name:'治療開始後24w', win:'[-2w,+2w]', phase:'t' },
-  { id:'t4', date:'2025-02-03', name:'治療開始後32w', win:'[-2w,+2w]', phase:'t' },
-  { id:'t5', date:'2025-03-31', name:'治療開始後40w', win:'[-2w,+2w]', phase:'t' },
-  { id:'t6', date:'2025-06-26', name:'増悪時',        win:'[-2w,+2w]', phase:'t' },
-  { id:'t7', date:'2025-07-21', name:'治療開始後56w', win:'[-2w,+2w]', phase:'f' },
+  { id:'t0', date:'2024-06-24', name:'登録時',        phase:'e' },
+  { id:'t1', date:'2024-08-19', name:'治療開始後8w',  phase:'t' },
+  { id:'t2', date:'2024-10-14', name:'治療開始後16w', phase:'t' },
+  { id:'t3', date:'2024-12-09', name:'治療開始後24w', phase:'t' },
+  { id:'t4', date:'2025-02-03', name:'治療開始後32w', phase:'t' },
+  { id:'t5', date:'2025-03-31', name:'治療開始後40w', phase:'t' },
+  { id:'t6', date:'2025-06-26', name:'増悪時',        phase:'t' },
+  { id:'t7', date:'2025-07-21', name:'治療開始後56w', phase:'f' },
 ];
 const N = TPS.length;
 const CL = {};
@@ -352,15 +387,13 @@ function mkD(arr) {
 }
 
 const ROWS = [
-  { type:'sec', label:'EDC Visit 情報' },
-  { type:'dot', label:'登録・基本情報', indent:'item',
-    dots: mkD(['b','b','b','b','b','b','b','b']), drawerType:'edc' },
+  { type:'edc', label:'edc visit', dots: mkD(['b','b','b','b','b','b','b','b']) },
 
   { type:'sec', label:'治療' },
 
   { type:'sub', label:'手術', noToggle:true },
   { type:'dot', label:'手術', indent:'item', dotStyle:'surgery',
-    dots: mkD([null,null,null,null,null,null,null,null]), drawerType:'surgery' },
+    dots: mkD([null,null,null,null,null,null,null,null]) },
 
   { type:'sub', label:'放射線治療', toggleKey:'grp-radio' },
   { type:'dot', label:'X線', indent:'item', collapseKey:'grp-radio',
@@ -404,7 +437,6 @@ function buildHead() {
     h += `<th id="th-${tp.id}"><div class="tp-header ph-${tp.phase}-bg">
       <span class="tp-date">${tp.date}</span>
       <span class="tp-name">${tp.name}</span>
-      <span class="tp-win">${tp.win}</span>
     </div></th>`;
   });
   h += '</tr>';
@@ -420,7 +452,19 @@ function buildBody() {
     }
 
     if (row.type === 'sec') {
-      h += `<tr><td class="row-label sec-hd">${row.label}</td>${TPS.map(tp=>`<td class="sec-cell ph-${tp.phase}-bg"></td>`).join('')}</tr>`;
+      const secAction = row.label === '臨床画像 / 診断レポート'
+        ? `<button class="btn btn-dicom" onclick="window.location.href='./viewer/index.html?exam=CT&timepoint=t0&occurrence=0'">画像閲覧</button>`
+        : '';
+      const secLabel = secAction ? `<span class="section-label-with-action"><span>${row.label}</span>${secAction}</span>` : row.label;
+      h += `<tr><td class="row-label sec-hd">${secLabel}</td>${TPS.map(tp=>`<td class="sec-cell ph-${tp.phase}-bg"></td>`).join('')}</tr>`;
+      return;
+    }
+
+    if (row.type === 'edc') {
+      h += `<tr>
+        <td class="row-label sec-hd">${row.label}</td>
+        ${TPS.map((tp,ci)=>`<td class="sec-cell ph-${tp.phase}-bg no-click">${renderDot(row.dots?.[ci], row.dotStyle)}</td>`).join('')}
+      </tr>`;
       return;
     }
 
@@ -474,7 +518,9 @@ function buildBody() {
         const d = row.dots ? row.dots[ci] : null;
         const dh = renderDot(d, row.dotStyle);
         const dLabel = typeof d==='object'&&d ? d.color : (d||'null');
-        return `<td class="dc ph-${tp.phase}-bg" onclick="openDotDrawer('${row.label}','${tp.name}','${tp.date}','${dLabel}','${row.drawerType||''}')">${dh}</td>`;
+        const clickable = !!d && !!row.drawerType;
+        const action = clickable ? ` onclick="openDotDetail('${row.label}','${tp.id}','${tp.name}','${tp.date}','${dLabel}','${row.drawerType||''}',${ci})"` : '';
+        return `<td class="dc ph-${tp.phase}-bg ${clickable?'':'no-click'}"${action}>${dh}</td>`;
       }).join('')}
     </tr>`;
   });
@@ -503,6 +549,100 @@ function hideTip() { tt.classList.remove('show'); }
 function posTip(e) { tt.style.left=(e.clientX+12)+'px'; tt.style.top=(e.clientY-10)+'px'; }
 document.addEventListener('mousemove',e=>{ if(tt.classList.contains('show')) posTip(e); });
 
+let imagePopupState = { records: [], index: 0 };
+
+function openDotDetail(label,tpId,tpName,tpDate,status,dtype,ci) {
+  if (dtype === 'img') {
+    openImagePopup(label,tpId,tpName,tpDate,ci);
+    return;
+  }
+  openDotDrawer(label,tpName,tpDate,status,dtype);
+}
+
+function addDays(dateText, days) {
+  const dt = new Date(dateText + 'T00:00:00');
+  dt.setDate(dt.getDate() + days);
+  return dt.toISOString().slice(0, 10);
+}
+
+function imageRecords(label,tpId,tpName,tpDate,ci) {
+  const row = ROWS.find(r => r.label === label && r.drawerType === 'img');
+  const d = row?.dots?.[ci];
+  const count = typeof d === 'object' && d?.count ? d.count : 1;
+  return Array.from({ length: count }, (_, i) => ({
+    examDate: count === 1 ? tpDate : addDays(tpDate, i * 3),
+    timepointId: tpId,
+    timepointName: tpName,
+    examType: label,
+    occurrence: i,
+    no: i + 1,
+  }));
+}
+
+function openImagePopup(label,tpId,tpName,tpDate,ci) {
+  imagePopupState = { records: imageRecords(label,tpId,tpName,tpDate,ci), index: 0 };
+  document.getElementById('imagePopupTitle').textContent = label;
+  document.getElementById('imagePopupSub').textContent = `${tpName}  ·  ${tpDate}`;
+  renderImagePopup();
+  document.getElementById('imagePopupOverlay').classList.add('open');
+}
+
+function renderImagePopup() {
+  const { records, index } = imagePopupState;
+  const rec = records[index];
+  const multiple = records.length > 1;
+  document.getElementById('imagePopupBody').innerHTML = `
+    <div class="dsec" style="margin-bottom:0;">
+      <div class="dsec-title">検査情報</div>
+      <div class="fr"><span class="fl">検査日</span><span class="fv" style="font-family:var(--mono)">${rec.examDate}</span></div>
+      <div class="fr"><span class="fl">timepoint</span><span class="fv">${rec.timepointName}</span></div>
+      <div class="fr"><span class="fl">timepoint ID</span><span class="fv" style="font-family:var(--mono)">${rec.timepointId}</span></div>
+      <div class="fr"><span class="fl">検査種別</span><span class="fv">${rec.examType}</span></div>
+    </div>
+    <div class="popup-actions">
+      <button class="popup-action-btn" type="button" onclick="openImageViewer()">画像閲覧</button>
+      <button class="popup-action-btn secondary" type="button" onclick="openReportPdf()">診断レポート閲覧</button>
+    </div>
+    ${multiple ? `
+      <div class="popup-pager">
+        <button class="popup-page-btn" type="button" onclick="changeImagePopupPage(-1)" ${index === 0 ? 'disabled' : ''}>前へ</button>
+        <span class="popup-page-indicator">${index + 1} / ${records.length}</span>
+        <button class="popup-page-btn" type="button" onclick="changeImagePopupPage(1)" ${index === records.length - 1 ? 'disabled' : ''}>次へ</button>
+      </div>` : ''}
+  `;
+}
+
+function changeImagePopupPage(delta) {
+  const next = imagePopupState.index + delta;
+  if (next < 0 || next >= imagePopupState.records.length) return;
+  imagePopupState.index = next;
+  renderImagePopup();
+}
+
+function openImageViewer() {
+  const rec = imagePopupState.records[imagePopupState.index];
+  const query = new URLSearchParams({
+    exam: rec.examType,
+    timepoint: rec.timepointId,
+    occurrence: String(rec.occurrence),
+  });
+  window.location.href = `./viewer/index.html?${query.toString()}`;
+}
+
+function openReportPdf() {
+  document.getElementById('pdfOverlay').classList.add('open');
+}
+
+function closeReportPdf(e) {
+  if (e && e.target !== document.getElementById('pdfOverlay')) return;
+  document.getElementById('pdfOverlay').classList.remove('open');
+}
+
+function closeImagePopup(e) {
+  if (e && e.target !== document.getElementById('imagePopupOverlay')) return;
+  document.getElementById('imagePopupOverlay').classList.remove('open');
+}
+
 function openDotDrawer(label,tpName,tpDate,status,dtype) {
   document.getElementById('drawerTitle').textContent=label;
   document.getElementById('drawerSub').textContent=`${tpName}  ·  ${tpDate}`;
@@ -517,18 +657,13 @@ function openDotDrawer(label,tpName,tpDate,status,dtype) {
       <div class="fr"><span class="fl">性別</span><span class="fv">男性</span></div>
       <div class="fr"><span class="fl">疾患名</span><span class="fv">結腸・直腸癌</span></div>
     </div>`;}
-  let dicomBtn = '';
-  if(dtype==='img' && status !== 'null' && status !== null && status !== 'gray'){
-    dicomBtn = `<div style="display:flex;justify-content:flex-end;margin-top:14px;">
-      <button class="btn btn-dicom" onclick="">画像閲覧</button>
-    </div>`;}
   document.getElementById('drawerBody').innerHTML=`
     <div class="dsec"><div class="dsec-title">データ状態</div>
       <div class="fr"><span class="fl">項目名</span><span class="fv">${label}</span></div>
       <div class="fr"><span class="fl">タイムポイント</span><span class="fv">${tpName}</span></div>
       <div class="fr"><span class="fl">収集日</span><span class="fv" style="font-family:var(--mono)">${tpDate}</span></div>
     </div>
-    ${extra}${dicomBtn}`;
+    ${extra}`;
   openDrawer();
 }
 
@@ -586,22 +721,6 @@ function syncMinimap() {
   thumb.style.left=(scr.scrollLeft/scr.scrollWidth*100)+'%';
 }
 document.getElementById('tlScroll').addEventListener('scroll',()=>{ syncMinimap(); });
-
-function changeBaseline(v){
-  let targetId = '';
-  if(v === 'registration') targetId = 't0';
-  else if(v === 'treatment') targetId = 't1';
-  else if(v === 'recurrence') targetId = 't6';
-
-  if(targetId) {
-    const th = document.getElementById(`th-${targetId}`);
-    if(th) {
-      const scr = document.getElementById('tlScroll');
-      const offset = th.offsetLeft - 190;
-      scr.scrollTo({ left: offset, behavior: 'smooth' });
-    }
-  }
-}
 
 buildHead();
 buildBody();
