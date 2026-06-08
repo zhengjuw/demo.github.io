@@ -573,7 +573,7 @@
 
             <div class="table-container">
                 <table class="file-table" id="pop-table">
-                    <thead>
+                    <thead id="pop-table-head">
                         <tr>
                             <th width="20%">検査ファイル</th>
                             <th width="15%">実施日</th>
@@ -1036,7 +1036,7 @@
                 dataZoom: [{ type: 'slider', show: true, xAxisIndex: [0], bottom: 15, height: 24, start: 0, end: 20 }, { type: 'inside', xAxisIndex: [0], zoomOnMouseWheel: true, moveOnMouseMove: true }],
                 xAxis: [{ type: 'time', position: 'bottom', min: xMin, max: xMax, axisLabel: { show: false }, splitLine: { show: false }, axisLine: { lineStyle: { color: '#e8ecf2' } }, axisTick: { show: false } }],
                 yAxis: [
-                    { type: 'category', data: ['臨床画像', 'PET-CT', 'CT', 'MRI', 'コンピュータX線撮影', '内視鏡検査'], inverse: true, boundaryGap: true, axisLine: { show: false }, axisLabel: { color: '#1e3a5f', fontWeight: 'bold', margin: 16, fontSize: 13 } },
+                    { type: 'category', data: ['臨床画像 / 診断レポート', 'PET-CT', 'CT', 'MRI', 'コンピュータX線撮影', '内視鏡検査'], inverse: true, boundaryGap: true, axisLine: { show: false }, axisLabel: { color: '#1e3a5f', fontWeight: 'bold', margin: 16, fontSize: 13 } },
                     { type: 'value', min: 0, max: 1, inverse: true, show: false }
                 ],
                 series: [
@@ -1226,17 +1226,61 @@
                     document.getElementById('pop-header-text').innerHTML =
                         `<span style="color:${titleColor}">&#128193; ${pd.visit}</span>`;
 
+                    const thead = document.getElementById('pop-table-head');
                     const tbody = document.getElementById('pop-table-body');
+                    let colCount = 4;
+                    if (pd.status === 'yellow') {
+                        colCount = 3;
+                        thead.innerHTML = `
+                            <tr>
+                                <th width="30%">検査ファイル</th>
+                                <th width="20%">実施日</th>
+                                <th width="50%">Timepoint・理由</th>
+                            </tr>`;
+                    } else if (pd.status === 'green') {
+                        colCount = 2;
+                        thead.innerHTML = `
+                            <tr>
+                                <th width="60%">検査ファイル</th>
+                                <th width="40%">実施日</th>
+                            </tr>`;
+                    } else {
+                        thead.innerHTML = `
+                            <tr>
+                                <th width="20%">検査ファイル</th>
+                                <th width="15%">実施日</th>
+                                <th width="30%">判定</th>
+                                <th width="35%">Timepoint・理由</th>
+                            </tr>`;
+                    }
+
                     let rowsHtml = '';
                     if (pd.files.length === 0) {
-                        rowsHtml = `<tr><td colspan="4" style="text-align:center;padding:30px;color:#94a3b8;">ファイルがアップロードされていません</td></tr>`;
+                        rowsHtml = `<tr><td colspan="${colCount}" style="text-align:center;padding:30px;color:#94a3b8;">ファイルがアップロードされていません</td></tr>`;
                     } else {
                         pd.files.forEach((f, i) => {
                             let dateBadge = f.isMissing ? `<span class="status-badge status-err">欠落</span>` :
                                 f.isDelayed ? `<span class="status-badge status-warn"> </span>` :
                                     `<span class="status-badge status-ok">定刻</span>`;
 
-                            if (pd.requiresJudgment && f.isDelayed && !f.isMissing) {
+                            if (pd.status === 'yellow') {
+                                const tpReason = [
+                                    f.assignedTP ? `<strong>${f.assignedTP}</strong>` : '',
+                                    f.reason ? `<span style="display:block;font-size:12px;color:#64748b;margin-top:3px;">理由: ${f.reason}</span>` : ''
+                                ].join('') || '<span style="color:#94a3b8;font-style:italic;">—</span>';
+                                rowsHtml += `
+                                    <tr>
+                                        <td>${f.name}</td>
+                                        <td>${f.actualDate || '未取得'}</td>
+                                        <td>${tpReason}</td>
+                                    </tr>`;
+                            } else if (pd.status === 'green') {
+                                rowsHtml += `
+                                    <tr>
+                                        <td>${f.name}</td>
+                                        <td>${f.actualDate || '未取得'}</td>
+                                    </tr>`;
+                            } else if (pd.requiresJudgment && f.isDelayed && !f.isMissing) {
                                 rowsHtml += `
                                     <tr style="background:#fffcfc">
                                         <td><strong>${f.name}</strong></td>
