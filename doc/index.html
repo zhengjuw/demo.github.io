@@ -453,7 +453,7 @@ function buildBody() {
 
     if (row.type === 'sec') {
       const secAction = row.label === '臨床画像 / 診断レポート'
-        ? `<button class="btn btn-dicom" onclick="window.location.href='./viewer/index.html?exam=CT&timepoint=t0&occurrence=0'">画像閲覧</button>`
+        ? `<button class="btn btn-dicom" onclick="window.open('./viewer/index.html?exam=CT&timepoint=t0&occurrence=0', '_blank', 'noopener')">画像閲覧</button>`
         : '';
       const secLabel = secAction ? `<span class="section-label-with-action"><span>${row.label}</span>${secAction}</span>` : row.label;
       h += `<tr><td class="row-label sec-hd">${secLabel}</td>${TPS.map(tp=>`<td class="sec-cell ph-${tp.phase}-bg"></td>`).join('')}</tr>`;
@@ -626,7 +626,7 @@ function openImageViewer() {
     timepoint: rec.timepointId,
     occurrence: String(rec.occurrence),
   });
-  window.location.href = `./viewer/index.html?${query.toString()}`;
+  window.open(`./viewer/index.html?${query.toString()}`, "_blank", "noopener");
 }
 
 function openReportPdf() {

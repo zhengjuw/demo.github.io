@@ -8,7 +8,7 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="back" href="../index.html" aria-label="Back">‹</a>
+    <button class="back" type="button" aria-label="Back">&lt;</button>
     <div>
       <div class="eyebrow">DICOM Viewer</div>
       <h1>CT Image Review</h1>
@@ -18,7 +18,7 @@
   </header>
 
   <nav class="workbar" aria-label="Viewer tools">
-    <div class="viewer-tab"><span>▦</span><strong>UNKNOWN</strong><button type="button">×</button></div>
+    <div class="viewer-tab"><span>CT</span><strong>UNKNOWN</strong><button type="button">x</button></div>
     <div class="work-status">Research viewer prototype</div>
   </nav>
 
@@ -64,7 +64,7 @@
   <section class="tool-drawer" id="toolDrawer" aria-label="Tool panel">
     <div class="tool-drawer-head">
       <strong id="toolDrawerTitle">Image Tools</strong>
-      <button id="toolDrawerClose" type="button">×</button>
+      <button id="toolDrawerClose" type="button">x</button>
     </div>
     <div id="toolDrawerBody" class="tool-drawer-body"></div>
   </section>
@@ -89,6 +89,6 @@
     <span id="sliceCount"></span>
   </div>
 
-  <script src="./viewer.js"></script>
+  <script src="./viewer.js?v=5"></script>
 </body>
 </html>
