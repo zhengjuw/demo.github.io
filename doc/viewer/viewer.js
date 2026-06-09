@@ -19,19 +19,10 @@
   "20240514153719": {
     label: "May 14, 2024",
     series: {
-      "SN-0001": { count: 1, first: 1, description: "CT Localizer 2.0" },
-      "SN-0002": { count: 77, first: 1, description: "Axial 5.0" },
-      "SN-0004": { count: 1, first: 1, description: "CT Localizer 2.0" },
-      "SN-0006": { count: 80, first: 1, description: "CE Axial 5.0" },
-      "SN-0008": { count: 80, first: 1, description: "CE Axial 5.0" },
-      "SN-0010": { count: 90, first: 1, description: "CE Axial 5.0" },
-      "SN-0011": { count: 56, first: 1, description: "CE Axial 5.0" },
-      "SN-0012": { count: 56, first: 1, description: "CE Axial 5.0" },
-      "SN-0015": { count: 198, first: 1, description: "CE Axial 2.0" },
-      "SN-0016": { count: 198, first: 1, description: "CE Axial 2.0" },
-      "SN-1011": { count: 4, first: 1, description: "Secondary Capture" },
-      "SN-30000": { count: 1, first: 1, description: "Summary" },
-      "SN-9000": { count: 5, first: 1, description: "Report Image" },
+      "ct-abdomen-c4kc-kits-series": { count: 101, first: 1, filePrefix: "instance-", digits: 4, description: "CT Abdomen C4KC/KiTS" },
+      "ct-chest-lidc-idri-series": { count: 250, first: 1, filePrefix: "instance-", digits: 4, description: "CT Chest LIDC-IDRI" },
+      "ct-lung-screening-nlst-series": { count: 150, first: 1, filePrefix: "instance-", digits: 4, description: "CT Lung Screening NLST" },
+      "ct-pancreas-pancreas-ct-series": { count: 218, first: 1, filePrefix: "instance-", digits: 4, description: "CT Pancreas" },
     },
   },
   "20240514133325": {
@@ -62,10 +53,10 @@ const DEFAULT_TIMEPOINTS = [
 const EXAM_TYPES = ["PET-CT", "CT", "MRI", "コンピュータX線撮影", "内視鏡検査"];
 const TIMEPOINT_STUDIES = {
   CT: {
-    t0: { study: "20240514153719", series: "SN-0015" },
-    t3: { study: "20240905180436", series: "SN-13001" },
-    t6: { study: "20250305141211", series: "SN-0002" },
-    t7: { study: "20250305141211", series: "SN-0002" },
+    t0: { study: "20240514153719", series: "ct-chest-lidc-idri-series" },
+    t3: { study: "20240514153719", series: "ct-lung-screening-nlst-series" },
+    t6: { study: "20240514153719", series: "ct-abdomen-c4kc-kits-series" },
+    t7: { study: "20240514153719", series: "ct-pancreas-pancreas-ct-series" },
   },
 };
 
@@ -76,7 +67,7 @@ const state = {
   examType: params.get("exam") || "CT",
   timepoint: params.get("timepoint") || "t0",
   study: params.get("study") || "20240514153719",
-  series: params.get("series") || "SN-0015",
+  series: params.get("series") || "ct-chest-lidc-idri-series",
   index: 0,
   cache: new Map(),
   localFiles: [],
@@ -184,7 +175,9 @@ function currentSeriesInfo(series = state.series) {
 function seriesUrl(series, index) {
   const info = currentSeriesInfo(series) || { first: 1 };
   const fileNumber = (info.first || 1) + index;
-  const file = `IN-${String(fileNumber).padStart(5, "0")}.dcm`;
+  const prefix = info.filePrefix || "IN-";
+  const digits = info.digits || 5;
+  const file = `${prefix}${String(fileNumber).padStart(digits, "0")}.dcm`;
   return `/M30011111/${state.study}/${series}/${file}`;
 }
 
@@ -767,7 +760,7 @@ function handleLocalFiles(files) {
     .sort((a, b) => (a.webkitRelativePath || a.name).localeCompare(b.webkitRelativePath || b.name, undefined, { numeric: true }));
 
   if (!selected.length) {
-    showNotice("No .dcm files found. Please select SN-0015 or the parent 20240514153719 folder.");
+    showNotice("No .dcm files found. Please select one of the configured CT series folders or the parent 20240514153719 folder.");
     return;
   }
 
