@@ -1,4 +1,4 @@
-const STUDIES = {
+﻿const STUDIES = {
   "20250305141211": {
     label: "Mar 5, 2025",
     series: {
@@ -810,14 +810,16 @@ async function init() {
   els.slider.max = String(currentSeriesInfo().count - 1);
   syncWindowInputs();
   if (location.protocol === "file:") {
-    showNotice("Direct local opening cannot automatically read DICOM files. Click Open Folder and select SN-0015 or the parent 20240514153719 folder.");
+    showNotice("Direct local opening cannot automatically read DICOM files. Please open this viewer from the deployed site or a local web server.");
   }
 }
 
 els.examTypeSelect.addEventListener("change", (event) => changeExamType(event.target.value));
 els.timepointSelect.addEventListener("change", (event) => changeTimepoint(event.target.value));
-els.localOpenBtn.addEventListener("click", () => els.localFileInput.click());
-els.localFileInput.addEventListener("change", (event) => handleLocalFiles(event.target.files));
+if (els.localOpenBtn && els.localFileInput) {
+  els.localOpenBtn.addEventListener("click", () => els.localFileInput.click());
+  els.localFileInput.addEventListener("change", (event) => handleLocalFiles(event.target.files));
+}
 els.toolDrawerClose.addEventListener("click", () => els.toolDrawer.classList.remove("open"));
 document.querySelector(".right-toolbar").addEventListener("click", (event) => {
   const button = event.target.closest(".rail-button");
