@@ -404,8 +404,9 @@ async function loadSliceForSeries(series, index) {
     state.cache.set(key, slice);
     return slice;
   }
-  const response = await fetch(seriesUrl(series, index));
-  if (!response.ok) throw new Error(`Could not load slice ${index + 1}`);
+  const url = seriesUrl(series, index);
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Could not load slice ${index + 1} (${response.status}) from ${url}`);
   const slice = parseDicom(await response.arrayBuffer());
   state.cache.set(key, slice);
   return slice;
@@ -502,7 +503,7 @@ async function showSlice(index) {
     els.loading.classList.add("hidden");
     preloadNeighbors();
   } catch (error) {
-    els.loading.textContent = `${error.message}. If you opened this HTML directly, use Open Folder and select the DICOM series folder.`;
+    els.loading.textContent = `${error.message}. Confirm the DICOM folder is included in the deployed site.`;
     els.loading.classList.add("error");
   }
 }

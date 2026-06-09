@@ -1,0 +1,15 @@
+version: 1
+frontend:
+  phases:
+    build:
+      commands:
+        - echo "Publishing static viewer files"
+  artifacts:
+    baseDirectory: .
+    files:
+      - index.html
+      - doc/**/*
+      - M30011111/**/*
+      - locales/**/*
+  cache:
+    paths: []
