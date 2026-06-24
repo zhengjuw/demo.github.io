@@ -102,13 +102,6 @@ body {
   padding: 6px 20px; display: flex; align-items: center; gap: 14px;
   flex-shrink: 0; flex-wrap: wrap;
 }
-.phase-group { display: flex; align-items: center; gap: 8px; }
-.phase-chip { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-mid); }
-.ph-dot { width: 8px; height: 8px; border-radius: 2px; }
-.ph-e { background: #94a3b8; }
-.ph-t { background: var(--blue); }
-.ph-f { background: var(--blue-dark); }
-.leg-div { width: 1px; height: 14px; background: #c7d4ea; }
 .data-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .leg-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-mid); }
 .ldot { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); }
@@ -132,12 +125,7 @@ body {
 .tp-header { padding: 6px 10px 5px; min-width: 88px; }
 .tp-date { font-size: 10px; color: var(--text-light); font-family: var(--mono); display: block; margin-bottom: 1px; }
 .tp-name { font-size: 11px; font-weight: 600; display: block; }
-.tp-header.ph-e-bg { background: rgba(148,163,184,0.06); }
-.tp-header.ph-e-bg .tp-name { color: #475569; }
-.tp-header.ph-t-bg { background: rgba(61,126,255,0.07); }
-.tp-header.ph-t-bg .tp-name { color: var(--blue-mid); }
-.tp-header.ph-f-bg { background: rgba(30,58,138,0.07); }
-.tp-header.ph-f-bg .tp-name { color: var(--blue-dark); }
+.tp-name { color: var(--blue-dark); }
 
 /* Label column (Sticky Left) */
 td.row-label {
@@ -290,14 +278,14 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 
 <div id="top-header">
   <img id="logo" src="./image13215-yqx-200w.png" alt="Logo">
-  <h3>症例ポータル</h3>
+  <h3>参加者ポータル</h3>
   <div class="hd-spacer"></div>
 </div>
 
 <div id="patient-bar">
   <a href="../index.html" class="back-btn">← 戻る</a>
   <div class="pt-sep"></div>
-  <span class="pt-label">患者ID</span>
+  <span class="pt-label">参加者ID</span>
   <span class="pill pill-id">M30011111</span>
   <span class="pill pill-gray">56歳 · 男性</span>
   <span class="pill pill-gray">登録日：2024-06-24</span>
@@ -308,12 +296,6 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 </div>
 
 <div id="legend-bar">
-  <div class="phase-group">
-    <div class="phase-chip"><div class="ph-dot ph-e"></div>登録期間</div>
-    <div class="phase-chip"><div class="ph-dot ph-t"></div>治療期間</div>
-    <div class="phase-chip"><div class="ph-dot ph-f"></div>フォローアップ</div>
-  </div>
-  <div class="leg-div"></div>
   <div class="data-group">
     <div class="leg-item"><div class="ldot"></div>EDC / 手術 / 臨床画像 / 病理画像 </div>
     <div class="leg-item"><div class="lline lline-blue"></div>薬物療法 / 放射線治療 / 補助化学療法 </div>
@@ -434,7 +416,7 @@ const ROWS = [
 function buildHead() {
   let h = '<tr class="thead-group"><th class="col-label" style="border-right:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text-light);font-weight:600;text-align:left;"></th>';
   TPS.forEach(tp => {
-    h += `<th id="th-${tp.id}"><div class="tp-header ph-${tp.phase}-bg">
+    h += `<th id="th-${tp.id}"><div class="tp-header">
       <span class="tp-date">${tp.date}</span>
       <span class="tp-name">${tp.name}</span>
     </div></th>`;
@@ -456,14 +438,14 @@ function buildBody() {
         ? `<button class="btn btn-dicom" onclick="window.open('./viewer/index.html?exam=CT&timepoint=t0&occurrence=0', '_blank', 'noopener')">画像閲覧</button>`
         : '';
       const secLabel = secAction ? `<span class="section-label-with-action"><span>${row.label}</span>${secAction}</span>` : row.label;
-      h += `<tr><td class="row-label sec-hd">${secLabel}</td>${TPS.map(tp=>`<td class="sec-cell ph-${tp.phase}-bg"></td>`).join('')}</tr>`;
+      h += `<tr><td class="row-label sec-hd">${secLabel}</td>${TPS.map(tp=>`<td class="sec-cell"></td>`).join('')}</tr>`;
       return;
     }
 
     if (row.type === 'edc') {
       h += `<tr>
         <td class="row-label sec-hd">${row.label}</td>
-        ${TPS.map((tp,ci)=>`<td class="sec-cell ph-${tp.phase}-bg no-click">${renderDot(row.dots?.[ci], row.dotStyle)}</td>`).join('')}
+        ${TPS.map((tp,ci)=>`<td class="sec-cell no-click">${renderDot(row.dots?.[ci], row.dotStyle)}</td>`).join('')}
       </tr>`;
       return;
     }
@@ -471,14 +453,14 @@ function buildBody() {
     if (row.type === 'sub') {
       const ic = row.toggleKey ? !!CL[row.toggleKey] : false;
       const btn = row.toggleKey ? `<button class="toggle-btn ${ic?'collapsed':''}" onclick="toggleGrp('${row.toggleKey}')">▼</button>` : '';
-      h += `<tr><td class="row-label sub-hd">${btn}${row.label}</td>${TPS.map(tp=>`<td class="sub-cell ph-${tp.phase}-bg"></td>`).join('')}</tr>`;
+      h += `<tr><td class="row-label sub-hd">${btn}${row.label}</td>${TPS.map(tp=>`<td class="sub-cell"></td>`).join('')}</tr>`;
       return;
     }
 
     if (row.type === 'sub2') {
       const ic = row.toggleKey ? !!CL[row.toggleKey] : false;
       const btn = row.toggleKey ? `<button class="toggle-btn ${ic?'collapsed':''}" onclick="toggleGrp('${row.toggleKey}')">▼</button>` : '';
-      h += `<tr><td class="row-label sub-item" style="padding-left:36px;">${btn}${row.label}</td>${TPS.map(tp=>`<td class="sub-cell ph-${tp.phase}-bg"></td>`).join('')}</tr>`;
+      h += `<tr><td class="row-label sub-item" style="padding-left:36px;">${btn}${row.label}</td>${TPS.map(tp=>`<td class="sub-cell"></td>`).join('')}</tr>`;
       return;
     }
 
@@ -520,7 +502,7 @@ function buildBody() {
         const dLabel = typeof d==='object'&&d ? d.color : (d||'null');
         const clickable = !!d && !!row.drawerType;
         const action = clickable ? ` onclick="openDotDetail('${row.label}','${tp.id}','${tp.name}','${tp.date}','${dLabel}','${row.drawerType||''}',${ci})"` : '';
-        return `<td class="dc ph-${tp.phase}-bg ${clickable?'':'no-click'}"${action}>${dh}</td>`;
+        return `<td class="dc ${clickable?'':'no-click'}"${action}>${dh}</td>`;
       }).join('')}
     </tr>`;
   });
@@ -651,7 +633,7 @@ function openDotDrawer(label,tpName,tpDate,status,dtype) {
   let extra='';
   if(dtype==='edc'){extra=`
     <div class="dsec"><div class="dsec-title">登録・基本情報</div>
-      <div class="fr"><span class="fl">患者ID</span><span class="fv" style="font-family:var(--mono)">M30011111</span></div>
+      <div class="fr"><span class="fl">参加者ID</span><span class="fv" style="font-family:var(--mono)">M30011111</span></div>
       <div class="fr"><span class="fl">登録日</span><span class="fv" style="font-family:var(--mono)">2024-06-24</span></div>
       <div class="fr"><span class="fl">生年月日</span><span class="fv" style="font-family:var(--mono)">1968-03-15</span></div>
       <div class="fr"><span class="fl">性別</span><span class="fv">男性</span></div>
