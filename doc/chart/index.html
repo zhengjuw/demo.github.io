@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -23,6 +23,7 @@
   --text-light: #94a3b8;
   --red: #dc2626;
   --amber: #d97706;
+  --yellow: #facc15;
   --header-h: 52px;
   --font: 'Noto Sans JP', sans-serif;
   --mono: 'IBM Plex Mono', monospace;
@@ -108,6 +109,8 @@ body {
 .data-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .leg-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-mid); }
 .ldot { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); }
+.ldot-red { background: var(--red); }
+.ldot-yellow { background: var(--yellow); }
 .lline { width: 18px; height: 3px; border-radius: 2px; }
 .lline-blue { background: var(--blue); }
 
@@ -218,6 +221,7 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 .dot-bluedark { background: var(--blue-dark); box-shadow: 0 0 0 2px rgba(30,58,138,0.15); }
 .dot-green   { background:#16a34a; box-shadow:0 0 0 2px rgba(22,163,74,0.14); }
 .dot-red     { background:#dc2626; box-shadow:0 0 0 2px rgba(220,38,38,0.14); }
+.dot-yellow  { background:var(--yellow); box-shadow:0 0 0 2px rgba(250,204,21,0.25); }
 .dot-gray    { border: 1.5px solid #c7d4ea; background: #f5f7fa; }
 .dot-pending { border: 1.5px dashed #94a3b8; background: transparent; }
 
@@ -383,9 +387,10 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 
 <div id="legend-bar">
   <div class="data-group">
-    <div class="leg-item"><div class="ldot"></div>EDC / 手術 / 臨床画像 / 病理画像 </div>
-    <div class="leg-item"><span class="dot dot-green"></span>EDC 完了</div>
-    <div class="leg-item"><span class="dot dot-red"></span>EDC 未完了</div>
+    <div class="leg-item"><div class="ldot"></div>EDC / 手術 / 臨床画像 / 病理画像</div>
+    <div class="leg-item"><span class="dot dot-red"></span>未入力</div>
+    <div class="leg-item"><span class="dot dot-blue"></span>入力完了</div>
+    <div class="leg-item"><span class="dot dot-yellow"></span>一時保存</div>
   </div>
 </div>
 
@@ -450,9 +455,9 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
     { id:'tp-surg', date:'2019-08-31', name:'手術時' },
     { id:'tp-p4', date:'2019-09-28', name:'術後4w' },
     { id:'tp-p12', date:'2019-11-23', name:'術後12w' },
-    { id:'tp-p24', date:'2020-02-15', name:'術後24w' },
-    { id:'tp-p36', date:'2020-05-09', name:'術後36w' },
-    { id:'tp-p48', date:'2020-08-01', name:'術後48w' },
+    { id:'tp-p24', date:'2020-02-15', name:'治療開始後24w' },
+    { id:'tp-p36', date:'2020-05-09', name:'治療開始後32w' },
+    { id:'tp-p48', date:'2020-08-01', name:'治療開始後40w' },
     { id:'tp-rec', date:'2021-01-16', name:'再発時' },
     { id:'tp-rsurg', date:'2021-03-06', name:'初回再発後手術時' },
     { id:'tp-rp4', date:'2021-04-03', name:'初回再発後術後4w' },
@@ -647,7 +652,7 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
     if (style === 'surgery') return '<span class="dot-surgery"></span>';
     const color = typeof d === 'object' ? d.color : d;
     const count = typeof d === 'object' ? d.count : undefined;
-    const cls = { b:'dot-blue', blue:'dot-blue', gray:'dot-gray', pend:'dot-pending', unjudged:'dot-unjudged', red:'dot-red' }[color] || 'dot-blue';
+    const cls = { b:'dot-blue', blue:'dot-blue', gray:'dot-gray', pend:'dot-pending', unjudged:'dot-unjudged', red:'dot-red', yellow:'dot-yellow' }[color] || 'dot-blue';
     if (count && count > 1) {
       return `<span class="dot-wrap"><span class="dot ${cls}"></span><span class="dot-count">${count}</span></span>`;
     }
@@ -686,18 +691,29 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
   }
 
   function renderEdcRow() {
-    const statuses = ['完了', '完了', '完了', '未完了', '完了', '未完了', '完了', '完了', '完了', '未完了'];
+    const statuses = [
+      { color:'blue', label:'入力完了' },
+      { color:'blue', label:'入力完了' },
+      { color:'blue', label:'入力完了' },
+      { color:'red', label:'未入力' },
+      { color:'red', label:'未入力' },
+      { color:'blue', label:'入力完了' },
+      { color:'yellow', label:'一時保存' },
+      { color:'blue', label:'入力完了' },
+      { color:'blue', label:'入力完了' },
+      { color:'red', label:'未入力' },
+    ];
     return `<tr><td class="row-label sec-hd">edc visit</td>` +
       APP_TPS.map((tp, i) => {
-        const done = statuses[i] === '完了';
+        const status = statuses[i] || { color:'blue', label:'入力完了' };
+        const cls = status.color === 'red' ? 'dot-red' : status.color === 'yellow' ? 'dot-yellow' : 'dot-blue';
         return `<td class="sec-cell ${cellClass(tp)} no-click">
-          <span class="dot ${done ? 'dot-green' : 'dot-red'}"
-            onmouseenter="showStatusTip(event,'${statuses[i]}')"
+          <span class="dot ${cls}"
+            onmouseenter="showStatusTip(event,'${status.label}')"
             onmouseleave="hideTip()"></span>
         </td>`;
       }).join('') + '</tr>';
   }
-
   function renderSection(label) {
     return `<tr><td class="row-label sec-hd">${label}</td>${APP_TPS.map(tp => `<td class="sec-cell ${cellClass(tp)}"></td>`).join('')}</tr>`;
   }

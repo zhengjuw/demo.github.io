@@ -23,6 +23,7 @@
   --text-light: #94a3b8;
   --red: #dc2626;
   --amber: #d97706;
+  --yellow: #facc15;
   --header-h: 52px;
   --font: 'Noto Sans JP', sans-serif;
   --mono: 'IBM Plex Mono', monospace;
@@ -105,6 +106,8 @@ body {
 .data-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .leg-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-mid); }
 .ldot { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); }
+.ldot-red { background: var(--red); }
+.ldot-yellow { background: var(--yellow); }
 .lline { width: 18px; height: 3px; border-radius: 2px; }
 .lline-blue { background: var(--blue); }
 
@@ -178,6 +181,8 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 .dot:hover { transform: scale(1.35); }
 .dot-blue    { background: var(--blue); box-shadow: 0 0 0 2px rgba(61,126,255,0.15); }
 .dot-bluedark { background: var(--blue-dark); box-shadow: 0 0 0 2px rgba(30,58,138,0.15); }
+.dot-red     { background: var(--red); box-shadow: 0 0 0 2px rgba(220,38,38,0.15); }
+.dot-yellow  { background: var(--yellow); box-shadow: 0 0 0 2px rgba(250,204,21,0.25); }
 .dot-gray    { border: 1.5px solid #c7d4ea; background: #f5f7fa; }
 .dot-pending { border: 1.5px dashed #94a3b8; background: transparent; }
 
@@ -298,6 +303,9 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 <div id="legend-bar">
   <div class="data-group">
     <div class="leg-item"><div class="ldot"></div>EDC / 手術 / 臨床画像 / 病理画像 </div>
+    <div class="leg-item"><div class="ldot ldot-red"></div>未入力</div>
+    <div class="leg-item"><div class="ldot"></div>入力完了</div>
+    <div class="leg-item"><div class="ldot ldot-yellow"></div>一時保存</div>
     <div class="leg-item"><div class="lline lline-blue"></div>薬物療法 / 放射線治療 / 補助化学療法 </div>
   </div>
 </div>
@@ -369,7 +377,16 @@ function mkD(arr) {
 }
 
 const ROWS = [
-  { type:'edc', label:'edc visit', dots: mkD(['b','b','b','b','b','b','b','b']) },
+  { type:'edc', label:'edc visit', dots: mkD([
+    'b',
+    'b',
+    'b',
+    { color:'red', status:'未入力' },
+    { color:'blue', status:'入力完了' },
+    { color:'yellow', status:'一時保存' },
+    'b',
+    'b'
+  ]) },
 
   { type:'sec', label:'治療' },
 
@@ -443,9 +460,15 @@ function buildBody() {
     }
 
     if (row.type === 'edc') {
+      const edcEntry = `<span class="section-label-with-action"><span>${row.label}</span><button class="btn btn-dicom" type="button" onclick="event.stopPropagation()">EDC</button></span>`;
       h += `<tr>
-        <td class="row-label sec-hd">${row.label}</td>
-        ${TPS.map((tp,ci)=>`<td class="sec-cell no-click">${renderDot(row.dots?.[ci], row.dotStyle)}</td>`).join('')}
+        <td class="row-label sec-hd">${edcEntry}</td>
+        ${TPS.map((tp,ci)=>{
+          const d = row.dots?.[ci];
+          const status = typeof d === 'object' && d?.status ? d.status : '';
+          const title = status ? ` title="${status}" aria-label="${status}"` : '';
+          return `<td class="sec-cell no-click"${title}>${renderDot(d, row.dotStyle)}</td>`;
+        }).join('')}
       </tr>`;
       return;
     }
@@ -515,7 +538,7 @@ function renderDot(d, style) {
   let color, count;
   if (typeof d === 'object') { color = d.color; count = d.count; }
   else color = d;
-  const cm = {g:'dot-blue', b:'dot-blue', blue:'dot-blue', r:'dot-blue', red:'dot-blue', gray:'dot-gray', pend:'dot-pending'};
+  const cm = {g:'dot-blue', b:'dot-blue', blue:'dot-blue', r:'dot-red', red:'dot-red', y:'dot-yellow', yellow:'dot-yellow', gray:'dot-gray', pend:'dot-pending'};
   const cls = cm[color] || 'dot-gray';
   if (count && count > 1) {
     return `<span class="dot-wrap"><span class="dot ${cls}"></span><span class="dot-count">${count}</span></span>`;

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja" style="height:100%">
 
 <head>
@@ -124,7 +124,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 860px;
+            min-width: 960px;
         }
 
         thead th {
@@ -525,6 +525,9 @@
                                     <input type="text" id="id-search" placeholder="参加者IDを検索..."
                                         oninput="updateDraft('id')">
                                 </div>
+                                <div class="filter-list" style="margin-top:8px;">
+                                    <span class="pill" id="id-pending-pill" onclick="toggleIdPendingOnly()">確認待ちのみ</span>
+                                </div>
                                 <div class="dropdown-actions right">
                                     <button class="dropdown-ok" type="button" onclick="commitDropdown('id')">OK</button>
                                 </div>
@@ -710,6 +713,41 @@
                     <th>
                         <div class="th-inner">
                             <div class="th-label-row">
+                                <span class="th-title" onclick="toggleDropdown('recurrenceCount')">再発/増悪回数
+                                    <span class="filter-trigger" aria-hidden="true">
+                                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 3.5H12L8.5 7.7V11L5.5 12V7.7L2 3.5Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </span>
+                                <span class="sort-icon" onclick="sortTable('recurrenceCount')" id="sort-recurrenceCount">
+                                    <svg viewBox="0 0 8 5" fill="currentColor">
+                                        <path d="M4 0L8 5H0z" />
+                                    </svg>
+                                    <svg viewBox="0 0 8 5" fill="currentColor" style="transform:rotate(180deg)">
+                                        <path d="M4 0L8 5H0z" />
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="filter-dropdown" id="dropdown-recurrenceCount" data-dropdown="recurrenceCount">
+                                <div class="dropdown-label">再発/増悪回数を選択</div>
+                                <div class="filter-list">
+                                    <span class="pill" data-val="0" onclick="togglePill(this,'recurrenceCount')">0回</span>
+                                    <span class="pill" data-val="1" onclick="togglePill(this,'recurrenceCount')">1回</span>
+                                    <span class="pill" data-val="2" onclick="togglePill(this,'recurrenceCount')">2回</span>
+                                </div>
+                                <div class="dropdown-actions right">
+                                    <button class="dropdown-ok" type="button"
+                                        onclick="commitDropdown('recurrenceCount')">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+
+
+                    <th>
+                        <div class="th-inner">
+                            <div class="th-label-row">
                                 <span class="th-title" onclick="toggleDropdown('survival')">生存状況
                                     <span class="filter-trigger" aria-hidden="true">
                                         <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -783,7 +821,7 @@
             </thead>
             <tbody id="table-body">
                 <tr id="empty-row" style="display:none">
-                    <td colspan="8">該当するデータがありません</td>
+                    <td colspan="9">該当するデータがありません</td>
                 </tr>
             </tbody>
         </table>
@@ -811,11 +849,16 @@
             { id: 'M30181818', age: 90, gender: '男性', regdate: '2020-03-11', cohort: 'B3：根治的な非手術療法', cancer: '肺癌', survival: '死亡', deathdate: '2021-11-03' },
             { id: 'M30191919', age: 55, gender: '女性', regdate: '2020-04-05', cohort: 'C1：WGS-based MRD', cancer: '大腸癌', survival: '生存', deathdate: '' },
         ];
+        rawData.forEach((d, i) => {
+            d.recurrenceCount = i < 2 ? 1 : (i % 2 === 0 ? 2 : 0);
+        });
 
         const committed = {
             idQ: '',
+            idPendingOnly: false,
             ageMin: '',
             ageMax: '',
+            recurrenceCount: new Set(),
             gender: new Set(),
             cohort: new Set(),
             cancer: new Set(),
@@ -842,8 +885,10 @@
         function cloneState(src) {
             return {
                 idQ: src.idQ,
+                idPendingOnly: src.idPendingOnly,
                 ageMin: src.ageMin,
                 ageMax: src.ageMax,
+                recurrenceCount: new Set(src.recurrenceCount),
                 gender: new Set(src.gender),
                 cohort: new Set(src.cohort),
                 cancer: new Set(src.cancer),
@@ -882,6 +927,7 @@
           <td>${d.regdate}</td>
           <td>${d.cohort || ''}</td>
           <td>${d.cancer || ''}</td>
+          <td>${d.recurrenceCount}</td>
           <td><span class="badge ${d.survival === '生存' ? 'badge-alive' : 'badge-dead'}">${d.survival}</span></td>
           <td>${d.deathdate || ''}</td>
         `;
@@ -893,6 +939,7 @@
             return [...data].sort((a, b) => {
                 let va, vb;
                 if (col === 'age') { va = a.age; vb = b.age; }
+                if (col === 'recurrenceCount') { va = a.recurrenceCount; vb = b.recurrenceCount; }
                 if (col === 'regdate') { va = a.regdate; vb = b.regdate; }
                 if (col === 'deathdate') { va = a.deathdate || ''; vb = b.deathdate || ''; }
                 if (va < vb) return -1 * dir;
@@ -942,11 +989,13 @@
 
             let result = rawData.filter(d => {
                 if (committed.idQ && !d.id.toLowerCase().includes(committed.idQ)) return false;
+                if (committed.idPendingOnly && d.id !== 'M30022222') return false;
                 if (d.age < ageMin || d.age > ageMax) return false;
                 if (!inDateRange(d.regdate, committed.reg.from, committed.reg.to)) return false;
                 if (d.deathdate && !inDateRange(d.deathdate, committed.death.from, committed.death.to)) return false;
                 if (!d.deathdate && (boundaryDate(committed.death.from, false) || boundaryDate(committed.death.to, true))) return false;
                 if (committed.gender.size > 0 && !committed.gender.has(d.gender)) return false;
+                if (committed.recurrenceCount.size > 0 && !committed.recurrenceCount.has(String(d.recurrenceCount))) return false;
                 if (committed.cohort.size > 0 && !committed.cohort.has(d.cohort)) return false;
                 if (committed.cancer.size > 0 && !committed.cancer.has(d.cancer)) return false;
                 if (committed.survival.size > 0 && !committed.survival.has(d.survival)) return false;
@@ -960,6 +1009,7 @@
         function syncDraftUI(key) {
             if (key === 'id') {
                 document.getElementById('id-search').value = draft.idQ;
+                document.getElementById('id-pending-pill')?.classList.toggle('active', draft.idPendingOnly);
                 return;
             }
             if (key === 'age') {
@@ -983,7 +1033,7 @@
                 });
                 return;
             }
-            ['gender', 'cohort', 'cancer', 'survival'].forEach(k => {
+            ['gender', 'recurrenceCount', 'cohort', 'cancer', 'survival'].forEach(k => {
                 if (k !== key) return;
                 document.querySelectorAll(`#dropdown-${k} .pill`).forEach(p => {
                     p.classList.toggle('active', draft[k].has(p.dataset.val));
@@ -992,11 +1042,14 @@
         }
 
         function setDraftFromCommitted(key) {
-            if (key === 'id') draft.idQ = committed.idQ;
+            if (key === 'id') {
+                draft.idQ = committed.idQ;
+                draft.idPendingOnly = committed.idPendingOnly;
+            }
             if (key === 'age') { draft.ageMin = committed.ageMin; draft.ageMax = committed.ageMax; }
             if (key === 'regdate') draft.reg = { from: { ...committed.reg.from }, to: { ...committed.reg.to } };
             if (key === 'deathdate') draft.death = { from: { ...committed.death.from }, to: { ...committed.death.to } };
-            if (['gender', 'cohort', 'cancer', 'survival'].includes(key)) draft[key] = new Set(committed[key]);
+            if (['gender', 'recurrenceCount', 'cohort', 'cancer', 'survival'].includes(key)) draft[key] = new Set(committed[key]);
             syncDraftUI(key);
         }
 
@@ -1028,9 +1081,15 @@
             el.classList.toggle('active');
         }
 
+        function toggleIdPendingOnly() {
+            draft.idPendingOnly = !draft.idPendingOnly;
+            document.getElementById('id-pending-pill')?.classList.toggle('active', draft.idPendingOnly);
+        }
+
         function commitDropdown(key) {
             if (key === 'id') {
                 committed.idQ = draft.idQ;
+                committed.idPendingOnly = draft.idPendingOnly;
             } else if (key === 'age') {
                 committed.ageMin = draft.ageMin;
                 committed.ageMax = draft.ageMax;
@@ -1044,7 +1103,7 @@
                     from: { ...draft.death.from },
                     to: { ...draft.death.to },
                 };
-            } else if (['gender', 'cohort', 'cancer', 'survival'].includes(key)) {
+            } else if (['gender', 'recurrenceCount', 'cohort', 'cancer', 'survival'].includes(key)) {
                 committed[key] = new Set(draft[key]);
             }
             closeAllDropdowns();
@@ -1134,6 +1193,7 @@
                 if (committed[k] instanceof Set) committed[k].clear();
             });
             committed.idQ = '';
+            committed.idPendingOnly = false;
             committed.ageMin = '';
             committed.ageMax = '';
             committed.reg = { from: { y: '', m: '', d: '' }, to: { y: '', m: '', d: '' } };
@@ -1143,6 +1203,7 @@
                 if (draft[k] instanceof Set) draft[k].clear();
             });
             draft.idQ = '';
+            draft.idPendingOnly = false;
             draft.ageMin = '';
             draft.ageMax = '';
             draft.reg = { from: { y: '', m: '', d: '' }, to: { y: '', m: '', d: '' } };
