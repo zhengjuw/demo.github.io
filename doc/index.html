@@ -15,7 +15,7 @@
   --blue-soft: #dbeafe;
   --border: #e2e8f0;
   --border-light: #eef2f8;
-  --border-dashed: #e2e8f0; 
+  --border-dashed: #e2e8f0;
   --bg: #f5f7fa;
   --surface: #ffffff;
   --text-dark: #1a2332;
@@ -38,7 +38,6 @@ body {
   color: var(--text-dark);
   font-size: 13px; line-height: 1.5;
 }
-
 /* ── Top header ── */
 #top-header {
   height: var(--header-h);
@@ -62,7 +61,6 @@ body {
 }
 .hd-divider { width: 1px; height: 20px; background: #c7d4ea; }
 .hd-spacer { flex: 1; }
-
 /* ── Patient bar ── */
 #patient-bar {
   background: #fff; border-bottom: 1px solid var(--border);
@@ -96,7 +94,6 @@ body {
 }
 .btn:hover { background: var(--bg); }
 .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue-mid); }
-
 /* ── Legend bar ── */
 #legend-bar {
   background: var(--blue-pale); border-bottom: 1px solid var(--border);
@@ -110,13 +107,11 @@ body {
 .ldot-yellow { background: var(--yellow); }
 .lline { width: 18px; height: 3px; border-radius: 2px; }
 .lline-blue { background: var(--blue); }
-
 /* ── Main ── */
 #main { flex: 1; overflow: hidden; display: flex; flex-direction: column; background: #fff;}
 .tl-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 .tl-scroll { flex: 1; overflow: auto; position: relative; }
 .tl-table { width: max-content; min-width: 100%; border-collapse: collapse; }
-
 /* Header */
 .thead-group th {
   position: sticky; top: 0; z-index: 20;
@@ -124,12 +119,10 @@ body {
   font-weight: 500; text-align: center; padding: 0;
 }
 .thead-group th.col-label { left: 0; z-index: 30; text-align: left; width: 190px; min-width: 190px; }
-
 .tp-header { padding: 6px 10px 5px; min-width: 88px; }
 .tp-date { font-size: 10px; color: var(--text-light); font-family: var(--mono); display: block; margin-bottom: 1px; }
 .tp-name { font-size: 11px; font-weight: 600; display: block; }
 .tp-name { color: var(--blue-dark); }
-
 /* Label column (Sticky Left) */
 td.row-label {
   position: sticky; left: 0; z-index: 10;
@@ -146,7 +139,6 @@ td.row-label.sub-hd { background: #f8faff; font-weight: 600; color: var(--text-d
 td.row-label.item-row { padding-left: 32px; }
 td.row-label.sub-item { padding-left: 44px; color: var(--text-dark); font-weight: 500; }
 td.row-label.deep-item { padding-left: 56px; color: var(--text-light); }
-
 /* Collapse Icon */
 .toggle-btn {
   background: none; border: none; cursor: pointer;
@@ -156,11 +148,10 @@ td.row-label.deep-item { padding-left: 56px; color: var(--text-light); }
   display: inline-block; vertical-align: middle;
 }
 .toggle-btn.collapsed { transform: rotate(-90deg); }
-
 /* Data cells */
 td.dc {
   text-align: center; vertical-align: middle; height: 32px;
-  border-bottom: 1px dashed var(--border-dashed); 
+  border-bottom: 1px dashed var(--border-dashed);
   position: relative; cursor: pointer; transition: background 0.1s;
 }
 td.dc:hover { background: rgba(61,126,255,0.04); }
@@ -171,7 +162,6 @@ td.sec-cell.no-click .dot { cursor: default; }
 td.sec-cell { background: var(--blue-pale); border-bottom: 1px dashed #c7d8ff; height: 26px; border-top: 1px solid #c7d8ff; }
 td.sec-cell { text-align: center; vertical-align: middle; }
 td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light); height: 26px; }
-
 /* Dots */
 .dot {
   display: inline-block; width: 10px; height: 10px; border-radius: 50%;
@@ -185,7 +175,6 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 .dot-yellow  { background: var(--yellow); box-shadow: 0 0 0 2px rgba(250,204,21,0.25); }
 .dot-gray    { border: 1.5px solid #c7d4ea; background: #f5f7fa; }
 .dot-pending { border: 1.5px dashed #94a3b8; background: transparent; }
-
 .dot-wrap { position: relative; display: inline-block; }
 .dot-count {
   position: absolute; top: -6px; right: -7px;
@@ -200,7 +189,6 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
   border: 1.5px solid var(--blue); background: transparent;
   display: inline-block; vertical-align: middle;
 }
-
 /* Bars */
 .treatment-bar {
   position: absolute; top: 50%; transform: translateY(-50%);
@@ -208,7 +196,6 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
   transition: height 0.15s, opacity 0.15s; z-index: 2;
 }
 .treatment-bar:hover { height: 8px; opacity: 0.85; }
-
 /* Minimap */
 .tl-minimap {
   height: 22px; background: #fff; border-top: 1px solid var(--border);
@@ -216,7 +203,6 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 }
 .mm-track { flex:1; height:5px; background:var(--bg); border-radius:3px; position:relative; cursor:pointer; }
 .mm-thumb { position:absolute; top:0; height:100%; background:#c7d8ff; border-radius:3px; min-width:40px; }
-
 /* Drawer & Tooltip */
 .drawer-overlay { position:fixed; inset:0; background:rgba(26,35,50,0.18); z-index:200; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .drawer-overlay.open { opacity:1; pointer-events:all; }
@@ -253,7 +239,6 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 .fl { color:var(--text-mid); } .fv { color:var(--text-dark); font-weight:500; text-align:right; }
 .badge { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:10px; font-size:11px; font-weight:500; }
 .badge-ok   { background:#f0fdf4; color:var(--blue-mid); } .badge-warn { background:#fef2f2; color:var(--red); } .badge-pend { background:var(--bg); color:var(--text-mid); border:1px solid var(--border); }
-
 .tooltip { position:fixed; background:var(--text-dark); color:#fff; font-size:11px; padding:6px 10px; border-radius:var(--radius); pointer-events:none; z-index:500; white-space:nowrap; opacity:0; transition:opacity 0.1s; line-height:1.7; }
 .tooltip.show { opacity:1; }
 .btn-dicom {
@@ -280,13 +265,11 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 </style>
 </head>
 <body>
-
 <div id="top-header">
   <img id="logo" src="./image13215-yqx-200w.png" alt="Logo">
   <h3>参加者ポータル</h3>
   <div class="hd-spacer"></div>
 </div>
-
 <div id="patient-bar">
   <a href="../index.html" class="back-btn">← 戻る</a>
   <div class="pt-sep"></div>
@@ -294,22 +277,19 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
   <span class="pill pill-id">M30011111</span>
   <span class="pill pill-gray">56歳 · 男性</span>
   <span class="pill pill-gray">登録日：2024-06-24</span>
-  <span class="pill pill-gray">コホートA</span>
+  <span class="pill pill-gray">コホートA：根治治療不能であり、緩和的薬物療法</span>
   <span class="pill pill-gray">結腸・直腸癌</span>
-  <span class="pill pill-gray">生存</span>
+  <span class="pill pill-gray">再発/増悪回数: 2回</span>
   <div class="pt-spacer"></div>
 </div>
-
 <div id="legend-bar">
   <div class="data-group">
-    <div class="leg-item"><div class="ldot"></div>EDC / 手術 / 臨床画像 / 病理画像 </div>
     <div class="leg-item"><div class="ldot ldot-red"></div>未入力</div>
     <div class="leg-item"><div class="ldot"></div>入力完了</div>
     <div class="leg-item"><div class="ldot ldot-yellow"></div>一時保存</div>
     <div class="leg-item"><div class="lline lline-blue"></div>薬物療法 / 放射線治療 / 補助化学療法 </div>
   </div>
 </div>
-
 <div id="main">
   <div class="tl-wrap">
     <div class="tl-scroll" id="tlScroll">
@@ -324,7 +304,6 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
     </div>
   </div>
 </div>
-
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
   <div class="drawer-head">
@@ -355,27 +334,24 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
   </div>
 </div>
 <div class="tooltip" id="tooltip"></div>
-
 <script>
 const TPS = [
-  { id:'t0', date:'2024-06-24', name:'登録時',        phase:'e' },
-  { id:'t1', date:'2024-08-19', name:'治療開始後8w',  phase:'t' },
-  { id:'t2', date:'2024-10-14', name:'治療開始後16w', phase:'t' },
-  { id:'t3', date:'2024-12-09', name:'治療開始後24w', phase:'t' },
-  { id:'t4', date:'2025-02-03', name:'治療開始後32w', phase:'t' },
-  { id:'t5', date:'2025-03-31', name:'治療開始後40w', phase:'t' },
-  { id:'t6', date:'2025-06-26', name:'増悪時',        phase:'t' },
-  { id:'t7', date:'2025-07-21', name:'治療開始後56w', phase:'f' },
+  { id:'t0', date:'2024-06-24', name:'登録時',              phase:'e' },
+  { id:'t1', date:'2024-08-19', name:'治療開始後8w',        phase:'t' },
+  { id:'t2', date:'2024-10-14', name:'治療開始後16w/増悪時', phase:'t' },
+  { id:'t3', date:'2024-12-09', name:'治療開始後8w',        phase:'t' },
+  { id:'t4', date:'2025-02-03', name:'治療開始後16w',       phase:'t' },
+  { id:'t5', date:'2025-03-31', name:'治療開始後24w',       phase:'t' },
+  { id:'t6', date:'2025-06-26', name:'増悪時',              phase:'t' },
+  { id:'t7', date:'2025-07-21', name:'治療開始後32w',       phase:'f' },
 ];
 const N = TPS.length;
 const CL = {};
-
 function mkD(arr) {
   const out = [];
   for (let i = 0; i < N; i++) out.push(arr[i] !== undefined ? arr[i] : null);
   return out;
 }
-
 const ROWS = [
   { type:'edc', label:'edc visit', dots: mkD([
     'b',
@@ -387,32 +363,29 @@ const ROWS = [
     'b',
     'b'
   ]) },
-
   { type:'sec', label:'治療' },
-
   { type:'sub', label:'手術', noToggle:true },
   { type:'dot', label:'手術', indent:'item', dotStyle:'surgery',
     dots: mkD([null,null,null,null,null,null,null,null]) },
-
   { type:'sub', label:'放射線治療', toggleKey:'grp-radio' },
   { type:'dot', label:'X線', indent:'item', collapseKey:'grp-radio',
     dots: mkD([null,null,null,null,null,null,null,null]) },
   { type:'dot', label:'Y線', indent:'item', collapseKey:'grp-radio',
     dots: mkD([null,null,null,null,null,null,null,null]) },
-
   /* === 薬物療法 === */
   { type:'sub', label:'薬物療法', toggleKey:'grp-drug' },
-  
-  { type:'bar', label:'治療ライン 1', indent:'sub-item', collapseKey:'grp-drug', toggleKey:'grp-drug-line2',
-    start:1, end:6, color:'var(--blue)', dose:'500mg/month', barLabel:'FULVESTRANT (治療ライン 1)' },
+  { type:'bar', label:'治療ライン 1', indent:'sub-item', collapseKey:'grp-drug', toggleKey:'grp-drug-line1',
+    start:1, end:2, color:'var(--blue)', dose:'500mg/month', barLabel:'FULVESTRANT (治療ライン 1)' },
+  { type:'dot', label:'レジメン名', indent:'deep', collapseKey:['grp-drug', 'grp-drug-line1'],
+    dots: mkD([null,null,null,null,null,null,null,null]) },
+  { type:'bar', label:'治療ライン 2', indent:'sub-item', collapseKey:'grp-drug', toggleKey:'grp-drug-line2',
+    start:3, end:7, color:'var(--blue)', dose:'500mg/month', barLabel:'治療ライン 2' },
   { type:'dot', label:'レジメン名', indent:'deep', collapseKey:['grp-drug', 'grp-drug-line2'],
     dots: mkD([null,null,null,null,null,null,null,null]) },
-
   /* === 補助化学療法 === */
   { type:'sub', label:'補助化学療法', toggleKey:'grp-adj-chemo' },
   { type:'dot', label:'薬剤名', indent:'item', collapseKey:'grp-adj-chemo',
     dots: mkD([null,null,null,null,null,null,null,null]) },
-
   { type:'sec', label:'臨床画像 / 診断レポート' },
   { type:'dot', label:'PET-CT', indent:'item',
     dots: mkD([null,null,null,null,'b',null,'b',null]), drawerType:'img' },
@@ -424,12 +397,12 @@ const ROWS = [
     dots: mkD([null,null,'b',null,null,null,null,null]), drawerType:'img' },
   { type:'dot', label:'内視鏡検査', indent:'item',
     dots: mkD([null,'b',null,null,null,null,'b',null]), drawerType:'img' },
-
+  /* === 病理画像 (コメントアウト) ===
   { type:'sec', label:'病理画像' },
   { type:'dot', label:'HE染色', indent:'item',
     dots: mkD([null,null,null,null,null,null,null,null]), drawerType:'path' }
+  === */
 ];
-
 function buildHead() {
   let h = '<tr class="thead-group"><th class="col-label" style="border-right:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text-light);font-weight:600;text-align:left;"></th>';
   TPS.forEach(tp => {
@@ -441,7 +414,6 @@ function buildHead() {
   h += '</tr>';
   document.getElementById('tlHead').innerHTML = h;
 }
-
 function buildBody() {
   let h = '';
   ROWS.forEach(row => {
@@ -449,16 +421,10 @@ function buildBody() {
       const keys = Array.isArray(row.collapseKey) ? row.collapseKey : [row.collapseKey];
       if (keys.some(k => CL[k])) return;
     }
-
     if (row.type === 'sec') {
-      const secAction = row.label === '臨床画像 / 診断レポート'
-        ? `<button class="btn btn-dicom" onclick="window.open('./viewer/index.html?exam=CT&timepoint=t0&occurrence=0', '_blank', 'noopener')">画像閲覧</button>`
-        : '';
-      const secLabel = secAction ? `<span class="section-label-with-action"><span>${row.label}</span>${secAction}</span>` : row.label;
-      h += `<tr><td class="row-label sec-hd">${secLabel}</td>${TPS.map(tp=>`<td class="sec-cell"></td>`).join('')}</tr>`;
+      h += `<tr><td class="row-label sec-hd">${row.label}</td>${TPS.map(tp=>`<td class="sec-cell"></td>`).join('')}</tr>`;
       return;
     }
-
     if (row.type === 'edc') {
       const edcEntry = `<span class="section-label-with-action"><span>${row.label}</span><button class="btn btn-dicom" type="button" onclick="event.stopPropagation()">EDC</button></span>`;
       h += `<tr>
@@ -472,21 +438,18 @@ function buildBody() {
       </tr>`;
       return;
     }
-
     if (row.type === 'sub') {
       const ic = row.toggleKey ? !!CL[row.toggleKey] : false;
       const btn = row.toggleKey ? `<button class="toggle-btn ${ic?'collapsed':''}" onclick="toggleGrp('${row.toggleKey}')">▼</button>` : '';
       h += `<tr><td class="row-label sub-hd">${btn}${row.label}</td>${TPS.map(tp=>`<td class="sub-cell"></td>`).join('')}</tr>`;
       return;
     }
-
     if (row.type === 'sub2') {
       const ic = row.toggleKey ? !!CL[row.toggleKey] : false;
       const btn = row.toggleKey ? `<button class="toggle-btn ${ic?'collapsed':''}" onclick="toggleGrp('${row.toggleKey}')">▼</button>` : '';
       h += `<tr><td class="row-label sub-item" style="padding-left:36px;">${btn}${row.label}</td>${TPS.map(tp=>`<td class="sub-cell"></td>`).join('')}</tr>`;
       return;
     }
-
     if (row.type === 'bar') {
       const sp = (row.start / N) * 100;
       const ep = ((row.end + 1) / N) * 100;
@@ -497,7 +460,6 @@ function buildBody() {
       const cls = {item:'item-row','sub-item':'sub-item',deep:'deep-item'}[row.indent]||'item-row';
       const ic = row.toggleKey ? !!CL[row.toggleKey] : false;
       const btn = row.toggleKey ? `<button class="toggle-btn ${ic?'collapsed':''}" onclick="toggleGrp('${row.toggleKey}')">▼</button>` : '';
-
       h += `<tr>
         <td class="row-label ${cls}" style="padding-left:${px}px;">${btn}${row.label}</td>
         <td colspan="${N}" style="padding:0;border-bottom:1px dashed var(--border-dashed);position:relative;height:32px;">
@@ -511,12 +473,10 @@ function buildBody() {
       </tr>`;
       return;
     }
-
     const px = {item:32,'sub-item':44,deep:56}[row.indent]||32;
     const cls = {item:'item-row','sub-item':'sub-item',deep:'deep-item'}[row.indent]||'item-row';
     const ic = row.toggleKey ? !!CL[row.toggleKey] : false;
     const btn = row.toggleKey ? `<button class="toggle-btn ${ic?'collapsed':''}" onclick="toggleGrp('${row.toggleKey}')">▼</button>` : '';
-    
     h += `<tr>
       <td class="row-label ${cls}" style="padding-left:${px}px;">${btn}${row.label}</td>
       ${TPS.map((tp,ci)=>{
@@ -531,7 +491,6 @@ function buildBody() {
   });
   document.getElementById('tlBody').innerHTML = h;
 }
-
 function renderDot(d, style) {
   if (!d) return '';
   if (style === 'surgery') return '<span class="dot-surgery"></span>';
@@ -545,17 +504,13 @@ function renderDot(d, style) {
   }
   return `<span class="dot ${cls}"></span>`;
 }
-
 function toggleGrp(key) { CL[key]=!CL[key]; buildBody(); syncMinimap(); }
-
 const tt = document.getElementById('tooltip');
 function showTip(e,name,start,end,dose) { tt.innerHTML=`<strong>${name}</strong><br>開始：${start}<br>終了：${end}${dose?'<br>用量：'+dose:''}`; tt.classList.add('show'); posTip(e); }
 function hideTip() { tt.classList.remove('show'); }
 function posTip(e) { tt.style.left=(e.clientX+12)+'px'; tt.style.top=(e.clientY-10)+'px'; }
 document.addEventListener('mousemove',e=>{ if(tt.classList.contains('show')) posTip(e); });
-
 let imagePopupState = { records: [], index: 0 };
-
 function openDotDetail(label,tpId,tpName,tpDate,status,dtype,ci) {
   if (dtype === 'img') {
     openImagePopup(label,tpId,tpName,tpDate,ci);
@@ -563,13 +518,11 @@ function openDotDetail(label,tpId,tpName,tpDate,status,dtype,ci) {
   }
   openDotDrawer(label,tpName,tpDate,status,dtype);
 }
-
 function addDays(dateText, days) {
   const dt = new Date(dateText + 'T00:00:00');
   dt.setDate(dt.getDate() + days);
   return dt.toISOString().slice(0, 10);
 }
-
 function imageRecords(label,tpId,tpName,tpDate,ci) {
   const row = ROWS.find(r => r.label === label && r.drawerType === 'img');
   const d = row?.dots?.[ci];
@@ -583,7 +536,6 @@ function imageRecords(label,tpId,tpName,tpDate,ci) {
     no: i + 1,
   }));
 }
-
 function openImagePopup(label,tpId,tpName,tpDate,ci) {
   imagePopupState = { records: imageRecords(label,tpId,tpName,tpDate,ci), index: 0 };
   document.getElementById('imagePopupTitle').textContent = label;
@@ -591,7 +543,6 @@ function openImagePopup(label,tpId,tpName,tpDate,ci) {
   renderImagePopup();
   document.getElementById('imagePopupOverlay').classList.add('open');
 }
-
 function renderImagePopup() {
   const { records, index } = imagePopupState;
   const rec = records[index];
@@ -616,14 +567,12 @@ function renderImagePopup() {
       </div>` : ''}
   `;
 }
-
 function changeImagePopupPage(delta) {
   const next = imagePopupState.index + delta;
   if (next < 0 || next >= imagePopupState.records.length) return;
   imagePopupState.index = next;
   renderImagePopup();
 }
-
 function openImageViewer() {
   const rec = imagePopupState.records[imagePopupState.index];
   const query = new URLSearchParams({
@@ -633,21 +582,17 @@ function openImageViewer() {
   });
   window.open(`./viewer/index.html?${query.toString()}`, "_blank", "noopener");
 }
-
 function openReportPdf() {
   document.getElementById('pdfOverlay').classList.add('open');
 }
-
 function closeReportPdf(e) {
   if (e && e.target !== document.getElementById('pdfOverlay')) return;
   document.getElementById('pdfOverlay').classList.remove('open');
 }
-
 function closeImagePopup(e) {
   if (e && e.target !== document.getElementById('imagePopupOverlay')) return;
   document.getElementById('imagePopupOverlay').classList.remove('open');
 }
-
 function openDotDrawer(label,tpName,tpDate,status,dtype) {
   document.getElementById('drawerTitle').textContent=label;
   document.getElementById('drawerSub').textContent=`${tpName}  ·  ${tpDate}`;
@@ -671,7 +616,6 @@ function openDotDrawer(label,tpName,tpDate,status,dtype) {
     ${extra}`;
   openDrawer();
 }
-
 // Treatment line metadata keyed by barLabel
 const TREATMENT_META = {
   'FULVESTRANT (治療ライン 1)': {
@@ -683,7 +627,6 @@ const TREATMENT_META = {
     dose: '500 mg/月',
   }
 };
-
 function openBarDrawer(name,start,end,dose,color) {
   document.getElementById('drawerTitle').textContent=name;
   document.getElementById('drawerSub').textContent=`${start} 〜 ${end}`;
@@ -714,10 +657,8 @@ function openBarDrawer(name,start,end,dose,color) {
     </div>`;
   openDrawer();
 }
-
 function openDrawer()  { document.getElementById('drawer').classList.add('open');    document.getElementById('drawerOverlay').classList.add('open'); }
 function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); }
-
 function syncMinimap() {
   const scr=document.getElementById('tlScroll');
   const thumb=document.getElementById('mmThumb');
@@ -726,7 +667,6 @@ function syncMinimap() {
   thumb.style.left=(scr.scrollLeft/scr.scrollWidth*100)+'%';
 }
 document.getElementById('tlScroll').addEventListener('scroll',()=>{ syncMinimap(); });
-
 buildHead();
 buildBody();
 setTimeout(()=>{ syncMinimap(); },150);
