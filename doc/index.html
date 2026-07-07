@@ -538,8 +538,8 @@ function imageRecords(label,tpId,tpName,tpDate,ci) {
 }
 function openImagePopup(label,tpId,tpName,tpDate,ci) {
   imagePopupState = { records: imageRecords(label,tpId,tpName,tpDate,ci), index: 0 };
-  document.getElementById('imagePopupTitle').textContent = label;
-  document.getElementById('imagePopupSub').textContent = `${tpName}  ·  ${tpDate}`;
+  document.getElementById('imagePopupTitle').textContent = '検査情報';
+  document.getElementById('imagePopupSub').textContent = '';
   renderImagePopup();
   document.getElementById('imagePopupOverlay').classList.add('open');
 }
@@ -549,11 +549,9 @@ function renderImagePopup() {
   const multiple = records.length > 1;
   document.getElementById('imagePopupBody').innerHTML = `
     <div class="dsec" style="margin-bottom:0;">
-      <div class="dsec-title">検査情報</div>
+      <div class="fr"><span class="fl">検査種別</span><span class="fv">${rec.examType}</span></div>
       <div class="fr"><span class="fl">検査日</span><span class="fv" style="font-family:var(--mono)">${rec.examDate}</span></div>
       <div class="fr"><span class="fl">timepoint</span><span class="fv">${rec.timepointName}</span></div>
-      <div class="fr"><span class="fl">timepoint ID</span><span class="fv" style="font-family:var(--mono)">${rec.timepointId}</span></div>
-      <div class="fr"><span class="fl">検査種別</span><span class="fv">${rec.examType}</span></div>
     </div>
     <div class="popup-actions">
       <button class="popup-action-btn" type="button" onclick="openImageViewer()">画像閲覧</button>

@@ -27,7 +27,7 @@
         #clear-btn { font-size: 11px; color: var(--text-light); background: none; border: none; cursor: pointer; padding: 3px 8px; border-radius: 5px; transition: background 0.12s, color 0.12s; }
         #clear-btn:hover { background: #fee2e2; color: #dc2626; }
         #table-wrap { flex: 1; overflow: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 960px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1040px; }
         thead th { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 2px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; user-select: none; vertical-align: top; }
         thead th:last-child { border-right: none; }
         .th-inner { position: relative; display: flex; flex-direction: column; gap: 0; }
@@ -71,11 +71,11 @@
         tbody td { padding: 10px 14px; font-size: 12px; color: var(--text-mid); white-space: nowrap; vertical-align: middle; }
         td.col-id { color: var(--blue-mid); font-weight: 500; cursor: pointer; }
         td.col-id:hover { text-decoration: underline; }
-        .btn-kakunin { display: inline-block; margin-left: 8px; font-size: 10px; font-weight: 500; font-family: 'Noto Sans JP', sans-serif; padding: 2px 9px; border-radius: 10px; border: 1px solid #f59e0b; background: #fef3c7; color: #92400e; cursor: pointer; vertical-align: middle; transition: background 0.12s, border-color 0.12s; white-space: nowrap; }
-        .btn-kakunin:hover { background: #fde68a; border-color: #d97706; }
         .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 10px; border-radius: 10px; }
         .badge-yes { background: #dbeafe; color: #1e40af; }
         .badge-no { background: #f1f5f9; color: #475569; }
+        .badge-action { border: none; font-family: 'Noto Sans JP', sans-serif; cursor: pointer; transition: filter 0.12s; }
+        .badge-action:hover { filter: brightness(0.96); }
         #empty-row td { text-align: center; padding: 48px; color: var(--text-light); font-size: 13px; }
     </style>
 </head>
@@ -119,11 +119,31 @@
                                     <input type="text" id="id-search" placeholder="参加者IDを検索..."
                                         oninput="updateDraft('id')">
                                 </div>
-                                <div class="filter-list" style="margin-top:8px;">
-                                    <span class="pill" id="id-pending-pill" onclick="toggleIdPendingOnly()">確認待ちのみ</span>
-                                </div>
                                 <div class="dropdown-actions right">
                                     <button class="dropdown-ok" type="button" onclick="commitDropdown('id')">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="th-inner">
+                            <div class="th-label-row">
+                                <span class="th-title" onclick="toggleDropdown('confirmationPending')">確認待ち有無
+                                    <span class="filter-trigger" aria-hidden="true">
+                                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 3.5H12L8.5 7.7V11L5.5 12V7.7L2 3.5Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="filter-dropdown" id="dropdown-confirmationPending" data-dropdown="confirmationPending">
+                                <div class="dropdown-label">確認待ち有無を選択</div>
+                                <div class="filter-list">
+                                    <span class="pill" data-val="有" onclick="togglePill(this,'confirmationPending')">有</span>
+                                    <span class="pill" data-val="無" onclick="togglePill(this,'confirmationPending')">無</span>
+                                </div>
+                                <div class="dropdown-actions right">
+                                    <button class="dropdown-ok" type="button" onclick="commitDropdown('confirmationPending')">OK</button>
                                 </div>
                             </div>
                         </div>
@@ -323,7 +343,7 @@
             </thead>
             <tbody id="table-body">
                 <tr id="empty-row" style="display:none">
-                    <td colspan="8">該当するデータがありません</td>
+                    <td colspan="9">該当するデータがありません</td>
                 </tr>
             </tbody>
         </table>
@@ -352,12 +372,13 @@
         ];
         rawData.forEach((d, i) => {
             d.recurrenceCount = i < 2 ? 2 : (i % 2 === 0 ? 2 : 0);
+            d.confirmationPending = d.id === 'M30022222' ? '有' : '無';
         });
         const committed = {
             idQ: '',
-            idPendingOnly: false,
             ageMin: '',
             ageMax: '',
+            confirmationPending: new Set(),
             recurrenceCount: new Set(),
             gender: new Set(),
             cohort: new Set(),
@@ -374,9 +395,9 @@
         function cloneState(src) {
             return {
                 idQ: src.idQ,
-                idPendingOnly: src.idPendingOnly,
                 ageMin: src.ageMin,
                 ageMax: src.ageMax,
+                confirmationPending: new Set(src.confirmationPending),
                 recurrenceCount: new Set(src.recurrenceCount),
                 gender: new Set(src.gender),
                 cohort: new Set(src.cohort),
@@ -397,10 +418,13 @@
             data.forEach(d => {
                 const tr = document.createElement('tr');
                 tr.className = 'data-row';
-                const kakuninBtn = d.id === 'M30022222' ? `<span class="btn-kakunin">確認待ち</span>` : '';
+                const pendingBadge = d.confirmationPending === '有'
+                    ? `<button class="badge badge-yes badge-action" type="button" onclick="navigateToJudgement('${d.id}')">確認待ち</button>`
+                    : `<span class="badge badge-no">${d.confirmationPending}</span>`;
                 const migrationBadge = `<span class="badge ${d.cohortMigration === '有' ? 'badge-yes' : 'badge-no'}">${d.cohortMigration || ''}</span>`;
                 tr.innerHTML = `
-          <td class="col-id" onclick="navigateToParticipant('${d.id}')">${d.id}${kakuninBtn}</td>
+          <td class="col-id" onclick="navigateToParticipant('${d.id}')">${d.id}</td>
+          <td>${pendingBadge}</td>
           <td>${d.age}</td>
           <td>${d.gender}</td>
           <td>${d.regdate}</td>
@@ -458,7 +482,7 @@
             const ageMax = committed.ageMax === '' ? 999 : Number(committed.ageMax);
             let result = rawData.filter(d => {
                 if (committed.idQ && !d.id.toLowerCase().includes(committed.idQ)) return false;
-                if (committed.idPendingOnly && d.id !== 'M30022222') return false;
+                if (committed.confirmationPending.size > 0 && !committed.confirmationPending.has(d.confirmationPending)) return false;
                 if (d.age < ageMin || d.age > ageMax) return false;
                 if (!inDateRange(d.regdate, committed.reg.from, committed.reg.to)) return false;
                 if (committed.gender.size > 0 && !committed.gender.has(d.gender)) return false;
@@ -478,7 +502,6 @@
         function syncDraftUI(key) {
             if (key === 'id') {
                 document.getElementById('id-search').value = draft.idQ;
-                document.getElementById('id-pending-pill')?.classList.toggle('active', draft.idPendingOnly);
                 return;
             }
             if (key === 'age') {
@@ -494,7 +517,7 @@
                 });
                 return;
             }
-            ['gender', 'recurrenceCount', 'cohort', 'cancer', 'cohortMigration'].forEach(k => {
+            ['confirmationPending', 'gender', 'recurrenceCount', 'cohort', 'cancer', 'cohortMigration'].forEach(k => {
                 if (k !== key) return;
                 document.querySelectorAll(`#dropdown-${k} .pill`).forEach(p => {
                     p.classList.toggle('active', draft[k].has(p.dataset.val));
@@ -504,11 +527,10 @@
         function setDraftFromCommitted(key) {
             if (key === 'id') {
                 draft.idQ = committed.idQ;
-                draft.idPendingOnly = committed.idPendingOnly;
             }
             if (key === 'age') { draft.ageMin = committed.ageMin; draft.ageMax = committed.ageMax; }
             if (key === 'regdate') draft.reg = { from: { ...committed.reg.from }, to: { ...committed.reg.to } };
-            if (['gender', 'recurrenceCount', 'cohort', 'cancer', 'cohortMigration'].includes(key)) draft[key] = new Set(committed[key]);
+            if (['confirmationPending', 'gender', 'recurrenceCount', 'cohort', 'cancer', 'cohortMigration'].includes(key)) draft[key] = new Set(committed[key]);
             syncDraftUI(key);
         }
         function updateDraft(key) {
@@ -532,20 +554,15 @@
             else draft[key].add(val);
             el.classList.toggle('active');
         }
-        function toggleIdPendingOnly() {
-            draft.idPendingOnly = !draft.idPendingOnly;
-            document.getElementById('id-pending-pill')?.classList.toggle('active', draft.idPendingOnly);
-        }
         function commitDropdown(key) {
             if (key === 'id') {
                 committed.idQ = draft.idQ;
-                committed.idPendingOnly = draft.idPendingOnly;
             } else if (key === 'age') {
                 committed.ageMin = draft.ageMin;
                 committed.ageMax = draft.ageMax;
             } else if (key === 'regdate') {
                 committed.reg = { from: { ...draft.reg.from }, to: { ...draft.reg.to } };
-            } else if (['gender', 'recurrenceCount', 'cohort', 'cancer', 'cohortMigration'].includes(key)) {
+            } else if (['confirmationPending', 'gender', 'recurrenceCount', 'cohort', 'cancer', 'cohortMigration'].includes(key)) {
                 committed[key] = new Set(draft[key]);
             }
             closeAllDropdowns();
@@ -617,11 +634,11 @@
                 });
             });
             Object.keys(committed).forEach(k => { if (committed[k] instanceof Set) committed[k].clear(); });
-            committed.idQ = ''; committed.idPendingOnly = false;
+            committed.idQ = '';
             committed.ageMin = ''; committed.ageMax = '';
             committed.reg = { from: { y: '', m: '', d: '' }, to: { y: '', m: '', d: '' } };
             Object.keys(draft).forEach(k => { if (draft[k] instanceof Set) draft[k].clear(); });
-            draft.idQ = ''; draft.idPendingOnly = false;
+            draft.idQ = '';
             draft.ageMin = ''; draft.ageMax = '';
             draft.reg = { from: { y: '', m: '', d: '' }, to: { y: '', m: '', d: '' } };
             document.querySelectorAll('.pill.active').forEach(p => p.classList.remove('active'));
@@ -632,8 +649,12 @@
         }
         function navigateToParticipant(id) {
             if (id === 'M30011111') { window.location.href = './doc/index.html'; return; }
-            if (id === 'M30022222') { window.location.href = './doc/chart/index.html'; return; }
+            if (id === 'M30022222') { window.location.href = './doc/pending/index.html'; return; }
             console.log('navigateToParticipant:', id);
+        }
+        function navigateToJudgement(id) {
+            if (id === 'M30022222') { window.location.href = './doc/chart/index.html'; return; }
+            navigateToParticipant(id);
         }
         function fillDateSelects(prefix) {
             const regDates = rawData.map(d => d.regdate).filter(Boolean);

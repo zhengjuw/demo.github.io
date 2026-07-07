@@ -39,6 +39,10 @@ body { display: flex; flex-direction: column; font-family: var(--font); backgrou
 .btn:hover { background: var(--bg); }
 .btn-success { background:#16a34a; color:#fff; border-color:#15803d; }
 .btn-success:hover { background:#15803d; }
+.btn-pending { background:#fef3c7; color:#92400e; border-color:#f59e0b; }
+.btn-pending:hover { background:#fde68a; border-color:#d97706; }
+.section-label-with-action { display:inline-flex; align-items:center; gap:8px; }
+.section-label-with-action .btn-pending { padding:3px 9px; font-size:11px; line-height:1.2; }
 #legend-bar { background: var(--blue-pale); border-bottom: 1px solid var(--border); padding: 6px 20px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; flex-wrap: wrap; }
 .data-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .leg-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-mid); }
@@ -240,7 +244,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
 <div class="pdf-overlay" id="pdfOverlay" onclick="closeReportPdf(event)">
   <div class="pdf-frame" onclick="event.stopPropagation()">
     <button class="pdf-close" type="button" onclick="closeReportPdf()">×</button>
-    <img src="./CTTTpdf.png" alt="report pdf">
+    <img src="../CTTTpdf.png" alt="report pdf">
   </div>
 </div>
 <div class="tooltip" id="tooltip"></div>
@@ -265,7 +269,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     <option value="医師の判断による許容">医師の判断による許容</option>
     <option value="参加者都合による日程変更">参加者都合による日程変更</option>
   `;
-  const appState = { judgeMode: true, activeJudgeRecords: [], auditLog: [] };
+  const appState = { judgeMode: false, activeJudgeRecords: [], auditLog: [] };
   const CL = {};
   window.toggleGrp = function(key) { CL[key] = !CL[key]; renderPortal(); };
   let imagePopupState = { records: [], index: 0 };
@@ -495,9 +499,13 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       </td></tr>`;
   }
   function renderClinicalSection() {
-    const actions = `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴 <span id="auditInlineCount">${appState.auditLog.length || ''}</span></button>`;
+    const label = `<span class="section-label-with-action"><span>臨床画像 / 診断レポート</span><button class="btn btn-pending" type="button" onclick="startJudgeAgain()">確認待ち</button></span>`;
+    const actions = appState.judgeMode
+      ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴 <span id="auditInlineCount">${appState.auditLog.length || ''}</span></button>
+         <button class="btn btn-success" type="button" onclick="confirmSave()">保存</button>`
+      : (appState.auditLog.length ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴 <span id="auditInlineCount">${appState.auditLog.length}</span></button>` : '');
     return `<tr>
-      <td class="row-label sec-hd">臨床画像 / 診断レポート</td>
+      <td class="row-label sec-hd">${label}</td>
       <td class="sec-cell sec-action-cell" colspan="${APP_TPS.length}">
         <div class="section-actions">${actions}</div>
       </td>
@@ -528,6 +536,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       const records = visible.filter(rec => displayKeys(rec).includes(key));
       const hasUnjudgedOutside = records.some(rec => !rec.inRange && rec.decision === 'unjudged');
       const hasOut = records.some(rec => rec.decision === 'out');
+      const hasJudgedTp = records.some(rec => rec.decision === 'include' && key === `tp:${rec.assignedTP}`);
       const hasInclude = records.some(rec => rec.decision === 'include');
       const color = appState.judgeMode && hasUnjudgedOutside ? 'red' : appState.judgeMode && hasOut ? 'gray' : appState.judgeMode && hasInclude ? 'yellow' : 'b';
       const count = records.length > 1 ? records.length : undefined;
@@ -545,8 +554,14 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     });
     const position = fallbackPositionForKey(key);
     const tp = tpById(displayTPId(records[0])) || nearestTPByPosition(position);
-    if (records.some(requiresImageJudgment)) openJudgePopup(type, tp, records, position);
+    if (appState.judgeMode) openJudgePopup(type, tp, records, position);
     else openImagePopupForRecords(type, tp, records);
+  };
+  window.startJudgeAgain = function() {
+    appState.judgeMode = true;
+    closeImagePopup();
+    toggleAuditPanel(false);
+    renderPortal();
   };
   function nearestTPByPosition(position) {
     return APP_TPS.reduce((best, tp) => Math.abs(tpCenterPercent(tp) - position) < Math.abs(tpCenterPercent(best) - position) ? tp : best, APP_TPS[0]);
@@ -775,7 +790,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     const rec = imagePopupState.records[imagePopupState.index];
     if (!rec) return;
     const query = new URLSearchParams({ exam: rec.examType, timepoint: rec.timepointId, occurrence: String(rec.occurrence || 0) });
-    window.open(`./viewer/index.html?${query.toString()}`, '_blank', 'noopener');
+    window.open(`../viewer/index.html?${query.toString()}`, '_blank', 'noopener');
   };
   window.closeDrawer = function() {
     document.getElementById('drawer').classList.remove('open');
