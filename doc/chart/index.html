@@ -489,7 +489,8 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       </td></tr>`;
   }
   function renderClinicalSection() {
-    const actions = `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴</button>`;
+    const actions = `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴</button>
+         <button class="btn btn-success" type="button" onclick="confirmSave()">保存</button>`;
     return `<tr>
       <td class="row-label sec-hd">臨床画像 / 診断レポート</td>
       <td class="sec-cell sec-action-cell" colspan="${APP_TPS.length}">
@@ -539,7 +540,12 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     });
     const position = fallbackPositionForKey(key);
     const tp = tpById(displayTPId(records[0])) || nearestTPByPosition(position);
-    if (records.some(requiresImageJudgment)) openJudgePopup(type, tp, records, position);
+    const hasJudgmentState = records.some(rec =>
+      (!rec.inRange && rec.decision === 'unjudged') ||
+      rec.decision === 'include' ||
+      rec.decision === 'out'
+    );
+    if (appState.judgeMode && hasJudgmentState) openJudgePopup(type, tp, records, position);
     else openImagePopupForRecords(type, tp, records);
   };
   function nearestTPByPosition(position) {
