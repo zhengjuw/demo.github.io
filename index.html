@@ -128,7 +128,7 @@
                     <th>
                         <div class="th-inner">
                             <div class="th-label-row">
-                                <span class="th-title" onclick="toggleDropdown('confirmationPending')">確認待ち有無
+                                <span class="th-title" onclick="toggleDropdown('confirmationPending')">確認要否
                                     <span class="filter-trigger" aria-hidden="true">
                                         <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M2 3.5H12L8.5 7.7V11L5.5 12V7.7L2 3.5Z" fill="currentColor" />
@@ -137,10 +137,10 @@
                                 </span>
                             </div>
                             <div class="filter-dropdown" id="dropdown-confirmationPending" data-dropdown="confirmationPending">
-                                <div class="dropdown-label">確認待ち有無を選択</div>
+                                <div class="dropdown-label">確認要否を選択</div>
                                 <div class="filter-list">
-                                    <span class="pill" data-val="有" onclick="togglePill(this,'confirmationPending')">有</span>
-                                    <span class="pill" data-val="無" onclick="togglePill(this,'confirmationPending')">無</span>
+                                    <span class="pill" data-val="要確認" onclick="togglePill(this,'confirmationPending')">要確認</span>
+                                    <span class="pill" data-val="不要" onclick="togglePill(this,'confirmationPending')">不要</span>
                                 </div>
                                 <div class="dropdown-actions right">
                                     <button class="dropdown-ok" type="button" onclick="commitDropdown('confirmationPending')">OK</button>
@@ -372,7 +372,7 @@
         ];
         rawData.forEach((d, i) => {
             d.recurrenceCount = i < 2 ? 2 : (i % 2 === 0 ? 2 : 0);
-            d.confirmationPending = d.id === 'M30022222' ? '有' : '無';
+            d.confirmationPending = d.id === 'M30022222' ? '要確認' : '不要';
         });
         const committed = {
             idQ: '',
@@ -418,8 +418,8 @@
             data.forEach(d => {
                 const tr = document.createElement('tr');
                 tr.className = 'data-row';
-                const pendingBadge = d.confirmationPending === '有'
-                    ? `<button class="badge badge-yes badge-action" type="button" onclick="navigateToJudgement('${d.id}')">確認待ち</button>`
+                const pendingBadge = d.confirmationPending === '要確認'
+                    ? `<span class="badge badge-yes">要確認</span>`
                     : `<span class="badge badge-no">${d.confirmationPending}</span>`;
                 const migrationBadge = `<span class="badge ${d.cohortMigration === '有' ? 'badge-yes' : 'badge-no'}">${d.cohortMigration || ''}</span>`;
                 tr.innerHTML = `
@@ -651,10 +651,6 @@
             if (id === 'M30011111') { window.location.href = './doc/index.html'; return; }
             if (id === 'M30022222') { window.location.href = './doc/pending/index.html'; return; }
             console.log('navigateToParticipant:', id);
-        }
-        function navigateToJudgement(id) {
-            if (id === 'M30022222') { window.location.href = './doc/chart/index.html'; return; }
-            navigateToParticipant(id);
         }
         function fillDateSelects(prefix) {
             const regDates = rawData.map(d => d.regdate).filter(Boolean);
