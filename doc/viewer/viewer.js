@@ -586,6 +586,7 @@ function syncWindowInputs() {
 }
 
 function openToolPanel(panel) {
+  if (!els.toolDrawer || !els.toolDrawerTitle || !els.toolDrawerBody) return;
   const panels = {
     display: {
       title: "Display",
@@ -776,28 +777,17 @@ function handleLocalFiles(files) {
 }
 
 function populateFilters() {
-  EXAM_TYPES.forEach((examType) => {
-    const option = document.createElement("option");
-    option.value = examType;
-    option.textContent = examType;
-    els.examTypeSelect.appendChild(option);
-  });
-
-  timepoints.forEach((tp) => {
-    const option = document.createElement("option");
-    option.value = tp.id;
-    option.textContent = timepointOptionText(tp);
-    els.timepointSelect.appendChild(option);
-  });
+  els.patientSelect.textContent = "M30011111";
+  els.examTypeSelect.textContent = state.examType || "CT";
+  const tp = timepoints.find((item) => item.id === state.timepoint) || timepoints[0];
+  els.timepointSelect.textContent = tp ? timepointOptionText(tp) : "";
 }
 
 async function init() {
   await loadTimepointsFromIndex();
-  populateFilters();
   if (!EXAM_TYPES.includes(state.examType)) state.examType = "CT";
   if (!timepoints.some((tp) => tp.id === state.timepoint)) state.timepoint = timepoints[0]?.id || "t0";
-  els.examTypeSelect.value = state.examType;
-  els.timepointSelect.value = state.timepoint;
+  populateFilters();
   applyStudySelection();
   if (!STUDIES[state.study]) state.study = Object.keys(STUDIES)[0];
   if (!currentSeriesInfo(state.series)) state.series = Object.keys(currentSeriesMap())[0];
@@ -808,14 +798,14 @@ async function init() {
   }
 }
 
-els.examTypeSelect.addEventListener("change", (event) => changeExamType(event.target.value));
-els.timepointSelect.addEventListener("change", (event) => changeTimepoint(event.target.value));
 if (els.localOpenBtn && els.localFileInput) {
   els.localOpenBtn.addEventListener("click", () => els.localFileInput.click());
   els.localFileInput.addEventListener("change", (event) => handleLocalFiles(event.target.files));
 }
-els.toolDrawerClose.addEventListener("click", () => els.toolDrawer.classList.remove("open"));
-document.querySelector(".right-toolbar").addEventListener("click", (event) => {
+if (els.toolDrawerClose && els.toolDrawer) {
+  els.toolDrawerClose.addEventListener("click", () => els.toolDrawer.classList.remove("open"));
+}
+document.querySelector(".right-toolbar")?.addEventListener("click", (event) => {
   const button = event.target.closest(".rail-button");
   if (button) openToolPanel(button.dataset.panel);
 });

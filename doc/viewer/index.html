@@ -26,9 +26,9 @@
     <aside class="side-panel">
       <div class="patient-card">
         <div class="explorer-filters">
-          <select id="patientSelect" aria-label="Patient filter"><option>UNKNOWN</option><option>M30011111</option></select>
-          <select id="examTypeSelect" aria-label="Exam type"></select>
-          <select id="timepointSelect" aria-label="Timepoint"></select>
+          <div id="patientSelect" class="readonly-field" aria-label="Patient filter">UNKNOWN</div>
+          <div id="examTypeSelect" class="readonly-field" aria-label="Exam type"></div>
+          <div id="timepointSelect" class="readonly-field" aria-label="Timepoint"></div>
         </div>
         <div class="patient-row"><span>Age / Sex</span><strong>56 / Male</strong></div>
         <div class="patient-row"><span>Registered</span><strong>2024-06-24</strong></div>
@@ -53,21 +53,7 @@
       <div class="loading" id="loading">Loading DICOM series...</div>
     </section>
 
-    <aside class="right-toolbar">
-      <button class="rail-button active" type="button" data-panel="display">Display</button>
-      <button class="rail-button" type="button" data-panel="imageTools">Image Tools</button>
-      <button class="rail-button" type="button" data-panel="measure">Draw & Measure</button>
-      <button class="rail-button" type="button" data-panel="attributes">DICOM Attributes</button>
-    </aside>
   </main>
-
-  <section class="tool-drawer" id="toolDrawer" aria-label="Tool panel">
-    <div class="tool-drawer-head">
-      <strong id="toolDrawerTitle">Image Tools</strong>
-      <button id="toolDrawerClose" type="button">x</button>
-    </div>
-    <div id="toolDrawerBody" class="tool-drawer-body"></div>
-  </section>
 
   <div class="hidden-meta" aria-hidden="true">
     <span id="patientValue"></span>

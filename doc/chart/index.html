@@ -184,13 +184,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
   <div class="pt-spacer"></div>
 </div>
 <div id="legend-bar">
-  <div class="data-group">
-    <div class="leg-item"><div class="ldot"></div>EDC / 手術 / 臨床画像</div>
-    <div class="leg-item"><span class="dot dot-red"></span>未入力</div>
-    <div class="leg-item"><span class="dot dot-blue"></span>入力完了</div>
-    <div class="leg-item"><span class="dot dot-yellow"></span>一時保存</div>
-    <div class="leg-item"><div class="lline lline-blue"></div>補助化学療法 / 放射線治療</div>
-  </div>
+  <div class="data-group" aria-hidden="true" style="min-height:16px;"></div>
 </div>
 <div id="main">
   <div class="tl-wrap">
@@ -495,7 +489,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       </td></tr>`;
   }
   function renderClinicalSection() {
-    const actions = `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴 <span id="auditInlineCount">${appState.auditLog.length || ''}</span></button>`;
+    const actions = `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴</button>`;
     return `<tr>
       <td class="row-label sec-hd">臨床画像 / 診断レポート</td>
       <td class="sec-cell sec-action-cell" colspan="${APP_TPS.length}">

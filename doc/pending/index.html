@@ -188,13 +188,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
   <div class="pt-spacer"></div>
 </div>
 <div id="legend-bar">
-  <div class="data-group">
-    <div class="leg-item"><div class="ldot"></div>EDC / 手術 / 臨床画像</div>
-    <div class="leg-item"><span class="dot dot-red"></span>未入力</div>
-    <div class="leg-item"><span class="dot dot-blue"></span>入力完了</div>
-    <div class="leg-item"><span class="dot dot-yellow"></span>一時保存</div>
-    <div class="leg-item"><div class="lline lline-blue"></div>補助化学療法 / 放射線治療</div>
-  </div>
+  <div class="data-group" aria-hidden="true" style="min-height:16px;"></div>
 </div>
 <div id="main">
   <div class="tl-wrap">
@@ -501,9 +495,9 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
   function renderClinicalSection() {
     const label = `<span class="section-label-with-action"><span>臨床画像 / 診断レポート</span><button class="btn btn-pending" type="button" onclick="startJudgeAgain()">確認待ち</button></span>`;
     const actions = appState.judgeMode
-      ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴 <span id="auditInlineCount">${appState.auditLog.length || ''}</span></button>
+      ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴</button>
          <button class="btn btn-success" type="button" onclick="confirmSave()">保存</button>`
-      : (appState.auditLog.length ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴 <span id="auditInlineCount">${appState.auditLog.length}</span></button>` : '');
+      : (appState.auditLog.length ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴</button>` : '');
     return `<tr>
       <td class="row-label sec-hd">${label}</td>
       <td class="sec-cell sec-action-cell" colspan="${APP_TPS.length}">
@@ -554,7 +548,12 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     });
     const position = fallbackPositionForKey(key);
     const tp = tpById(displayTPId(records[0])) || nearestTPByPosition(position);
-    if (appState.judgeMode) openJudgePopup(type, tp, records, position);
+    const hasJudgmentState = records.some(rec =>
+      (!rec.inRange && rec.decision === 'unjudged') ||
+      rec.decision === 'include' ||
+      rec.decision === 'out'
+    );
+    if (appState.judgeMode && hasJudgmentState) openJudgePopup(type, tp, records, position);
     else openImagePopupForRecords(type, tp, records);
   };
   window.startJudgeAgain = function() {

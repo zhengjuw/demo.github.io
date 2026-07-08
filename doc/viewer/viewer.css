@@ -125,7 +125,7 @@ h1 {
 .viewer-shell {
   height: calc(100vh - 58px);
   display: grid;
-  grid-template-columns: 296px minmax(0, 1fr) 66px;
+  grid-template-columns: 296px minmax(0, 1fr);
   min-height: 0;
 }
 
@@ -188,6 +188,23 @@ h1 {
   background: #11161c;
   color: #f1f5f9;
   padding: 0 8px;
+}
+
+.readonly-field {
+  min-height: 36px;
+  border: 1px solid #464e59;
+  border-radius: 4px;
+  background: #1e2229;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.explorer-filters select:disabled {
+  opacity: 0.72;
+  cursor: default;
 }
 
 .upload-folder-button {
