@@ -381,7 +381,7 @@ const ROWS = [
   { type:'sub', label:'補助化学療法', toggleKey:'grp-adj-chemo' },
   { type:'dot', label:'薬剤名', indent:'item', collapseKey:'grp-adj-chemo',
     dots: mkD([null,null,null,null,null,null,null,null]) },
-  { type:'sec', label:'臨床画像 / 診断レポート' },
+  { type:'sec', label:'臨床画像・診断レポート' },
   { type:'dot', label:'PET-CT', indent:'item',
     dots: mkD([null,null,null,null,'b',null,'b',null]), drawerType:'img' },
   { type:'dot', label:'CT', indent:'item',
@@ -546,7 +546,7 @@ function renderImagePopup() {
     <div class="dsec" style="margin-bottom:0;">
       <div class="fr"><span class="fl">検査種別</span><span class="fv">${rec.examType}</span></div>
       <div class="fr"><span class="fl">検査日</span><span class="fv" style="font-family:var(--mono)">${rec.examDate}</span></div>
-      <div class="fr"><span class="fl">timepoint</span><span class="fv">${rec.timepointName}</span></div>
+      <div class="fr"><span class="fl">タイムポイント</span><span class="fv">${rec.timepointName}</span></div>
     </div>
     <div class="popup-actions">
       <button class="popup-action-btn" type="button" onclick="openImageViewer()">画像閲覧</button>

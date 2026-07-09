@@ -229,7 +229,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
 </div>
 <div class="audit-panel" id="auditPanel">
   <div class="audit-head">
-    <div class="audit-title">判定履歴</div>
+    <div class="audit-title">確認履歴</div>
     <div class="pt-spacer"></div>
     <button class="btn" type="button" onclick="toggleAuditPanel(false)">閉じる</button>
   </div>
@@ -493,11 +493,11 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       </td></tr>`;
   }
   function renderClinicalSection() {
-    const label = `<span class="section-label-with-action"><span>臨床画像 / 診断レポート</span><button class="btn btn-pending" type="button" onclick="startJudgeAgain()">確認待ち</button></span>`;
+    const label = `<span class="section-label-with-action"><span>臨床画像・診断レポート</span><button class="btn btn-pending" type="button" onclick="startJudgeAgain()">確認待ち</button></span>`;
     const actions = appState.judgeMode
-      ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴</button>
+      ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">確認履歴</button>
          <button class="btn btn-success" type="button" onclick="confirmSave()">保存</button>`
-      : (appState.auditLog.length ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">判定履歴</button>` : '');
+      : (appState.auditLog.length ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">確認履歴</button>` : '');
     return `<tr>
       <td class="row-label sec-hd">${label}</td>
       <td class="sec-cell sec-action-cell" colspan="${APP_TPS.length}">
@@ -580,9 +580,8 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
   function openJudgePopup(type, tp, records, position) {
     appState.activeJudgeRecords = records;
     document.getElementById('imagePopup').classList.add('popup-wide');
-    const requiresJudgment = records.some(requiresImageJudgment);
-    document.getElementById('imagePopupTitle').textContent = requiresJudgment ? `${type} 判定` : type;
-    document.getElementById('imagePopupSub').textContent = requiresJudgment ? `実施日位置  ·  ${Number(position).toFixed(1)}%` : `${tp.name}  ·  ${tp.date}`;
+    document.getElementById('imagePopupTitle').textContent = 'ファイル確認';
+    document.getElementById('imagePopupSub').textContent = '';
     renderJudgePopup();
     document.getElementById('imagePopupOverlay').classList.add('open');
   }
@@ -600,8 +599,8 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     const mode = needsJudgment ? 'judge' : hasJudged ? 'judged' : 'inRange';
     const headers = {
       inRange: '<th width="60%">検査ファイル</th><th width="40%">実施日</th>',
-      judged: '<th width="30%">検査ファイル</th><th width="20%">実施日</th><th width="50%">Timepoint・理由</th>',
-      judge: '<th width="24%">検査ファイル</th><th width="16%">実施日</th><th width="30%">判定</th><th width="30%">Timepoint・理由</th>',
+      judged: '<th width="30%">検査ファイル</th><th width="20%">実施日</th><th width="50%">タイムポイント・理由</th>',
+      judge: '<th width="24%">検査ファイル</th><th width="16%">実施日</th><th width="30%">確認</th><th width="30%">タイムポイント・理由</th>',
     }[mode];
     const colCount = mode === 'inRange' ? 2 : mode === 'judged' ? 3 : 4;
     const rows = records.map((rec, i) => {
@@ -609,7 +608,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       const dateCell = `<span style="font-family:var(--mono);">${esc(rec.actualDate)}</span>`;
       if (mode === 'inRange') return `<tr><td>${fileCell}</td><td>${dateCell}</td></tr>`;
       if (mode === 'judged') return `<tr><td>${fileCell}</td><td>${dateCell}</td><td>${tpReasonCell(rec)}</td></tr>`;
-      if (!requiresImageJudgment(rec)) return `<tr><td>${fileCell}</td><td>${dateCell}</td><td><span style="color:var(--text-light);">判定不要</span></td><td>${tpReasonCell(rec)}</td></tr>`;
+      if (!requiresImageJudgment(rec)) return `<tr><td>${fileCell}</td><td>${dateCell}</td><td><span style="color:var(--text-light);">確認不要</span></td><td>${tpReasonCell(rec)}</td></tr>`;
       return `<tr style="background:#fffcfc;">
         <td>${fileCell}</td><td>${dateCell}</td>
         <td><div style="display:flex; flex-direction:column; gap:6px;">
@@ -632,7 +631,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     if (checked.value === 'include') {
       detail.innerHTML = `
         <select id="sel-tp-${i}" class="detail-select" onchange="checkSingleValid(${i})">
-          <option value="">-- Timepoint選択 --</option>${TP_OPTIONS}
+          <option value="">-- タイムポイント選択 --</option>${TP_OPTIONS}
         </select>
         <select id="sel-rs-${i}" class="detail-select" onchange="checkSingleValid(${i})">${REASON_OPTIONS}</select>
         <button class="single-save-btn" id="save-btn-${i}" disabled onclick="saveSingleDecision(${i})">保存</button>`;
@@ -679,7 +678,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
   function pushAudit(rec, timestamp) {
     appState.auditLog.push({
       actionType: rec.decision,
-      visit: `${rec.decision === 'out' ? '規定外' : (tpById(displayTPId(rec))?.name || '未判定')} - ${rec.type}`,
+      visit: `${rec.decision === 'out' ? '規定外' : (tpById(displayTPId(rec))?.name || '未確認')} - ${rec.type}`,
       type: rec.type, timestamp, operator: 'Dr. 山田',
       reason: rec.reason || rec.comment || '—',
       files: rec.files.map(f => ({ name:f.name, actualDate:f.actualDate })),
@@ -694,12 +693,12 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     const panel = document.getElementById('auditPanel');
     if (forceOpen === false) {
       panel.classList.remove('open');
-      if (document.getElementById('imagePopupTitle')?.textContent === '判定履歴') closeImagePopup();
+      if (document.getElementById('imagePopupTitle')?.textContent === '確認履歴') closeImagePopup();
       return;
     }
     panel.classList.remove('open');
     document.getElementById('imagePopup').classList.add('popup-wide');
-    document.getElementById('imagePopupTitle').textContent = '判定履歴';
+    document.getElementById('imagePopupTitle').textContent = '確認履歴';
     document.getElementById('imagePopupSub').textContent = appState.auditLog.length ? `${appState.auditLog.length} 件` : '履歴がありません';
     document.getElementById('imagePopupBody').innerHTML = renderAuditBody();
     document.getElementById('imagePopupOverlay').classList.add('open');
@@ -713,8 +712,8 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
         <div class="audit-meta"><strong style="color:var(--text-dark);">${esc(r.visit)}</strong><span>${r.timestamp}</span></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
           <span class="status-badge ${r.actionType === 'out' ? 'status-out' : 'status-ok'}">${label}</span>
-          <span class="status-badge status-out">判定者: ${esc(r.operator)}</span>
-          <span class="status-badge status-out">Timepoint: ${esc(r.assignedTP)}</span>
+          <span class="status-badge status-out">確認者: ${esc(r.operator)}</span>
+          <span class="status-badge status-out">タイムポイント: ${esc(r.assignedTP)}</span>
         </div>
         <div style="font-size:11px;color:var(--text-mid);margin-bottom:6px;">理由: ${esc(r.reason)}</div>
         <table style="width:100%;font-size:11px;border-collapse:collapse;">
@@ -728,7 +727,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     overlay.className = 'modal-overlay';
     overlay.innerHTML = `<div class="modal-box">
       <div class="modal-title">変更を保存しますか？</div>
-      <div class="modal-body">判定結果を保存します。</div>
+      <div class="modal-body">確認結果を保存します。</div>
       <div class="modal-btns">
         <button class="btn btn-success" id="confirm-save-btn" type="button">保存</button>
         <button class="btn" id="cancel-save-btn" type="button">キャンセル</button>
@@ -799,17 +798,17 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     const { records, index } = imagePopupState;
     const rec = records[index];
     const multiple = records.length > 1;
-    const statusLabel = rec.decision === 'include' ? '規定内' : rec.decision === 'out' ? '規定外' : '未判定';
+    const statusLabel = rec.decision === 'include' ? '規定内' : rec.decision === 'out' ? '規定外' : '未確認';
     const statusClass = rec.decision === 'include' ? 'status-ok' : rec.decision === 'out' ? 'status-out' : 'status-warn';
     const tpText = rec.decision === 'out' ? '規定外' : rec.timepointName;
     const judgmentRow = rec.decision !== 'unjudged'
-      ? `<div class="fr"><span class="fl">判定</span><span class="fv"><span class="status-badge ${statusClass}">${statusLabel}</span></span></div>`
+      ? `<div class="fr"><span class="fl">確認</span><span class="fv"><span class="status-badge ${statusClass}">${statusLabel}</span></span></div>`
       : '';
     document.getElementById('imagePopupBody').innerHTML = `
       <div class="dsec" style="margin-bottom:0;">
         <div class="fr"><span class="fl">検査種別</span><span class="fv">${rec.examType}</span></div>
         <div class="fr"><span class="fl">検査日</span><span class="fv" style="font-family:var(--mono)">${rec.examDate}</span></div>
-        <div class="fr"><span class="fl">timepoint</span><span class="fv">${tpText}</span></div>
+        <div class="fr"><span class="fl">タイムポイント</span><span class="fv">${tpText}</span></div>
         ${judgmentRow}
       </div>
       <div class="popup-actions">
