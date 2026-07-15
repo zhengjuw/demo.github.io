@@ -83,6 +83,11 @@ const state = {
   dragMode: "window",
   lastX: 0,
   lastY: 0,
+  activeTool: "window",
+  currentSlice: null,
+  imageTransform: null,
+  measurements: [],
+  draftMeasurement: null,
 };
 
 const els = {
@@ -98,6 +103,11 @@ const els = {
   centerInput: document.getElementById("centerInput"),
   widthInput: document.getElementById("widthInput"),
   resetBtn: document.getElementById("resetBtn"),
+  measureBtn: document.getElementById("measureBtn"),
+  clearMeasureBtn: document.getElementById("clearMeasureBtn"),
+  zoomInBtn: document.getElementById("zoomInBtn"),
+  zoomOutBtn: document.getElementById("zoomOutBtn"),
+  measurementReadout: document.getElementById("measurementReadout"),
   localOpenBtn: document.getElementById("localOpenBtn"),
   localFileInput: document.getElementById("localFileInput"),
   seriesList: document.getElementById("seriesList"),
@@ -178,7 +188,10 @@ function seriesUrl(series, index) {
   const prefix = info.filePrefix || "IN-";
   const digits = info.digits || 5;
   const file = `${prefix}${String(fileNumber).padStart(digits, "0")}.dcm`;
-  return `/M30011111/${state.study}/${series}/${file}`;
+  const dicomPath = `M30011111/${state.study}/${series}/${file}`;
+  return location.protocol === "file:"
+    ? new URL(`../${dicomPath}`, location.href).href
+    : `/${dicomPath}`;
 }
 
 function showNotice(message) {
@@ -409,6 +422,98 @@ async function loadSlice(index) {
   return loadSliceForSeries(state.series, index);
 }
 
+function parsePixelSpacing(value) {
+  if (!value) return null;
+  const parts = String(value).split("\\").map((part) => Number(part.trim())).filter(Number.isFinite);
+  if (parts.length < 2 || parts.some((part) => part <= 0)) return null;
+  return { row: parts[0], col: parts[1] };
+}
+
+function measurementKey(item = {}) {
+  return item.key || `${state.study}:${state.series}:${state.index}`;
+}
+
+function currentMeasurementKey() {
+  return `${state.study}:${state.series}:${state.index}`;
+}
+
+function viewportToImagePoint(event) {
+  const transform = state.imageTransform;
+  if (!transform) return null;
+  const rect = els.canvas.getBoundingClientRect();
+  const x = (event.clientX - rect.left - transform.x) / transform.scale;
+  const y = (event.clientY - rect.top - transform.y) / transform.scale;
+  if (x < 0 || y < 0 || x > transform.cols || y > transform.rows) return null;
+  return { x, y };
+}
+
+function imageToViewportPoint(point) {
+  const transform = state.imageTransform;
+  return {
+    x: transform.x + point.x * transform.scale,
+    y: transform.y + point.y * transform.scale,
+  };
+}
+
+function measurementLength(item, spacing) {
+  const dx = item.end.x - item.start.x;
+  const dy = item.end.y - item.start.y;
+  const px = Math.hypot(dx, dy);
+  if (!spacing) return { px, label: `${px.toFixed(1)} px` };
+  const mm = Math.hypot(dx * spacing.col, dy * spacing.row);
+  return { px, mm, label: `${mm.toFixed(1)} mm` };
+}
+
+function drawMeasurement(item, meta, draft = false) {
+  if (!state.imageTransform || !item?.start || !item?.end) return;
+  const spacing = parsePixelSpacing(meta.pixelSpacing);
+  const a = imageToViewportPoint(item.start);
+  const b = imageToViewportPoint(item.end);
+  const length = measurementLength(item, spacing);
+  ctx.save();
+  ctx.lineWidth = draft ? 1.5 : 2;
+  ctx.strokeStyle = draft ? "rgba(255,217,91,.82)" : "#ffd95b";
+  ctx.fillStyle = "#ffd95b";
+  ctx.shadowColor = "rgba(0,0,0,.85)";
+  ctx.shadowBlur = 4;
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+  [a, b].forEach((p) => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  const labelX = (a.x + b.x) / 2 + 8;
+  const labelY = (a.y + b.y) / 2 - 8;
+  ctx.font = "12px Consolas, monospace";
+  ctx.fillText(length.label, labelX, labelY);
+  ctx.restore();
+}
+
+function renderMeasurements(meta) {
+  const key = currentMeasurementKey();
+  state.measurements
+    .filter((item) => measurementKey(item) === key)
+    .forEach((item) => drawMeasurement(item, meta));
+  if (state.draftMeasurement) drawMeasurement(state.draftMeasurement, meta, true);
+}
+
+function updateMeasurementUi() {
+  if (els.measureBtn) {
+    const active = state.activeTool === "measure";
+    els.measureBtn.classList.toggle("active", active);
+    els.measureBtn.setAttribute("aria-pressed", String(active));
+  }
+  if (!els.measurementReadout) return;
+  const key = currentMeasurementKey();
+  const count = state.measurements.filter((item) => measurementKey(item) === key).length;
+  els.measurementReadout.textContent = state.activeTool === "measure"
+    ? `Measure on · ${count} line${count === 1 ? "" : "s"}`
+    : "Measure off";
+}
+
 function renderSlice(slice) {
   const { meta, pixels } = slice;
   const imageData = ctx.createImageData(meta.cols, meta.rows);
@@ -443,7 +548,10 @@ function renderSlice(slice) {
   const drawH = meta.rows * baseScale * state.scale;
   const x = (rect.width - drawW) / 2 + state.panX;
   const y = (rect.height - drawH) / 2 + state.panY;
+  state.imageTransform = { x, y, scale: baseScale * state.scale, rows: meta.rows, cols: meta.cols };
   ctx.drawImage(offscreen, x, y, drawW, drawH);
+  renderMeasurements(meta);
+  updateMeasurementUi();
 
   els.patientValue.textContent = meta.patientId || meta.patientName || "-";
   const seriesInfo = currentSeriesInfo();
@@ -492,6 +600,7 @@ async function showSlice(index) {
       state.windowInitialized = true;
       syncWindowInputs();
     }
+    state.currentSlice = slice;
     renderSlice(slice);
     els.loading.classList.add("hidden");
     preloadNeighbors();
@@ -793,9 +902,6 @@ async function init() {
   if (!currentSeriesInfo(state.series)) state.series = Object.keys(currentSeriesMap())[0];
   els.slider.max = String(currentSeriesInfo().count - 1);
   syncWindowInputs();
-  if (location.protocol === "file:") {
-    showNotice("Direct local opening cannot automatically read DICOM files. Please open this viewer from the deployed site or a local web server.");
-  }
 }
 
 if (els.localOpenBtn && els.localFileInput) {
@@ -826,21 +932,85 @@ document.querySelectorAll(".preset").forEach((button) => {
     showSlice(state.index);
   });
 });
+if (els.measureBtn) {
+  els.measureBtn.addEventListener("click", () => {
+    state.activeTool = state.activeTool === "measure" ? "window" : "measure";
+    state.draftMeasurement = null;
+    updateMeasurementUi();
+    if (state.currentSlice) renderSlice(state.currentSlice);
+  });
+}
+if (els.clearMeasureBtn) {
+  els.clearMeasureBtn.addEventListener("click", () => {
+    const key = currentMeasurementKey();
+    state.measurements = state.measurements.filter((item) => measurementKey(item) !== key);
+    state.draftMeasurement = null;
+    if (state.currentSlice) renderSlice(state.currentSlice);
+  });
+}
+if (els.zoomInBtn) {
+  els.zoomInBtn.addEventListener("click", () => {
+    state.scale *= 1.15;
+    showSlice(state.index);
+  });
+}
+if (els.zoomOutBtn) {
+  els.zoomOutBtn.addEventListener("click", () => {
+    state.scale /= 1.15;
+    showSlice(state.index);
+  });
+}
 els.resetBtn.addEventListener("click", resetView);
-els.wrap.addEventListener("dblclick", resetView);
+els.wrap.addEventListener("dblclick", (event) => {
+  if (state.activeTool === "measure") {
+    event.preventDefault();
+    state.draftMeasurement = null;
+    if (state.currentSlice) renderSlice(state.currentSlice);
+    return;
+  }
+  resetView();
+});
 els.wrap.addEventListener("wheel", (event) => {
   event.preventDefault();
   showSlice(state.index + (event.deltaY > 0 ? 1 : -1));
 }, { passive: false });
 els.wrap.addEventListener("mousedown", (event) => {
+  if (state.activeTool === "measure") {
+    const point = viewportToImagePoint(event);
+    if (!point) return;
+    event.preventDefault();
+    state.dragging = true;
+    state.dragMode = "measure";
+    state.draftMeasurement = { key: currentMeasurementKey(), start: point, end: point };
+    if (state.currentSlice) renderSlice(state.currentSlice);
+    return;
+  }
   state.dragging = true;
   state.dragMode = event.shiftKey ? "pan" : "window";
   state.lastX = event.clientX;
   state.lastY = event.clientY;
 });
-window.addEventListener("mouseup", () => { state.dragging = false; });
+window.addEventListener("mouseup", () => {
+  if (state.dragMode === "measure" && state.draftMeasurement) {
+    const item = state.draftMeasurement;
+    if (Math.hypot(item.end.x - item.start.x, item.end.y - item.start.y) > 2) {
+      state.measurements.push(item);
+    }
+    state.draftMeasurement = null;
+    if (state.currentSlice) renderSlice(state.currentSlice);
+  }
+  state.dragging = false;
+});
 window.addEventListener("mousemove", (event) => {
   if (!state.dragging) return;
+  if (state.dragMode === "measure") {
+    const point = viewportToImagePoint(event);
+    if (point && state.draftMeasurement) {
+      state.draftMeasurement.end = point;
+      if (state.currentSlice) renderSlice(state.currentSlice);
+    }
+    return;
+  }
   const dx = event.clientX - state.lastX;
   const dy = event.clientY - state.lastY;
   state.lastX = event.clientX;
@@ -860,6 +1030,12 @@ window.addEventListener("keydown", (event) => {
   if (event.key === "ArrowUp" || event.key === "ArrowLeft") showSlice(state.index - 1);
   if (event.key === "+" || event.key === "=") { state.scale *= 1.1; showSlice(state.index); }
   if (event.key === "-") { state.scale /= 1.1; showSlice(state.index); }
+  if (event.key === "Escape" && state.activeTool === "measure") {
+    state.activeTool = "window";
+    state.draftMeasurement = null;
+    updateMeasurementUi();
+    if (state.currentSlice) renderSlice(state.currentSlice);
+  }
 });
 window.addEventListener("resize", () => showSlice(state.index));
 

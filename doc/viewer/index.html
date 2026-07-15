@@ -36,6 +36,16 @@
       </div>
 
       <div class="panel-section">
+        <div class="section-title">Tools</div>
+        <div class="viewer-tool-grid">
+          <button id="measureBtn" class="tool-button measure-toggle" type="button" aria-pressed="false">Measure</button>
+          <button id="clearMeasureBtn" class="tool-button" type="button">Clear</button>
+          <button id="zoomInBtn" class="tool-button" type="button">Zoom +</button>
+          <button id="zoomOutBtn" class="tool-button" type="button">Zoom -</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
         <div class="section-title" id="seriesSectionTitle">CT Series</div>
         <div id="seriesList" class="series-list"></div>
       </div>
@@ -47,6 +57,7 @@
         <strong id="viewportSeriesTitle">ct-chest-lidc-idri-series</strong>
       </div>
       <canvas id="dicomCanvas"></canvas>
+      <div class="measurement-readout" id="measurementReadout">Measure off</div>
       <div class="overlay top-left" id="overlayLeft"></div>
       <div class="overlay top-right" id="overlayRight"></div>
       <div class="overlay bottom-left" id="overlayBottom"></div>
@@ -75,6 +86,6 @@
     <span id="sliceCount"></span>
   </div>
 
-  <script src="./viewer.js?v=7"></script>
+  <script src="./viewer.js?v=8"></script>
 </body>
 </html>

@@ -122,6 +122,11 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
 .popup-actions { display:flex; gap:8px; margin-top:14px; }
 .popup-action-btn { flex:1; border:1px solid var(--blue-mid); background:var(--blue); color:#fff; border-radius:var(--radius); padding:8px 10px; cursor:pointer; font-family:var(--font); font-size:12px; font-weight:600; }
 .popup-action-btn.secondary { background:#fff; color:var(--blue-mid); }
+.visit-table { width:100%; border-collapse:collapse; font-size:12px; }
+.visit-table th,
+.visit-table td { padding:8px 10px; border-bottom:1px solid var(--border-light); text-align:left; }
+.visit-table th { color:var(--text-light); font-weight:600; background:var(--bg); }
+.visit-table td:last-child { width:40%; }
 .judge-table-wrap { max-height: 430px; overflow:auto; border:1px solid var(--border); border-radius:6px; }
 .judge-table { width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }
 .judge-table th, .judge-table td { border-bottom:1px solid var(--border-light); border-right:1px solid var(--border-light); padding:9px; text-align:left; vertical-align:top; }
@@ -267,6 +272,29 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
   const CL = {};
   window.toggleGrp = function(key) { CL[key] = !CL[key]; renderPortal(); };
   let imagePopupState = { records: [], index: 0 };
+  function edcDot(visits) {
+    const color = visits.some(v => v.status === '未入力')
+      ? 'red'
+      : visits.some(v => v.status === '一時保存')
+        ? 'yellow'
+        : 'blue';
+    return { color, visits, count: visits.length > 1 ? visits.length : undefined };
+  }
+  const EDC_VISITS = [
+    edcDot([{ name:'症例登録票', status:'データ確定' }]),
+    edcDot([{ name:'手術', status:'データ確定' }]),
+    edcDot([{ name:'再発1', status:'データ確定' }]),
+    edcDot([
+      { name:'手術', status:'未入力' },
+      { name:'再発2', status:'データ確定' },
+    ]),
+    edcDot([{ name:'再発2', status:'データ確定' }]),
+    edcDot([{ name:'再発2', status:'一時保存' }]),
+    edcDot([{ name:'術前治療1', status:'データ確定' }]),
+    edcDot([{ name:'術後治療1', status:'データ確定' }]),
+    edcDot([{ name:'術後治療2', status:'データ確定' }]),
+    edcDot([{ name:'再発2', status:'未入力' }]),
+  ];
   const imageEvents = [
     imgEvent('PET-CT', 'tp-reg',    '2019-07-24', ['PET-CT画像', 'PET-CTレポート']),
     imgEvent('PET-CT', 'tp-p4a',    '2019-09-12', ['PET-CT画像', 'PET-CTレポート']),
@@ -423,12 +451,14 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     // 補助化学療法 (collapsible)
     rows.push(renderSubHeader('補助化学療法', 'grp-adj-chemo'));
     if (!CL['grp-adj-chemo']) {
-      rows.push(renderSubMultiBarRow('薬剤 A（CapeOX）', [
+      rows.push(renderSubMultiBarRow('術前治療1', [
         { startTPId:'tp-reg',    endTPId:'tp-surg',   color:'var(--blue)', drug:'CapeOX (カペシタビン+オキサリプラチン)', dose:'1000 mg/m²/day' },
-        { startTPId:'tp-p12rec', endTPId:'tp-p4b',    color:'var(--blue)', drug:'CapeOX (カペシタビン+オキサリプラチン)', dose:'1000 mg/m²/day' },
       ]));
-      rows.push(renderSubMultiBarRow('薬剤 B（5-FU）', [
+      rows.push(renderSubMultiBarRow('術後治療1', [
         { startTPId:'tp-surg', endTPId:'tp-p12rec', color:'var(--blue)', drug:'5-FU (フルオロウラシル)', dose:'500 mg/m²/week' },
+      ]));
+      rows.push(renderSubMultiBarRow('術後治療2', [
+        { startTPId:'tp-p12rec', endTPId:'tp-p4b', color:'var(--blue)', drug:'CapeOX (カペシタビン+オキサリプラチン)', dose:'1000 mg/m²/day' },
       ]));
     }
     rows.push(renderClinicalSection());
@@ -440,18 +470,15 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     document.getElementById('tlBody').innerHTML = rows.join('');
   }
   function renderEdcRow() {
-    const statuses = [
-      { color:'blue', label:'入力完了' }, { color:'blue', label:'入力完了' }, { color:'blue', label:'入力完了' },
-      { color:'red', label:'未入力' }, { color:'red', label:'未入力' }, { color:'blue', label:'入力完了' },
-      { color:'yellow', label:'一時保存' }, { color:'blue', label:'入力完了' }, { color:'blue', label:'入力完了' },
-      { color:'red', label:'未入力' },
-    ];
     return `<tr><td class="row-label sec-hd">edc visit</td>` +
       APP_TPS.map((tp, i) => {
-        const status = statuses[i] || { color:'blue', label:'入力完了' };
-        const cls = status.color === 'red' ? 'dot-red' : status.color === 'yellow' ? 'dot-yellow' : 'dot-blue';
-        return `<td class="sec-cell no-click">
-          <span class="dot ${cls}" onmouseenter="showStatusTip(event,'${status.label}')" onmouseleave="hideTip()"></span>
+        const item = EDC_VISITS[i] || edcDot([{ name:`再発${i}`, status:'データ確定' }]);
+        const cls = item.color === 'red' ? 'dot-red' : item.color === 'yellow' ? 'dot-yellow' : 'dot-blue';
+        const dot = item.count
+          ? `<span class="dot-wrap"><span class="dot ${cls}"></span><span class="dot-count">${item.count}</span></span>`
+          : `<span class="dot ${cls}"></span>`;
+        return `<td class="sec-cell" style="cursor:pointer;" onclick="openEdcPopup('${tp.id}')">
+          ${dot}
         </td>`;
       }).join('') + '</tr>';
   }
@@ -577,6 +604,35 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     renderImagePopup();
     document.getElementById('imagePopupOverlay').classList.add('open');
   }
+  window.openEdcPopup = function(tpId) {
+    const tpIndex = APP_TPS.findIndex(tp => tp.id === tpId);
+    const tp = APP_TPS[tpIndex];
+    const item = EDC_VISITS[tpIndex];
+    if (!tp || !item) return;
+    imagePopupState = { records: item.visits, index: 0, mode: 'edc' };
+    document.getElementById('imagePopup').classList.remove('popup-wide');
+    document.getElementById('imagePopupTitle').textContent = tp.name;
+    document.getElementById('imagePopupSub').textContent = tp.date;
+    renderEdcPopup();
+    document.getElementById('imagePopupOverlay').classList.add('open');
+  };
+  function renderEdcPopup() {
+    const rows = imagePopupState.records.map(v => `
+      <tr>
+        <td>${esc(v.name)}</td>
+        <td>${esc(v.status)}</td>
+      </tr>
+    `).join('');
+    document.getElementById('imagePopupBody').innerHTML = `
+      <table class="visit-table">
+        <thead><tr><th>ビジット</th><th>ステータス</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="popup-actions">
+        <button class="popup-action-btn" type="button" onclick="openEdcPortal()">EDC</button>
+      </div>`;
+  }
+  window.openEdcPortal = function() {};
   function openJudgePopup(type, tp, records, position) {
     appState.activeJudgeRecords = records;
     document.getElementById('imagePopup').classList.add('popup-wide');
@@ -750,14 +806,9 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
   window.showBarTip = function(e, el) {
     const tt = document.getElementById('tooltip');
     const drug = el.dataset.drug || '';
-    const dose = el.dataset.dose || '';
-    const sName = el.dataset.startName || '';
-    const eName = el.dataset.endName || '';
     const sDate = el.dataset.startDate || '';
     const eDate = el.dataset.endDate || '';
-    tt.innerHTML = `<strong>${drug}</strong>` +
-      (dose ? `<br>用量：${dose}` : '') +
-      `<br>期間：${sName} (${sDate})<br>　　　〜 ${eName} (${eDate})`;
+    tt.innerHTML = `治療開始日：${sDate}<br>最終投与日：${eDate}<br>薬剤名：${drug || '—'}`;
     tt.classList.add('show');
     tt.style.left = (e.clientX + 14) + 'px';
     tt.style.top = (e.clientY - 10) + 'px';

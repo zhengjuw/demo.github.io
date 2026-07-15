@@ -192,7 +192,7 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 /* Bars */
 .treatment-bar {
   position: absolute; top: 50%; transform: translateY(-50%);
-  height: 5px; border-radius: 3px; cursor: pointer;
+  height: 5px; border-radius: 3px; cursor: default;
   transition: height 0.15s, opacity 0.15s; z-index: 2;
 }
 .treatment-bar:hover { height: 8px; opacity: 0.85; }
@@ -228,6 +228,11 @@ td.sub-cell { background: #f8faff; border-bottom: 1px dashed var(--border-light)
 .popup-actions { display:flex; gap:8px; margin-top:14px; }
 .popup-action-btn { flex:1; border:1px solid var(--blue-mid); background:var(--blue); color:#fff; border-radius:var(--radius); padding:8px 10px; cursor:pointer; font-family:var(--font); font-size:12px; font-weight:600; }
 .popup-action-btn.secondary { background:#fff; color:var(--blue-mid); }
+.visit-table { width:100%; border-collapse:collapse; font-size:12px; }
+.visit-table th,
+.visit-table td { padding:8px 10px; border-bottom:1px solid var(--border-light); text-align:left; }
+.visit-table th { color:var(--text-light); font-weight:600; background:var(--bg); }
+.visit-table td:last-child { width:40%; }
 .pdf-overlay { position:fixed; inset:0; z-index:400; background:rgba(15,23,42,0.72); display:none; align-items:center; justify-content:center; padding:24px; }
 .pdf-overlay.open { display:flex; }
 .pdf-frame { max-width:calc(100vw - 48px); max-height:calc(100vh - 48px); background:#fff; border-radius:8px; box-shadow:0 24px 48px rgba(0,0,0,0.32); overflow:hidden; position:relative; }
@@ -334,11 +339,11 @@ const TPS = [
   { id:'t0', date:'2024-06-24', name:'登録時',              phase:'e' },
   { id:'t1', date:'2024-08-19', name:'治療開始後8w',        phase:'t' },
   { id:'t2', date:'2024-10-14', name:'治療開始後16w/増悪時', phase:'t' },
-  { id:'t3', date:'2024-12-09', name:'治療開始後8w',        phase:'t' },
-  { id:'t4', date:'2025-02-03', name:'治療開始後16w',       phase:'t' },
-  { id:'t5', date:'2025-03-31', name:'治療開始後24w',       phase:'t' },
+  { id:'t3', date:'2024-12-09', name:'次治療開始後8w',      phase:'t' },
+  { id:'t4', date:'2025-02-03', name:'次治療開始後16w',     phase:'t' },
+  { id:'t5', date:'2025-03-31', name:'次治療開始後24w',     phase:'t' },
   { id:'t6', date:'2025-06-26', name:'増悪時',              phase:'t' },
-  { id:'t7', date:'2025-07-21', name:'治療開始後32w',       phase:'f' },
+  { id:'t7', date:'2025-07-21', name:'次治療開始後32w',     phase:'f' },
 ];
 const N = TPS.length;
 const CL = {};
@@ -347,16 +352,31 @@ function mkD(arr) {
   for (let i = 0; i < N; i++) out.push(arr[i] !== undefined ? arr[i] : null);
   return out;
 }
+function edcDot(color, visits) {
+  const aggregateColor = visits.some(v => v.status === '未入力')
+    ? 'red'
+    : visits.some(v => v.status === '一時保存')
+      ? 'yellow'
+      : 'blue';
+  return { color: aggregateColor, count: visits.length > 1 ? visits.length : undefined, visits };
+}
 const ROWS = [
   { type:'edc', label:'edc visit', dots: mkD([
-    'b',
-    'b',
-    'b',
-    { color:'red', status:'未入力' },
-    { color:'blue', status:'入力完了' },
-    { color:'yellow', status:'一時保存' },
-    'b',
-    'b'
+    edcDot('blue',   [{ name:'症例登録票', status:'データ確定' }]),
+    edcDot('blue',   [{ name:'薬物療法歴 1', status:'データ確定' }]),
+    edcDot('blue',   [{ name:'薬物療法歴 2', status:'データ確定' }]),
+    edcDot('red',    [
+      { name:'薬物療法歴 3', status:'未入力' },
+      { name:'薬物療法歴 4', status:'データ確定' }
+    ]),
+    edcDot('blue',   [{ name:'薬物療法歴 5', status:'データ確定' }]),
+    edcDot('yellow', [{ name:'薬物療法歴 6', status:'一時保存' }]),
+    edcDot('blue',   [{ name:'薬物療法歴 7', status:'データ確定' }]),
+    edcDot('blue',   [
+      { name:'薬物療法歴 8', status:'データ確定' },
+      { name:'薬物療法歴 9', status:'データ確定' },
+      { name:'薬物療法歴 10', status:'データ確定' }
+    ])
   ]) },
   { type:'sec', label:'治療' },
   { type:'sub', label:'手術', noToggle:true },
@@ -369,17 +389,15 @@ const ROWS = [
     dots: mkD([null,null,null,null,null,null,null,null]) },
   /* === 薬物療法 === */
   { type:'sub', label:'薬物療法', toggleKey:'grp-drug' },
-  { type:'bar', label:'治療ライン 1', indent:'sub-item', collapseKey:'grp-drug', toggleKey:'grp-drug-line1',
+  { type:'bar', label:'治療ライン 1', indent:'sub-item', collapseKey:'grp-drug',
     start:1, end:2, color:'var(--blue)', dose:'500mg/month', barLabel:'FULVESTRANT (治療ライン 1)' },
-  { type:'dot', label:'レジメン名', indent:'deep', collapseKey:['grp-drug', 'grp-drug-line1'],
-    dots: mkD([null,null,null,null,null,null,null,null]) },
-  { type:'bar', label:'治療ライン 2', indent:'sub-item', collapseKey:'grp-drug', toggleKey:'grp-drug-line2',
+  { type:'bar', label:'治療ライン 2', indent:'sub-item', collapseKey:'grp-drug',
     start:3, end:7, color:'var(--blue)', dose:'500mg/month', barLabel:'治療ライン 2' },
-  { type:'dot', label:'レジメン名', indent:'deep', collapseKey:['grp-drug', 'grp-drug-line2'],
-    dots: mkD([null,null,null,null,null,null,null,null]) },
   /* === 補助化学療法 === */
   { type:'sub', label:'補助化学療法', toggleKey:'grp-adj-chemo' },
-  { type:'dot', label:'薬剤名', indent:'item', collapseKey:'grp-adj-chemo',
+  { type:'dot', label:'術前治療1', indent:'item', collapseKey:'grp-adj-chemo',
+    dots: mkD([null,null,null,null,null,null,null,null]) },
+  { type:'dot', label:'術後治療1', indent:'item', collapseKey:'grp-adj-chemo',
     dots: mkD([null,null,null,null,null,null,null,null]) },
   { type:'sec', label:'臨床画像・診断レポート' },
   { type:'dot', label:'PET-CT', indent:'item',
@@ -421,14 +439,13 @@ function buildBody() {
       return;
     }
     if (row.type === 'edc') {
-      const edcEntry = `<span class="section-label-with-action"><span>${row.label}</span><button class="btn btn-dicom" type="button" onclick="event.stopPropagation()">EDC</button></span>`;
       h += `<tr>
-        <td class="row-label sec-hd">${edcEntry}</td>
+        <td class="row-label sec-hd">${row.label}</td>
         ${TPS.map((tp,ci)=>{
           const d = row.dots?.[ci];
-          const status = typeof d === 'object' && d?.status ? d.status : '';
-          const title = status ? ` title="${status}" aria-label="${status}"` : '';
-          return `<td class="sec-cell no-click"${title}>${renderDot(d, row.dotStyle)}</td>`;
+          const visits = edcVisitsFromDot(d);
+          const action = visits.length ? ` onclick="openEdcPopup('${tp.id}','${tp.name}','${tp.date}',${ci})"` : '';
+          return `<td class="sec-cell ${visits.length?'':'no-click'}"${action}>${renderDot(d, row.dotStyle)}</td>`;
         }).join('')}
       </tr>`;
       return;
@@ -460,9 +477,8 @@ function buildBody() {
         <td colspan="${N}" style="padding:0;border-bottom:1px dashed var(--border-dashed);position:relative;height:32px;">
           <div class="treatment-bar"
             style="left:${sp}%;width:${w}%;background:${row.color};"
-            onmouseenter="showTip(event,'${row.barLabel||row.label}','${sd}','${ed}','${row.dose||''}')"
-            onmouseleave="hideTip()"
-            onclick="openBarDrawer('${row.barLabel||row.label}','${sd}','${ed}','${row.dose||''}','${row.color}')">
+            onmouseenter="showTip(event,'${row.barLabel||row.label}','${sd}','${ed}')"
+            onmouseleave="hideTip()">
           </div>
         </td>
       </tr>`;
@@ -501,11 +517,51 @@ function renderDot(d, style) {
 }
 function toggleGrp(key) { CL[key]=!CL[key]; buildBody(); syncMinimap(); }
 const tt = document.getElementById('tooltip');
-function showTip(e,name,start,end,dose) { tt.innerHTML=`<strong>${name}</strong><br>開始：${start}<br>終了：${end}${dose?'<br>用量：'+dose:''}`; tt.classList.add('show'); posTip(e); }
+function showTip(e,name,start,end) {
+  const meta = TREATMENT_META[name] || {};
+  const drugs = Array.isArray(meta.drugs) ? meta.drugs.join('、') : (meta.drugs || meta.drug || '—');
+  tt.innerHTML=`治療開始日：${start}<br>最終投与日：${end}<br>薬剤名：${drugs}`;
+  tt.classList.add('show');
+  posTip(e);
+}
 function hideTip() { tt.classList.remove('show'); }
 function posTip(e) { tt.style.left=(e.clientX+12)+'px'; tt.style.top=(e.clientY-10)+'px'; }
 document.addEventListener('mousemove',e=>{ if(tt.classList.contains('show')) posTip(e); });
 let imagePopupState = { records: [], index: 0 };
+function edcVisitsFromDot(d) {
+  if (!d) return [];
+  if (typeof d === 'object' && Array.isArray(d.visits)) return d.visits;
+  const statusMap = { b:'データ確定', blue:'データ確定', red:'未入力', yellow:'一時保存' };
+  const color = typeof d === 'object' ? d.color : d;
+  return [{ name:'薬物療法歴', status: statusMap[color] || '—' }];
+}
+function openEdcPopup(tpId,tpName,tpDate,ci) {
+  const row = ROWS.find(r => r.type === 'edc');
+  const visits = edcVisitsFromDot(row?.dots?.[ci]);
+  imagePopupState = { records: visits, index: 0, mode: 'edc', timepointId: tpId };
+  document.getElementById('imagePopupTitle').textContent = tpName;
+  document.getElementById('imagePopupSub').textContent = tpDate;
+  renderEdcPopup();
+  document.getElementById('imagePopupOverlay').classList.add('open');
+}
+function renderEdcPopup() {
+  const rows = imagePopupState.records.map(v => `
+    <tr>
+      <td>${v.name}</td>
+      <td>${v.status}</td>
+    </tr>
+  `).join('');
+  document.getElementById('imagePopupBody').innerHTML = `
+    <table class="visit-table">
+      <thead><tr><th>ビジット</th><th>ステータス</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="popup-actions">
+      <button class="popup-action-btn" type="button" onclick="openEdcPortal()">EDC</button>
+    </div>
+  `;
+}
+function openEdcPortal() {}
 function openDotDetail(label,tpId,tpName,tpDate,status,dtype,ci) {
   if (dtype === 'img') {
     openImagePopup(label,tpId,tpName,tpDate,ci);
@@ -612,44 +668,9 @@ function openDotDrawer(label,tpName,tpDate,status,dtype) {
 // Treatment line metadata keyed by barLabel
 const TREATMENT_META = {
   'FULVESTRANT (治療ライン 1)': {
-    drug: 'フルベストラント (FULVESTRANT)',
-    regimen: 'フルベストラント単剤療法',
-    purpose: '転移性乳癌に対するホルモン療法（ER陽性）',
-    line: '1st line',
-    route: '筋肉内注射',
-    dose: '500 mg/月',
+    drugs: ['フルベストラント (FULVESTRANT)'],
   }
 };
-function openBarDrawer(name,start,end,dose,color) {
-  document.getElementById('drawerTitle').textContent=name;
-  document.getElementById('drawerSub').textContent=`${start} 〜 ${end}`;
-  const meta = TREATMENT_META[name] || {};
-  const drugName   = meta.drug    || name;
-  const regimen    = meta.regimen || '—';
-  const purpose    = meta.purpose || '—';
-  const line       = meta.line    || '—';
-  const route      = meta.route   || '—';
-  const doseVal    = meta.dose    || dose || '—';
-  document.getElementById('drawerBody').innerHTML=`
-    <div class="dsec">
-      <div class="dsec-title">治療ライン情報</div>
-      <div class="fr"><span class="fl">薬剤名</span><span class="fv">${drugName}</span></div>
-      <div class="fr"><span class="fl">レジメン</span><span class="fv">${regimen}</span></div>
-      <div class="fr"><span class="fl">治療ライン</span><span class="fv">${line}</span></div>
-      <div class="fr"><span class="fl">投与経路</span><span class="fv">${route}</span></div>
-      <div class="fr"><span class="fl">用量</span><span class="fv" style="font-family:var(--mono)">${doseVal}</span></div>
-    </div>
-    <div class="dsec">
-      <div class="dsec-title">期間</div>
-      <div class="fr"><span class="fl">開始日</span><span class="fv" style="font-family:var(--mono)">${start}</span></div>
-      <div class="fr"><span class="fl">終了日</span><span class="fv" style="font-family:var(--mono)">${end}</span></div>
-    </div>
-    <div class="dsec">
-      <div class="dsec-title">治療目的</div>
-      <div style="font-size:12px;color:var(--text-dark);line-height:1.7;padding-top:4px;">${purpose}</div>
-    </div>`;
-  openDrawer();
-}
 function openDrawer()  { document.getElementById('drawer').classList.add('open');    document.getElementById('drawerOverlay').classList.add('open'); }
 function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); }
 function syncMinimap() {
