@@ -39,6 +39,7 @@ body { display: flex; flex-direction: column; font-family: var(--font); backgrou
 .btn:hover { background: var(--bg); }
 .btn-success { background:#16a34a; color:#fff; border-color:#15803d; }
 .btn-success:hover { background:#15803d; }
+.btn:disabled, .btn:disabled:hover { background:#cbd5e1; color:#64748b; border-color:#cbd5e1; cursor:default; }
 .btn-pending { background:#fef3c7; color:#92400e; border-color:#f59e0b; }
 .btn-pending:hover { background:#fde68a; border-color:#d97706; }
 .section-label-with-action { display:inline-flex; align-items:center; gap:8px; }
@@ -180,7 +181,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
   <div class="hd-spacer"></div>
 </div>
 <div id="patient-bar">
-  <a href="../../index.html" class="back-btn">← 戻る</a>
+  <a href="../../index.html" class="back-btn" onclick="return confirmBack(event)">← 戻る</a>
   <div class="pt-sep"></div>
   <!-- <span class="pt-label">表示中</span> -->
   <span class="pill pill-id">M30022222</span>
@@ -268,6 +269,14 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     <option value="医師の判断による許容">医師の判断による許容</option>
   `;
   const appState = { judgeMode: false, activeJudgeRecords: [], auditLog: [] };
+  let savedSnapshot = null;
+  const decisionFields = ['decision', 'assignedTP', 'reason', 'comment'];
+  const copyDecisions = () => imageEvents.map(rec => Object.fromEntries(decisionFields.map(key => [key, rec[key]])));
+  const changedRecords = () => savedSnapshot ? imageEvents.filter((rec, i) => decisionFields.some(key => rec[key] !== savedSnapshot[i][key])) : [];
+  function discardDecisions() {
+    if (savedSnapshot) imageEvents.forEach((rec, i) => Object.assign(rec, savedSnapshot[i]));
+    savedSnapshot = null;
+  }
   const CL = {};
   window.toggleGrp = function(key) { CL[key] = !CL[key]; renderPortal(); };
   let imagePopupState = { records: [], index: 0 };
@@ -519,10 +528,12 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       </td></tr>`;
   }
   function renderClinicalSection() {
-    const label = `<span class="section-label-with-action"><span>臨床画像・診断レポート</span><button class="btn btn-pending" type="button" onclick="startJudgeAgain()">確認待ち</button></span>`;
+    const hasPending = imageEvents.some(rec => !rec.inRange && rec.decision === 'unjudged');
+    const pendingButton = hasPending ? '<button class="btn btn-pending" type="button" onclick="startJudgeAgain()">確認待ち</button>' : '';
+    const label = `<span class="section-label-with-action"><span>臨床画像・診断レポート</span>${pendingButton}</span>`;
     const actions = appState.judgeMode
       ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">確認履歴</button>
-         <button class="btn btn-success" type="button" onclick="confirmSave()">保存</button>`
+         <button class="btn btn-success" type="button" onclick="confirmSave()" ${changedRecords().length ? '' : 'disabled'}>保存</button>`
       : (appState.auditLog.length ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">確認履歴</button>` : '');
     return `<tr>
       <td class="row-label sec-hd">${label}</td>
@@ -583,6 +594,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     else openImagePopupForRecords(type, tp, records);
   };
   window.startJudgeAgain = function() {
+    if (!appState.judgeMode) savedSnapshot = copyDecisions();
     appState.judgeMode = true;
     closeImagePopup();
     toggleAuditPanel(false);
@@ -640,7 +652,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     renderJudgePopup();
     document.getElementById('imagePopupOverlay').classList.add('open');
   }
-  function requiresImageJudgment(rec) { return !rec.inRange && rec.decision === 'unjudged'; }
+  function requiresImageJudgment(rec) { return !rec.inRange; }
   function tpReasonCell(rec) {
     if (rec.decision === 'out') return `<strong>規定外</strong>${rec.reason ? `<span style="display:block;font-size:12px;color:var(--text-light);margin-top:3px;">理由: ${esc(rec.reason)}</span>` : ''}`;
     const tpName = tpById(displayTPId(rec))?.name || '—';
@@ -678,6 +690,17 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
         <thead><tr>${headers}</tr></thead>
         <tbody>${rows || `<tr><td colspan="${colCount}" style="text-align:center;color:var(--text-light);padding:24px;">データがありません</td></tr>`}</tbody>
       </table></div>`;
+    records.forEach((rec, i) => {
+      if (!requiresImageJudgment(rec) || !['include', 'out'].includes(rec.decision)) return;
+      document.querySelector('input[name="dec-' + i + '"][value="' + rec.decision + '"]').checked = true;
+      updateRowState(i);
+      const tp = document.getElementById('sel-tp-' + i);
+      if (tp) tp.value = rec.assignedTP;
+      document.getElementById('sel-rs-' + i).value = rec.reason;
+      const comment = document.getElementById('inp-out-comm-' + i);
+      if (comment) comment.value = rec.comment;
+      checkSingleValid(i);
+    });
   }
   window.updateRowState = function(i) {
     const checked = document.querySelector(`input[name="dec-${i}"]:checked`);
@@ -689,12 +712,12 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
           <option value="">-- タイムポイント選択 --</option>${TP_OPTIONS}
         </select>
         <select id="sel-rs-${i}" class="detail-select" onchange="checkSingleValid(${i})">${REASON_OPTIONS}</select>
-        <button class="single-save-btn" id="save-btn-${i}" disabled onclick="saveSingleDecision(${i})">保存</button>`;
+        <button class="single-save-btn" id="save-btn-${i}" disabled onclick="confirmSingleDecision(${i})">確認</button>`;
     } else {
       detail.innerHTML = `
         <select id="sel-rs-${i}" class="detail-select" onchange="checkSingleValid(${i})">${REASON_OPTIONS}</select>
         <input type="text" id="inp-out-comm-${i}" class="detail-input" placeholder="コメント（任意）" oninput="checkSingleValid(${i})">
-        <button class="single-save-btn" id="save-btn-${i}" disabled onclick="saveSingleDecision(${i})">保存</button>`;
+        <button class="single-save-btn" id="save-btn-${i}" disabled onclick="confirmSingleDecision(${i})">確認</button>`;
     }
     checkSingleValid(i);
   };
@@ -709,22 +732,24 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     }
     btn.disabled = !rs;
   };
-  window.saveSingleDecision = function(i) {
+  window.confirmSingleDecision = function(i) {
     const rec = appState.activeJudgeRecords[i];
     const checked = document.querySelector(`input[name="dec-${i}"]:checked`);
     if (!rec || !checked) return;
+    checkSingleValid(i);
+    if (document.getElementById(`save-btn-${i}`)?.disabled) return;
     const now = new Date();
     const timestamp = now.toLocaleDateString('ja-JP') + ' ' + now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
     if (checked.value === 'include') {
       const tpVal = document.getElementById(`sel-tp-${i}`).value;
       const reason = document.getElementById(`sel-rs-${i}`).value;
       rec.reason = reason; rec.comment = ''; rec.decision = 'include'; rec.assignedTP = tpVal;
-      pushAudit(rec, timestamp);
+
     } else {
       rec.decision = 'out'; rec.assignedTP = '';
       rec.reason = document.getElementById(`sel-rs-${i}`)?.value || '';
       rec.comment = document.getElementById(`inp-out-comm-${i}`)?.value.trim() || '';
-      pushAudit(rec, timestamp);
+
     }
     closeImagePopup();
     renderPortal();
@@ -777,25 +802,48 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       </div>`;
     }).join('');
   }
-  window.confirmSave = function() {
+  function askConfirmation(message, onYes) {
+    if (document.querySelector('.modal-overlay')) return;
+    const previousFocus = document.activeElement;
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
-    overlay.innerHTML = `<div class="modal-box">
-      <div class="modal-title">変更を保存しますか？</div>
-      <div class="modal-body">確認結果を保存します。</div>
-      <div class="modal-btns">
-        <button class="btn btn-success" id="confirm-save-btn" type="button">保存</button>
-        <button class="btn" id="cancel-save-btn" type="button">キャンセル</button>
-      </div></div>`;
+    overlay.innerHTML = '<div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="confirmation-title"><div class="modal-title" id="confirmation-title"></div><div class="modal-btns"><button class="btn btn-success" type="button" data-answer="yes">はい</button><button class="btn" type="button" data-answer="no">いいえ</button></div></div>';
+    overlay.querySelector('.modal-title').textContent = message;
     document.body.appendChild(overlay);
-    overlay.querySelector('#confirm-save-btn').onclick = () => {
-      appState.judgeMode = false;
-      overlay.remove(); closeImagePopup(); toggleAuditPanel(false); renderPortal();
-      const toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = '変更が保存されました';
-      document.body.appendChild(toast);
-      setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.35s'; setTimeout(() => toast.remove(), 350); }, 2400);
+    const yes = overlay.querySelector('[data-answer="yes"]');
+    const no = overlay.querySelector('[data-answer="no"]');
+    const close = () => { overlay.remove(); previousFocus?.focus(); };
+    yes.onclick = () => { close(); onYes(); };
+    no.onclick = close;
+    overlay.onkeydown = event => {
+      if (event.key === 'Escape') { event.preventDefault(); close(); }
+      if (event.key === 'Tab') { event.preventDefault(); (document.activeElement === yes ? no : yes).focus(); }
     };
-    overlay.querySelector('#cancel-save-btn').onclick = () => overlay.remove();
+    no.focus();
+  }
+  window.confirmSave = function() {
+    if (!changedRecords().length) return;
+    askConfirmation('確認結果を保存しますか？', () => {
+      const now = new Date();
+      const timestamp = now.toLocaleDateString('ja-JP') + ' ' + now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+      changedRecords().forEach(rec => pushAudit(rec, timestamp));
+      savedSnapshot = null;
+      appState.judgeMode = false;
+      closeImagePopup(); toggleAuditPanel(false); renderPortal(); updateAuditBadge();
+      const toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = '確認結果を保存しました';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2400);
+    });
+  };
+  window.confirmBack = function(event) {
+    if (!changedRecords().length) return true;
+    event.preventDefault();
+    const destination = event.currentTarget.href;
+    askConfirmation('確認結果が保存されていません。今回保存せずに終了しますか？', () => {
+      discardDecisions();
+      window.location.href = destination;
+    });
+    return false;
   };
   window.showStatusTip = function(e, status) {
     const tt = document.getElementById('tooltip');
