@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -639,11 +639,8 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
         <thead><tr><th>ビジット</th><th>ステータス</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
-      <div class="popup-actions">
-        <button class="popup-action-btn" type="button" onclick="openEdcPortal()">EDC</button>
-      </div>`;
+`;
   }
-  window.openEdcPortal = function() {};
   function openJudgePopup(type, tp, records, position) {
     appState.activeJudgeRecords = records;
     document.getElementById('imagePopup').classList.add('popup-wide');

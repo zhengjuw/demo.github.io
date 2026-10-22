@@ -556,12 +556,9 @@ function renderEdcPopup() {
       <thead><tr><th>ビジット</th><th>ステータス</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <div class="popup-actions">
-      <button class="popup-action-btn" type="button" onclick="openEdcPortal()">EDC</button>
-    </div>
+
   `;
 }
-function openEdcPortal() {}
 function openDotDetail(label,tpId,tpName,tpDate,status,dtype,ci) {
   if (dtype === 'img') {
     openImagePopup(label,tpId,tpName,tpDate,ci);
