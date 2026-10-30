@@ -311,6 +311,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     imgEvent('CT', 'tp-reg',        '2019-07-24', ['CT画像', 'CTレポート']),
     imgEvent('CT', 'tp-p4a',        '2019-09-12', ['CT画像', 'CTレポート']),
     imgEvent('CT', 'tp-p12rec',     '2019-12-10', ['CT画像', 'CTレポート'], { inRange:false }),
+    imgEvent('CT', 'tp-p12rec',     '2019-12-11', ['CT画像（追加ファイル）'], { inRange:false }),
     imgEvent('MRI', 'tp-reg',       '2019-07-24', ['MRI画像', 'MRIレポート']),
     imgEvent('MRI', 'tp-p12rec',    '2019-12-10', ['MRI画像', 'MRIレポート'], { inRange:false }),
     imgEvent('コンピュータX線撮影', 'tp-p4a', '2019-09-12', ['コンピュータX線撮影画像', 'コンピュータX線撮影レポート']),
@@ -529,7 +530,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
   }
   function renderClinicalSection() {
     const hasPending = imageEvents.some(rec => !rec.inRange && rec.decision === 'unjudged');
-    const pendingButton = hasPending ? '<button class="btn btn-pending" type="button" onclick="startJudgeAgain()">確認待ち</button>' : '';
+    const pendingButton = appState.judgeMode ? '<button class="btn" type="button" onclick="returnToView()">戻る</button>' : hasPending ? '<button class="btn btn-pending" type="button" onclick="startJudgeAgain()">確認待ち</button>' : '';
     const label = `<span class="section-label-with-action"><span>臨床画像・診断レポート</span>${pendingButton}</span>`;
     const actions = appState.judgeMode
       ? `<button class="btn" type="button" onclick="toggleAuditPanel(true)">確認履歴</button>
@@ -718,16 +719,26 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     }
     checkSingleValid(i);
   };
-  window.checkSingleValid = function(i) {
+  function rowDraft(i) {
     const checked = document.querySelector(`input[name="dec-${i}"]:checked`);
+    if (!checked) return null;
+    return {
+      decision: checked.value,
+      assignedTP: checked.value === 'include' ? document.getElementById(`sel-tp-${i}`)?.value || '' : '',
+      reason: document.getElementById(`sel-rs-${i}`)?.value || '',
+      comment: checked.value === 'out' ? document.getElementById(`inp-out-comm-${i}`)?.value.trim() || '' : '',
+    };
+  }
+  function draftMatches(rec, draft) {
+    return draft && decisionFields.every(key => rec[key] === draft[key]);
+  }
+  window.checkSingleValid = function(i) {
+    const draft = rowDraft(i);
     const btn = document.getElementById(`save-btn-${i}`);
-    if (!checked || !btn) return;
-    const rs = document.getElementById(`sel-rs-${i}`)?.value;
-    if (checked.value === 'include') {
-      const tp = document.getElementById(`sel-tp-${i}`)?.value;
-      btn.disabled = !(tp && rs); return;
-    }
-    btn.disabled = !rs;
+    if (!draft || !btn) return;
+    const confirmed = draftMatches(appState.activeJudgeRecords[i], draft);
+    btn.textContent = confirmed ? '確認済み' : '確認';
+    btn.disabled = confirmed || !draft.reason || (draft.decision === 'include' && !draft.assignedTP);
   };
   window.confirmSingleDecision = function(i) {
     const rec = appState.activeJudgeRecords[i];
@@ -748,7 +759,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       rec.comment = document.getElementById(`inp-out-comm-${i}`)?.value.trim() || '';
 
     }
-    closeImagePopup();
+    checkSingleValid(i);
     renderPortal();
     updateAuditBadge();
   };
@@ -832,14 +843,34 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       setTimeout(() => toast.remove(), 2400);
     });
   };
-  window.confirmBack = function(event) {
-    if (!changedRecords().length) return true;
-    event.preventDefault();
-    const destination = event.currentTarget.href;
+  function hasUnsavedJudgments() {
+    if (changedRecords().length) return true;
+    if (!appState.judgeMode || !document.getElementById('imagePopupOverlay').classList.contains('open')) return false;
+    return appState.activeJudgeRecords.some((rec, i) => {
+      const draft = rowDraft(i);
+      return draft && !draftMatches(rec, draft);
+    });
+  }
+  function leaveConfirmation(onLeave) {
+    if (!hasUnsavedJudgments()) { onLeave(); return; }
     askConfirmation('確認結果が保存されていません。今回保存せずに終了しますか？', () => {
       discardDecisions();
-      window.location.href = destination;
+      onLeave();
     });
+  }
+  window.returnToView = function() {
+    leaveConfirmation(() => {
+      savedSnapshot = null;
+      appState.judgeMode = false;
+      appState.activeJudgeRecords = [];
+      closeImagePopup(); toggleAuditPanel(false); renderPortal();
+    });
+  };
+  window.confirmBack = function(event) {
+    if (!hasUnsavedJudgments()) return true;
+    event.preventDefault();
+    const destination = event.currentTarget.href;
+    leaveConfirmation(() => { window.location.href = destination; });
     return false;
   };
   window.showStatusTip = function(e, status) {
@@ -883,7 +914,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     const rec = imagePopupState.records[imagePopupState.index];
     if (!rec) return;
     const query = new URLSearchParams({ exam: rec.examType, timepoint: rec.timepointId, occurrence: String(rec.occurrence || 0) });
-    window.open(`../viewer/index.html?${query.toString()}`, '_blank', 'noopener');
+    window.open(`file:///C:/Users/%E7%8E%8B%E6%AD%A3%E8%8F%8A/OneDrive%20-%20iTMS%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/zzzzz/%E7%94%BB%E5%83%8F%E8%A1%A8%E7%A4%BA/demo.github.io/doc/viewer/index.html?${query.toString()}`, '_blank', 'noopener');
   };
   window.closeDrawer = function() {
     document.getElementById('drawer').classList.remove('open');
