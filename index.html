@@ -372,7 +372,7 @@
         ];
         rawData.forEach((d, i) => {
             d.recurrenceCount = i < 2 ? 2 : (i % 2 === 0 ? 2 : 0);
-            d.confirmationPending = d.id === 'M30022222' ? '要確認' : '不要';
+            d.confirmationPending = ['M30022222', 'M30033333'].includes(d.id) ? '要確認' : '不要';
         });
         const committed = {
             idQ: '',
@@ -650,6 +650,7 @@
         function navigateToParticipant(id) {
             if (id === 'M30011111') { window.location.href = './doc/index.html'; return; }
             if (id === 'M30022222') { window.location.href = './doc/pending/index.html'; return; }
+            if (id === 'M30033333') { window.location.href = './doc/extended/index.html'; return; }
             console.log('navigateToParticipant:', id);
         }
         function fillDateSelects(prefix) {
