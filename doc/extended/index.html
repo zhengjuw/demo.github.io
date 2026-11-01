@@ -168,7 +168,8 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
 .audit-meta { display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; font-size:11px; color:var(--text-light); }
 .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.38); z-index:600; display:flex; align-items:center; justify-content:center; padding:24px; }
 .modal-box { width:min(360px,100%); background:#fff; border-radius:8px; border:1px solid var(--border); box-shadow:0 18px 36px rgba(15,23,42,0.2); padding:24px; text-align:center; }
-.modal-title { font-size:16px; font-weight:700; margin-bottom:8px; }
+.modal-title { white-space:pre-line; font-size:16px; font-weight:700; margin-bottom:8px; }
+.modal-warning { margin-top:12px; font-size:13px; font-weight:400; line-height:1.6; color:var(--red); }
 .modal-body { color:var(--text-mid); font-size:12px; margin-bottom:18px; }
 .modal-btns { display:flex; justify-content:center; gap:10px; }
 .toast { position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:700; background:#16a34a; color:#fff; padding:10px 18px; border-radius:7px; font-size:12px; font-weight:700; box-shadow:0 8px 18px rgba(22,163,74,0.24); }
@@ -270,7 +271,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
   `;
   const appState = { judgeMode: false, activeJudgeRecords: [], auditLog: [] };
   let savedSnapshot = null;
-  const decisionFields = ['decision', 'assignedTP', 'reason', 'comment'];
+  const decisionFields = ['decision', 'assignedTP', 'reason'];
   const copyDecisions = () => imageEvents.map(rec => Object.fromEntries(decisionFields.map(key => [key, rec[key]])));
   const changedRecords = () => savedSnapshot ? imageEvents.filter((rec, i) => decisionFields.some(key => rec[key] !== savedSnapshot[i][key])) : [];
   function discardDecisions() {
@@ -324,7 +325,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       id: `${type}-${originalTP}-${actualDate}-${Math.random().toString(36).slice(2, 7)}`,
       type, originalTP, actualDate, originalDate: actualDate,
       inRange: opts.inRange ?? true,
-      confirmed: false, decision: 'unjudged', assignedTP: '', reason: '', comment: '',
+      confirmed: false, decision: 'unjudged', assignedTP: '', reason: '',
       files: fileNames.map(name => ({ name, actualDate })),
     };
   }
@@ -698,8 +699,6 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       const tp = document.getElementById('sel-tp-' + i);
       if (tp) tp.value = rec.assignedTP;
       document.getElementById('sel-rs-' + i).value = rec.reason;
-      const comment = document.getElementById('inp-out-comm-' + i);
-      if (comment) comment.value = rec.comment;
       checkSingleValid(i);
     });
   }
@@ -717,7 +716,6 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     } else {
       detail.innerHTML = `
         <select id="sel-rs-${i}" class="detail-select" onchange="checkSingleValid(${i})">${REASON_OPTIONS}</select>
-        <input type="text" id="inp-out-comm-${i}" class="detail-input" placeholder="コメント（任意）" oninput="checkSingleValid(${i})">
         <button class="single-save-btn" id="save-btn-${i}" disabled onclick="confirmSingleDecision(${i})">確認</button>`;
     }
     checkSingleValid(i);
@@ -729,7 +727,6 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       decision: checked.value,
       assignedTP: checked.value === 'include' ? document.getElementById(`sel-tp-${i}`)?.value || '' : '',
       reason: document.getElementById(`sel-rs-${i}`)?.value || '',
-      comment: checked.value === 'out' ? document.getElementById(`inp-out-comm-${i}`)?.value.trim() || '' : '',
     };
   }
   function draftMatches(rec, draft) {
@@ -754,12 +751,11 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     if (checked.value === 'include') {
       const tpVal = document.getElementById(`sel-tp-${i}`).value;
       const reason = document.getElementById(`sel-rs-${i}`).value;
-      rec.reason = reason; rec.comment = ''; rec.decision = 'include'; rec.assignedTP = tpVal;
+      rec.reason = reason; rec.decision = 'include'; rec.assignedTP = tpVal;
 
     } else {
       rec.decision = 'out'; rec.assignedTP = '';
       rec.reason = document.getElementById(`sel-rs-${i}`)?.value || '';
-      rec.comment = document.getElementById(`inp-out-comm-${i}`)?.value.trim() || '';
 
     }
     checkSingleValid(i);
@@ -771,7 +767,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       actionType: rec.decision,
       visit: `${rec.decision === 'out' ? '規定外' : (tpById(displayTPId(rec))?.name || '未確認')} - ${rec.type}`,
       type: rec.type, timestamp, operator: 'Dr. 山田',
-      reason: rec.reason || rec.comment || '—',
+      reason: rec.reason || '—',
       files: rec.files.map(f => ({ name:f.name, actualDate:f.actualDate })),
       assignedTP: rec.decision === 'out' ? '規定外' : (rec.assignedTP ? tpById(rec.assignedTP)?.name : '—'),
     });
@@ -819,7 +815,15 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     overlay.innerHTML = '<div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="confirmation-title"><div class="modal-title" id="confirmation-title"></div><div class="modal-btns"><button class="btn btn-success" type="button" data-answer="yes">はい</button><button class="btn" type="button" data-answer="no">いいえ</button></div></div>';
-    overlay.querySelector('.modal-title').textContent = message;
+    const [question, warning] = message.split('\n\n');
+    const title = overlay.querySelector('.modal-title');
+    title.textContent = question;
+    if (warning) {
+      const note = document.createElement('p');
+      note.className = 'modal-warning';
+      note.textContent = warning;
+      title.appendChild(note);
+    }
     document.body.appendChild(overlay);
     const yes = overlay.querySelector('[data-answer="yes"]');
     const no = overlay.querySelector('[data-answer="no"]');
@@ -834,7 +838,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
   }
   window.confirmSave = function() {
     if (!changedRecords().length) return;
-    askConfirmation('確認結果を保存しますか？', () => {
+    askConfirmation('確認結果を保存しますか？\n\n※ 保存後は内容を変更できません。保存前に、確認結果に誤りがないことをご確認ください。', () => {
       const now = new Date();
       const timestamp = now.toLocaleDateString('ja-JP') + ' ' + now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
       changedRecords().forEach(rec => { pushAudit(rec, timestamp); rec.confirmed = true; });
