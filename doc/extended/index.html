@@ -324,7 +324,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       id: `${type}-${originalTP}-${actualDate}-${Math.random().toString(36).slice(2, 7)}`,
       type, originalTP, actualDate, originalDate: actualDate,
       inRange: opts.inRange ?? true,
-      decision: 'unjudged', assignedTP: '', reason: '', comment: '',
+      confirmed: false, decision: 'unjudged', assignedTP: '', reason: '', comment: '',
       files: fileNames.map(name => ({ name, actualDate })),
     };
   }
@@ -574,9 +574,9 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     return keys.map(key => {
       const records = visible.filter(rec => displayKeys(rec).includes(key));
       const hasUnjudgedOutside = records.some(rec => !rec.inRange && rec.decision === 'unjudged');
-      const hasOut = records.some(rec => rec.decision === 'out');
+      const hasOut = records.some(rec => !rec.confirmed && rec.decision === 'out');
       const hasJudgedTp = records.some(rec => rec.decision === 'include' && key === `tp:${rec.assignedTP}`);
-      const hasInclude = records.some(rec => rec.decision === 'include');
+      const hasInclude = records.some(rec => !rec.confirmed && rec.decision === 'include');
       const color = appState.judgeMode && hasUnjudgedOutside ? 'red' : appState.judgeMode && hasOut ? 'gray' : appState.judgeMode && hasInclude ? 'yellow' : 'b';
       const count = records.length > 1 ? records.length : undefined;
       return `<button class="image-dot-btn" type="button" data-pos-key="${key}" style="left:${fallbackPositionForKey(key)}%;" onclick="handleImageSlot('${type}','${key}')">
@@ -593,11 +593,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     });
     const position = fallbackPositionForKey(key);
     const tp = tpById(displayTPId(records[0])) || nearestTPByPosition(position);
-    const hasJudgmentState = records.some(rec =>
-      (!rec.inRange && rec.decision === 'unjudged') ||
-      rec.decision === 'include' ||
-      rec.decision === 'out'
-    );
+    const hasJudgmentState = records.some(requiresImageJudgment);
     if (appState.judgeMode && hasJudgmentState) openJudgePopup(type, tp, records, position);
     else openImagePopupForRecords(type, tp, records);
   };
@@ -657,7 +653,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     renderJudgePopup();
     document.getElementById('imagePopupOverlay').classList.add('open');
   }
-  function requiresImageJudgment(rec) { return !rec.inRange; }
+  function requiresImageJudgment(rec) { return !rec.inRange && !rec.confirmed; }
   function tpReasonCell(rec) {
     if (rec.decision === 'out') return `<strong>規定外</strong>${rec.reason ? `<span style="display:block;font-size:12px;color:var(--text-light);margin-top:3px;">理由: ${esc(rec.reason)}</span>` : ''}`;
     const tpName = tpById(displayTPId(rec))?.name || '—';
@@ -680,7 +676,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
       const dateCell = `<span style="font-family:var(--mono);">${esc(rec.actualDate)}</span>`;
       if (mode === 'inRange') return `<tr><td>${fileCell}</td><td>${dateCell}</td></tr>`;
       if (mode === 'judged') return `<tr><td>${fileCell}</td><td>${dateCell}</td><td>${tpReasonCell(rec)}</td></tr>`;
-      if (!requiresImageJudgment(rec)) return `<tr><td>${fileCell}</td><td>${dateCell}</td><td><span style="color:var(--text-light);">確認不要</span></td><td>${tpReasonCell(rec)}</td></tr>`;
+      if (!requiresImageJudgment(rec)) return `<tr><td>${fileCell}</td><td>${dateCell}</td><td><span style="color:var(--text-light);">${rec.confirmed ? '確認済み' : '確認不要'}</span></td><td>${tpReasonCell(rec)}</td></tr>`;
       return `<tr style="background:#fffcfc;">
         <td>${fileCell}</td><td>${dateCell}</td>
         <td><div style="display:flex; flex-direction:column; gap:6px;">
@@ -743,14 +739,14 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     const draft = rowDraft(i);
     const btn = document.getElementById(`save-btn-${i}`);
     if (!draft || !btn) return;
-    const confirmed = draftMatches(appState.activeJudgeRecords[i], draft);
+    const confirmed = appState.activeJudgeRecords[i].confirmed || draftMatches(appState.activeJudgeRecords[i], draft);
     btn.textContent = confirmed ? '確認済み' : '確認';
     btn.disabled = confirmed || !draft.reason || (draft.decision === 'include' && !draft.assignedTP);
   };
   window.confirmSingleDecision = function(i) {
     const rec = appState.activeJudgeRecords[i];
     const checked = document.querySelector(`input[name="dec-${i}"]:checked`);
-    if (!rec || !checked) return;
+    if (!rec || !checked || !requiresImageJudgment(rec)) return;
     checkSingleValid(i);
     if (document.getElementById(`save-btn-${i}`)?.disabled) return;
     const now = new Date();
@@ -841,7 +837,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     askConfirmation('確認結果を保存しますか？', () => {
       const now = new Date();
       const timestamp = now.toLocaleDateString('ja-JP') + ' ' + now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
-      changedRecords().forEach(rec => pushAudit(rec, timestamp));
+      changedRecords().forEach(rec => { pushAudit(rec, timestamp); rec.confirmed = true; });
       savedSnapshot = null;
       appState.judgeMode = false;
       closeImagePopup(); toggleAuditPanel(false); renderPortal(); updateAuditBadge();
@@ -855,7 +851,7 @@ td.span-bar-cell .treatment-bar { position: absolute; top: 50%; transform: trans
     if (!appState.judgeMode || !document.getElementById('imagePopupOverlay').classList.contains('open')) return false;
     return appState.activeJudgeRecords.some((rec, i) => {
       const draft = rowDraft(i);
-      return draft && !draftMatches(rec, draft);
+      return requiresImageJudgment(rec) && draft && !draftMatches(rec, draft);
     });
   }
   function leaveConfirmation(onLeave) {
